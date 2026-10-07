@@ -36,6 +36,7 @@ Entregável:
 ## João
 
 ### Modelagem do normal
+- Classificação de tipos
 
 Entregável:
 - modelo inicial de representação da peça correta.
@@ -46,8 +47,8 @@ Entregável:
 
 ## João
 
-- Classificação de tipos
 - Integração I11/P2
+- Ajuste dos limiares
 
 ## Ícaro
 
@@ -89,7 +90,6 @@ frontend
 
 ## João / Ícaro
 
-- Ajuste dos limiares
 - Calibração do modelo
 
 ## Equipe
