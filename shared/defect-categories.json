@@ -1,0 +1,40 @@
+{
+  "taxonomy_version": "1.0",
+  "categories": [
+    {
+      "id": "NORMAL",
+      "name": "Sem defeito",
+      "description": "Nenhum defeito relevante identificado",
+      "severity": "NONE",
+      "consequence": "APPROVE"
+    },
+    {
+      "id": "AMASSADO",
+      "name": "Amassado",
+      "description": "Deformação física na superfície da peça",
+      "severity": "HIGH",
+      "consequence": "REJECT"
+    },
+    {
+      "id": "RACHADURA",
+      "name": "Rachadura",
+      "description": "Rachadura identificada na superfície da peça",
+      "severity": "HIGH",
+      "consequence": "REJECT"
+    },
+    {
+      "id": "DEFORMADO",
+      "name": "Deformado",
+      "description": "Deformação identificada na superficie da peça",
+      "severity": "HIGH",
+      "consequence": "REJECT"
+    },
+    {
+      "id": "RISCO",
+      "name": "Risco",
+      "description": "Risco identificado na superfície da peça",
+      "severity": "MEDIUM",
+      "consequence": "REVIEW"
+    }
+  ]
+}

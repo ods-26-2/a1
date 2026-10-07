@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "A1 Triage Result Event",
+  "type": "object",
+
+  "required": [
+    "message_type",
+    "schema",
+    "schema_version",
+    "producer",
+    "published_at",
+    "payload"
+  ],
+
+  "properties": {
+    "message_type": {
+      "type": "string",
+      "const": "event"
+    },
+
+    "schema": {
+      "type": "string",
+      "const": "ods.ver1.a1_triage_result"
+    },
+
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+
+    "producer": {
+      "type": "string",
+      "const": "A1"
+    },
+
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "payload": {
+      "type": "object",
+
+      "required": [
+        "piece_id",
+        "status",
+        "review_required"
+      ],
+
+      "properties": {
+        "piece_id": {
+          "type": "string"
+        },
+
+        "status": {
+          "type": "string",
+          "enum": [
+            "APPROVED",
+            "REJECTED",
+            "REVIEW"
+          ]
+        },
+
+        "defect_id": {
+          "type": ["string", "null"]
+        },
+
+        "review_required": {
+          "type": "boolean"
+        }
+      },
+
+      "additionalProperties": false
+    }
+  },
+
+  "additionalProperties": false
+}

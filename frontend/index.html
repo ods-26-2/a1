@@ -1,0 +1,167 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Interface de inspeção e triagem do projeto acadêmico VER-1."
+    />
+    <title>Inspeção Atual | VER-1</title>
+    <link rel="stylesheet" href="./css/styles.css" />
+  </head>
+  <body>
+    <header class="app-header">
+      <div class="brand" aria-label="VER-1 — Sistema de Inspeção e Triagem">
+        <span class="brand__mark" aria-hidden="true">V1</span>
+        <div>
+          <strong>VER-1</strong>
+          <span>Sistema de Inspeção e Triagem</span>
+        </div>
+      </div>
+
+      <div class="system-state" role="status">
+        <span class="system-state__dot" aria-hidden="true"></span>
+        SISTEMA ONLINE
+      </div>
+    </header>
+
+    <main class="inspection-page">
+      <div class="page-heading">
+        <div>
+          <p class="eyebrow">POSTO DE QUALIDADE · LINHA 01</p>
+          <h1>Inspeção atual</h1>
+        </div>
+        <p class="inspection-code">Evento <strong id="event-id">—</strong></p>
+      </div>
+
+      <div id="app-error" class="app-error" role="alert" hidden>
+        Não foi possível carregar a inspeção simulada. Inicie a interface por um
+        servidor local e tente novamente.
+      </div>
+
+      <section class="inspection-layout" aria-label="Resultado da inspeção atual">
+        <article class="evidence-panel" aria-labelledby="evidence-title">
+          <div class="panel-heading">
+            <div>
+              <p class="panel-kicker">EVIDÊNCIA VISUAL</p>
+              <h2 id="evidence-title">Imagem da peça</h2>
+            </div>
+            <span class="source-tag">MOCK · SPRINT 1</span>
+          </div>
+
+          <figure class="evidence-frame">
+            <img
+              id="evidence-image"
+              alt=""
+              width="1536"
+              height="1024"
+            />
+            <figcaption>
+              Evidência local simulada — sem integração com I8/S4
+            </figcaption>
+          </figure>
+
+          <dl class="evidence-meta">
+            <div>
+              <dt>Peça</dt>
+              <dd id="piece-id">—</dd>
+            </div>
+            <div>
+              <dt>Inspecionada em</dt>
+              <dd id="inspection-time">—</dd>
+            </div>
+          </dl>
+        </article>
+
+        <section class="result-panel" aria-label="Decisão da triagem">
+          <div id="status-banner" class="status-banner" role="status" aria-live="polite">
+            <span id="status-icon" class="status-banner__icon" aria-hidden="true"></span>
+            <div>
+              <span class="status-banner__label">RESULTADO DA TRIAGEM</span>
+              <strong id="status-text">—</strong>
+            </div>
+          </div>
+
+          <div class="defect-summary">
+            <p class="panel-kicker">CLASSIFICAÇÃO DETECTADA</p>
+            <div class="defect-heading">
+              <h2 id="classification-name">—</h2>
+              <span id="severity" class="severity-badge">—</span>
+            </div>
+            <p id="classification-description">—</p>
+            <p class="classification-code">
+              Código: <strong id="classification-id">—</strong>
+            </p>
+          </div>
+
+          <div class="metrics" aria-label="Indicadores da inferência">
+            <div class="metric metric--confidence">
+              <div class="metric__heading">
+                <div>
+                  <span>Confiança</span>
+                  <small>certeza da classificação</small>
+                </div>
+                <strong id="confidence-value">—</strong>
+              </div>
+              <div
+                id="confidence-bar"
+                class="confidence-bar"
+                role="progressbar"
+                aria-label="Confiança da classificação"
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow="0"
+              >
+                <span id="confidence-fill"></span>
+              </div>
+            </div>
+
+            <div class="metric metric--similarity">
+              <span>Similaridade</span>
+              <strong id="similarity-value">—</strong>
+              <small>referência informada pelo I8</small>
+            </div>
+          </div>
+
+          <div class="operator-actions">
+            <div class="operator-actions__heading">
+              <div>
+                <p class="panel-kicker">AÇÃO DO OPERADOR</p>
+                <h2>Revisão local</h2>
+              </div>
+              <span>Sem persistência</span>
+            </div>
+
+            <div class="action-buttons">
+              <button id="confirm-result" class="button button--primary" type="button">
+                Confirmar resultado
+              </button>
+              <button id="send-review" class="button button--secondary" type="button">
+                Enviar para revisão
+              </button>
+            </div>
+            <p id="action-feedback" class="action-feedback" aria-live="polite">
+              Nenhuma ação local realizada.
+            </p>
+          </div>
+        </section>
+      </section>
+
+      <section class="demo-panel" aria-labelledby="demo-title">
+        <div>
+          <p class="panel-kicker">MODO DEMONSTRAÇÃO · SPRINT 1</p>
+          <h2 id="demo-title">Testar estados de triagem</h2>
+          <p>Controle temporário: carrega eventos reais de <code>shared/mocks/</code>.</p>
+        </div>
+        <div class="demo-controls" role="group" aria-label="Selecionar estado simulado">
+          <button type="button" data-demo-status="APPROVED">Peça aprovada</button>
+          <button type="button" data-demo-status="REJECTED">Peça reprovada</button>
+          <button type="button" data-demo-status="REVIEW">Caso duvidoso</button>
+        </div>
+      </section>
+    </main>
+
+    <script type="module" src="./js/app.js"></script>
+  </body>
+</html>

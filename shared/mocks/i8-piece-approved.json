@@ -1,0 +1,22 @@
+{
+  "message_type": "event",
+  "schema": "ods.ver1.i8_piece_analyzed",
+  "schema_version": "1.0",
+  "producer": "I8",
+  "published_at": "2026-09-23T10:00:00.000Z",
+
+  "payload": {
+    "piece_id": "P000001",
+
+    "classification": {
+      "id": "NORMAL"
+    },
+
+    "confidence": 0.97,
+    "similarity": 0.95,
+
+    "evidence": {
+      "image_url": "/frontend/assets/images/mock-piece-approved.png"
+    }
+  }
+}

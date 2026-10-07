@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "I8 Piece Analyzed Event",
+  "type": "object",
+
+  "required": [
+    "message_type",
+    "schema",
+    "schema_version",
+    "producer",
+    "published_at",
+    "payload"
+  ],
+
+  "properties": {
+    "message_type": {
+      "type": "string",
+      "const": "event"
+    },
+
+    "schema": {
+      "type": "string",
+      "const": "ods.ver1.i8_piece_analyzed"
+    },
+
+    "schema_version": {
+      "type": "string",
+      "const": "1.0"
+    },
+
+    "producer": {
+      "type": "string",
+      "const": "I8"
+    },
+
+    "published_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+
+    "payload": {
+      "type": "object",
+
+      "required": [
+        "piece_id",
+        "classification",
+        "confidence",
+        "similarity"
+      ],
+
+      "properties": {
+        "piece_id": {
+          "type": "string",
+          "minLength": 1
+        },
+
+        "classification": {
+          "type": "object",
+
+          "required": [
+            "id"
+          ],
+
+          "properties": {
+            "id": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+
+          "additionalProperties": false
+        },
+
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+
+        "similarity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+
+        "evidence": {
+          "type": "object",
+
+          "properties": {
+            "image_url": {
+              "type": "string"
+            }
+          },
+
+          "additionalProperties": false
+        }
+      },
+
+      "additionalProperties": false
+    }
+  },
+
+  "additionalProperties": false
+}

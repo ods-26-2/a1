@@ -1,0 +1,22 @@
+{
+  "message_type": "event",
+  "schema": "ods.ver1.i8_piece_analyzed",
+  "schema_version": "1.0",
+  "producer": "I8",
+  "published_at": "2026-09-23T10:00:01.000Z",
+
+  "payload": {
+    "piece_id": "P000002",
+
+    "classification": {
+      "id": "AMASSADO"
+    },
+
+    "confidence": 0.94,
+    "similarity": 0.31,
+
+    "evidence": {
+      "image_url": "/frontend/assets/images/mock-piece-defective.png"
+    }
+  }
+}
