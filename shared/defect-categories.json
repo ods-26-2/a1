@@ -16,25 +16,18 @@
       "consequence": "REJECT"
     },
     {
-      "id": "RACHADURA",
-      "name": "Rachadura",
-      "description": "Rachadura identificada na superfície da peça",
+      "id": "FURADO",
+      "name": "Furado",
+      "description": "Buraco identificado na superfície da peça",
       "severity": "HIGH",
       "consequence": "REJECT"
     },
     {
-      "id": "DEFORMADO",
-      "name": "Deformado",
-      "description": "Deformação identificada na superficie da peça",
+      "id": "FURADO_AMASSADO",
+      "name": "Furado e Amassado",
+      "description": "Buracos e deformações identificados na superfície da peça",
       "severity": "HIGH",
       "consequence": "REJECT"
-    },
-    {
-      "id": "RISCO",
-      "name": "Risco",
-      "description": "Risco identificado na superfície da peça",
-      "severity": "MEDIUM",
-      "consequence": "REVIEW"
     }
   ]
 }
