@@ -1,0 +1,23 @@
+{
+  "message_type": "event",
+  "message_id": "e04b4114-c9dd-46c9-a819-0738a9fc9cd3",
+  "schema": "ods.i8.piece_analysis",
+  "schema_version": "1.0",
+  "producer": "I8",
+  "published_at": "2026-10-20T12:00:04.120Z",
+  "captured_at": "2026-10-20T12:00:04.000Z",
+  "source_id": "cam-linha1",
+  "session_id": "c6d74fc3-6a32-42a9-b3fd-4866732db39d",
+  "sequence": 30459,
+  "artifact_version": "piece-cls-0.9.2",
+  "payload": {
+    "frame_index": 30459,
+    "detection_id": 0,
+    "bbox": [600, 220, 980, 610],
+    "result": "CONFORMING",
+    "taxonomy_version": "defects-a1-1.0.0",
+    "confidence": 0.97,
+    "similarity": 0.96,
+    "evidence": { "image_url": "owned-by-i8.png" }
+  }
+}

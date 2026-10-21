@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/contracts/1.0/ods.artifact.published.schema.json",
+  "title": "ods.artifact.published para DEFECT_TAXONOMY",
+  "type": "object",
+  "required": [
+    "message_type",
+    "message_id",
+    "schema",
+    "schema_version",
+    "producer",
+    "published_at",
+    "payload"
+  ],
+  "properties": {
+    "message_type": { "const": "event" },
+    "message_id": { "type": "string", "format": "uuid" },
+    "schema": { "const": "ods.artifact.published" },
+    "schema_version": { "const": "1.0" },
+    "producer": { "const": "A1" },
+    "published_at": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "payload": {
+      "type": "object",
+      "required": [
+        "artifact_id",
+        "artifact_version",
+        "kind",
+        "owner",
+        "uri",
+        "hash_sha256",
+        "valid_from",
+        "schema_version"
+      ],
+      "properties": {
+        "artifact_id": { "type": "string", "minLength": 1 },
+        "artifact_version": { "type": "string", "minLength": 1 },
+        "kind": { "const": "DEFECT_TAXONOMY" },
+        "owner": { "const": "A1" },
+        "uri": { "type": "string", "minLength": 1 },
+        "hash_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "valid_from": { "type": "string", "format": "date-time", "pattern": "Z$" },
+        "schema_version": { "const": "1.0" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

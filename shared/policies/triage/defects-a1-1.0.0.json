@@ -1,0 +1,19 @@
+{
+  "policy_version": "triage-a1-1.0.0",
+  "taxonomy_version": "defects-a1-1.0.0",
+  "default_status": "REVIEW",
+  "consequences": [
+    {
+      "defect_class": "AMASSADO",
+      "status": "REJECTED"
+    },
+    {
+      "defect_class": "FURADO",
+      "status": "REJECTED"
+    },
+    {
+      "defect_class": "FURADO_AMASSADO",
+      "status": "REJECTED"
+    }
+  ]
+}

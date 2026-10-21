@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/contracts/1.x/ods.i8.piece_analysis.consume.schema.json",
+  "title": "ods.i8.piece_analysis - consumidor A1 compatível com 1.x",
+  "type": "object",
+  "required": [
+    "message_type",
+    "message_id",
+    "schema",
+    "schema_version",
+    "producer",
+    "published_at",
+    "captured_at",
+    "source_id",
+    "session_id",
+    "sequence",
+    "artifact_version",
+    "payload"
+  ],
+  "properties": {
+    "message_type": { "const": "event" },
+    "message_id": { "type": "string", "format": "uuid" },
+    "schema": { "const": "ods.i8.piece_analysis" },
+    "schema_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+    "producer": { "const": "I8" },
+    "published_at": { "type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$" },
+    "captured_at": { "type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$" },
+    "source_id": { "type": "string", "minLength": 1 },
+    "session_id": { "type": "string", "format": "uuid" },
+    "sequence": { "type": "integer", "minimum": 0 },
+    "artifact_version": { "type": "string", "minLength": 1 },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "payload": {
+      "type": "object",
+      "required": [
+        "frame_index",
+        "detection_id",
+        "bbox",
+        "result",
+        "taxonomy_version",
+        "confidence",
+        "similarity"
+      ],
+      "properties": {
+        "frame_index": { "type": "integer", "minimum": 0 },
+        "detection_id": { "type": "integer", "minimum": 0 },
+        "bbox": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 },
+          "minItems": 4,
+          "maxItems": 4
+        },
+        "result": {
+          "enum": ["CONFORMING", "NON_CONFORMING", "ANOMALY", "UNCERTAIN"]
+        },
+        "defect_class": { "type": "string", "minLength": 1 },
+        "taxonomy_version": { "type": "string", "minLength": 1 },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "similarity": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "result": { "const": "NON_CONFORMING" } } },
+          "then": { "required": ["defect_class"] },
+          "else": { "not": { "required": ["defect_class"] } }
+        },
+        {
+          "not": {
+            "anyOf": [
+              { "required": ["piece_id"] },
+              { "required": ["classification"] },
+              { "required": ["evidence"] },
+              { "required": ["status"] },
+              { "required": ["consequence"] },
+              { "required": ["image_url"] }
+            ]
+          }
+        }
+      ],
+      "additionalProperties": true
+    }
+  },
+  "not": { "required": ["target"] },
+  "additionalProperties": true
+}

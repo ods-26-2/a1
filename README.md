@@ -32,3 +32,21 @@ HTTP porque carrega os JSON de `shared/` com `fetch`.
 O frontend e os dados de demonstração da Sprint 1 estão presentes. O diretório
 `backend/` documenta os módulos planejados, mas a implementação da API e da
 persistência ainda pertence às próximas entregas.
+
+## Sprint 3 — contratos 6c e taxonomia
+
+S3-01 e S3-02 estão implementados como uma fronteira contratual independente da
+API futura: schemas de publicação/consumo de `ods.i8.piece_analysis`, quatro
+resultados válidos, exemplos inválidos, catálogo versionado
+`DEFECT_TAXONOMY`, descritor com hash e anúncio local. A consequência de negócio
+permanece em uma política A1 separada do artefato consumido pelo I8.
+
+Os arquivos de demonstração `ods.ver1.*` foram preservados para não antecipar a
+migração do frontend de S3-03. Consulte `docs/contratos/migracao-6c.md` e valide
+o pacote com:
+
+```powershell
+python -m pip install -r requirements-contracts.txt
+python scripts/validate_contracts.py
+python -m pytest -q
+```

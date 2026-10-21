@@ -1,0 +1,10 @@
+{
+  "artifact_id": "defect-taxonomy-a1",
+  "artifact_version": "defects-a1-1.0.0",
+  "kind": "DEFECT_TAXONOMY",
+  "owner": "A1",
+  "uri": "registry://b5/a1/defect-taxonomy/defects-a1-1.0.0",
+  "hash_sha256": "324476cf7bbef29de8583807c1eb7b4a3709ef269c2db317a670501da4f7440a",
+  "valid_from": "2026-10-20T12:00:00.000Z",
+  "schema_version": "1.0"
+}

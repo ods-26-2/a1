@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/artifacts/1.0/descriptor.schema.json",
+  "title": "Descritor de artefato 6c",
+  "type": "object",
+  "required": [
+    "artifact_id",
+    "artifact_version",
+    "kind",
+    "owner",
+    "uri",
+    "hash_sha256",
+    "valid_from",
+    "schema_version"
+  ],
+  "properties": {
+    "artifact_id": { "type": "string", "minLength": 1 },
+    "artifact_version": { "type": "string", "minLength": 1 },
+    "kind": { "const": "DEFECT_TAXONOMY" },
+    "owner": { "const": "A1" },
+    "uri": { "type": "string", "minLength": 1 },
+    "hash_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "valid_from": { "type": "string", "format": "date-time", "pattern": "Z$" },
+    "schema_version": { "const": "1.0" }
+  },
+  "additionalProperties": false
+}

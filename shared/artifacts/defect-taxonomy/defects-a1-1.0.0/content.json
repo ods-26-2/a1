@@ -1,0 +1,22 @@
+{
+  "classes": [
+    {
+      "defect_class": "AMASSADO",
+      "name": "Amassado",
+      "description": "Deformação física na superfície da peça",
+      "severity": "HIGH"
+    },
+    {
+      "defect_class": "FURADO",
+      "name": "Furado",
+      "description": "Buraco identificado na superfície da peça",
+      "severity": "HIGH"
+    },
+    {
+      "defect_class": "FURADO_AMASSADO",
+      "name": "Furado e amassado",
+      "description": "Buracos e deformações identificados na superfície da peça",
+      "severity": "HIGH"
+    }
+  ]
+}
