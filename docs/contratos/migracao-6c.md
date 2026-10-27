@@ -20,6 +20,10 @@ Os arquivos antigos `ods.ver1.*`, a taxonomia `shared/defect-categories.json` e
 os mocks usados pelo frontend permanecem apenas para a demonstração anterior.
 Removê-los ou adaptar a tela faz parte de S3-03, não desta migração.
 
+Atualização S3-03: o frontend passou a consumir a API A1
+(`docs/contratos/a1-api.md`) e os arquivos `ods.ver1.*` foram movidos para
+`shared/legacy/ver1/` como legado identificado.
+
 ## DEFECT_TAXONOMY
 
 A fonte versionada está em

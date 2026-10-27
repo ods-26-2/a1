@@ -1,48 +1,20 @@
-import { renderStatus } from "./status.js";
-import { getCategoryById } from "./taxonomy.js";
-
-const percentageFormatter = new Intl.NumberFormat("pt-BR", {
-  style: "percent",
-  maximumFractionDigits: 0,
-});
-
-const dateFormatter = new Intl.DateTimeFormat("pt-BR", {
-  dateStyle: "short",
-  timeStyle: "medium",
-});
-
-const severityLabels = Object.freeze({
-  NONE: "NENHUMA · NONE",
-  LOW: "BAIXA · LOW",
-  MEDIUM: "MÉDIA · MEDIUM",
-  HIGH: "ALTA · HIGH",
-});
-
-function clampRatio(value) {
-  const numericValue = Number(value);
-
-  if (!Number.isFinite(numericValue)) {
-    return 0;
-  }
-
-  return Math.min(1, Math.max(0, numericValue));
-}
-
-function formatPercentage(value) {
-  return percentageFormatter.format(clampRatio(value));
-}
-
-function formatTimestamp(timestamp) {
-  const date = new Date(timestamp);
-  return Number.isNaN(date.getTime()) ? "Horário indisponível" : dateFormatter.format(date);
-}
+import { renderEvidence } from "./ui/evidence.js";
+import { clampRatio, formatDateTime, formatPercentage } from "./ui/format.js";
+import {
+  getResultPresentation,
+  getSeverityLabel,
+  renderResultBadge,
+  renderStatus,
+} from "./status.js";
 
 export function cacheInspectionElements(root = document) {
   return {
-    eventId: root.querySelector("#event-id"),
-    pieceId: root.querySelector("#piece-id"),
-    inspectionTime: root.querySelector("#inspection-time"),
-    evidenceImage: root.querySelector("#evidence-image"),
+    inspectionId: root.querySelector("#inspection-id"),
+    originSource: root.querySelector("#origin-source"),
+    capturedAt: root.querySelector("#captured-at"),
+    originFrame: root.querySelector("#origin-frame"),
+    originBbox: root.querySelector("#origin-bbox"),
+    analysisResult: root.querySelector("#analysis-result"),
     classificationName: root.querySelector("#classification-name"),
     classificationId: root.querySelector("#classification-id"),
     classificationDescription: root.querySelector("#classification-description"),
@@ -51,58 +23,64 @@ export function cacheInspectionElements(root = document) {
     confidenceBar: root.querySelector("#confidence-bar"),
     confidenceFill: root.querySelector("#confidence-fill"),
     similarityValue: root.querySelector("#similarity-value"),
+    versionModel: root.querySelector("#version-model"),
+    versionTaxonomy: root.querySelector("#version-taxonomy"),
+    versionPolicy: root.querySelector("#version-policy"),
     status: {
       banner: root.querySelector("#status-banner"),
       text: root.querySelector("#status-text"),
       icon: root.querySelector("#status-icon"),
+      origin: root.querySelector("#status-origin"),
+      reason: root.querySelector("#status-reason"),
     },
   };
 }
 
-export function renderInspection(inspection, elements) {
-  const { classification, status } = inspection;
-  const confidence = clampRatio(inspection.confidence);
+function renderAnalysis(analysis, elements) {
+  const presentation = getResultPresentation(analysis.result);
+  const { defect } = analysis;
 
-  elements.eventId.textContent = inspection.pieceId;
-  elements.pieceId.textContent = inspection.pieceId;
-  elements.inspectionTime.textContent = formatTimestamp(inspection.timestamp);
-  elements.evidenceImage.src = inspection.imagePath;
-  elements.evidenceImage.onerror = () => {
-    elements.evidenceImage.onerror = null;
-    elements.evidenceImage.src = "./assets/images/mock-piece-approved.png";
-  };
-  elements.evidenceImage.alt = `Evidência simulada da peça ${inspection.pieceId} com ${classification.name.toLowerCase()}`;
-  elements.classificationName.textContent = classification.name;
-  elements.classificationId.textContent = classification.id;
-  elements.classificationDescription.textContent = classification.description;
-  elements.severity.textContent = severityLabels[classification.severity] ?? classification.severity;
+  renderResultBadge(analysis.result, elements.analysisResult);
+  elements.classificationName.textContent = defect?.name ?? presentation.heading;
+  elements.classificationDescription.textContent =
+    defect?.description ?? presentation.description;
+  elements.classificationId.textContent = defect?.defect_class ?? "nenhuma";
+  elements.severity.hidden = !defect;
+  elements.severity.textContent = defect ? getSeverityLabel(defect.severity) : "";
+
+  const confidence = clampRatio(analysis.confidence);
   elements.confidenceValue.textContent = formatPercentage(confidence);
   elements.confidenceFill.style.width = `${confidence * 100}%`;
-  elements.confidenceBar.setAttribute(
-    "aria-valuenow",
-    String(Math.round(confidence * 100)),
-  );
-  elements.similarityValue.textContent = formatPercentage(inspection.similarity);
-
-  renderStatus(status, elements.status);
+  elements.confidenceBar.setAttribute("aria-valuenow", String(Math.round(confidence * 100)));
+  elements.similarityValue.textContent = formatPercentage(analysis.similarity);
 }
 
-export function mapEventsToInspection(inferenceEvent, triageEvent, taxonomy) {
-  const payload = inferenceEvent.payload;
-  const classification = getCategoryById(taxonomy, payload.classification.id);
+function renderDecision(view, elements) {
+  const decision = view.final_decision ?? view.triage;
+  const byOperator = view.final_decision !== null;
 
-  return {
-    pieceId: payload.piece_id,
-    timestamp: inferenceEvent.published_at,
-    classification,
-    confidence: payload.confidence,
-    similarity: payload.similarity,
-    imagePath: payload.evidence?.image_url ?? "./assets/images/mock-piece-approved.png",
-    status: triageEvent.payload.status,
-  };
+  renderStatus(decision.status, elements.status);
+  elements.status.origin.textContent = byOperator
+    ? `DECISÃO DO OPERADOR · ${decision.decided_by}`
+    : "DECISÃO AUTOMÁTICA DA TRIAGEM";
+  elements.status.reason.textContent = byOperator
+    ? `${decision.reason} Automática: ${view.triage.status} — ${view.triage.reason}`
+    : decision.reason;
 }
 
-export function updateInspectionStatus(inspection, status, elements) {
-  inspection.status = status;
-  renderStatus(status, elements.status);
+export function renderInspection(view, elements, evidenceElements) {
+  const { origin } = view;
+
+  elements.inspectionId.textContent = view.inspection_id;
+  elements.originSource.textContent = origin.source_id;
+  elements.capturedAt.textContent = formatDateTime(view.times.captured_at);
+  elements.originFrame.textContent = `${origin.frame_index} · ${origin.detection_id}`;
+  elements.originBbox.textContent = `[${origin.bbox.join(", ")}]`;
+  elements.versionModel.textContent = view.versions.model;
+  elements.versionTaxonomy.textContent = view.versions.taxonomy;
+  elements.versionPolicy.textContent = view.versions.policy;
+
+  renderAnalysis(view.analysis, elements);
+  renderDecision(view, elements);
+  renderEvidence(view.evidence, view.inspection_id, evidenceElements);
 }

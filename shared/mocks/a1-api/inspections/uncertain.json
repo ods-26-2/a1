@@ -1,0 +1,50 @@
+{
+  "inspection_id": "INSP-c6d74fc3-30458-0",
+  "origin": {
+    "message_id": "3fbff51e-3e45-433c-b69a-6753e0f4ebd7",
+    "schema": "ods.i8.piece_analysis",
+    "schema_version": "1.0",
+    "producer": "I8",
+    "source_id": "cam-linha1",
+    "session_id": "c6d74fc3-6a32-42a9-b3fd-4866732db39d",
+    "sequence": 30458,
+    "frame_index": 30458,
+    "detection_id": 0,
+    "bbox": [
+      600,
+      220,
+      980,
+      610
+    ]
+  },
+  "times": {
+    "captured_at": "2026-10-20T12:00:03.000Z",
+    "published_at": "2026-10-20T12:00:03.120Z",
+    "received_at": "2026-10-20T12:00:03.133Z"
+  },
+  "versions": {
+    "model": "piece-cls-0.9.2",
+    "taxonomy": "defects-a1-1.0.0",
+    "policy": "triage-a1-1.0.0"
+  },
+  "analysis": {
+    "result": "UNCERTAIN",
+    "confidence": 0.54,
+    "similarity": 0.7,
+    "defect": null
+  },
+  "triage": {
+    "status": "REVIEW",
+    "reason": "UNCERTAIN: sem aprovação automática; encaminhada para revisão humana.",
+    "decided_by": "AUTO",
+    "decided_at": "2026-10-20T12:00:03.138Z"
+  },
+  "final_decision": null,
+  "evidence": {
+    "state": "EXPIRED",
+    "clip_id": "9d4e1f20-6a7b-4c8d-9e0f-1a2b3c4d5e66",
+    "url": null,
+    "expires_at": "2026-10-20T12:30:03.000Z",
+    "detail": "Clipe de S4 expirou; a mídia não está mais disponível (fake S4)."
+  }
+}

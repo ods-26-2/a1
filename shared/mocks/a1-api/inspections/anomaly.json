@@ -1,0 +1,50 @@
+{
+  "inspection_id": "INSP-c6d74fc3-30457-0",
+  "origin": {
+    "message_id": "2f703620-2a2d-485f-b814-f82badf60fd8",
+    "schema": "ods.i8.piece_analysis",
+    "schema_version": "1.0",
+    "producer": "I8",
+    "source_id": "cam-linha1",
+    "session_id": "c6d74fc3-6a32-42a9-b3fd-4866732db39d",
+    "sequence": 30457,
+    "frame_index": 30457,
+    "detection_id": 0,
+    "bbox": [
+      600,
+      220,
+      980,
+      610
+    ]
+  },
+  "times": {
+    "captured_at": "2026-10-20T12:00:02.000Z",
+    "published_at": "2026-10-20T12:00:02.120Z",
+    "received_at": "2026-10-20T12:00:02.136Z"
+  },
+  "versions": {
+    "model": "piece-cls-0.9.2",
+    "taxonomy": "defects-a1-1.0.0",
+    "policy": "triage-a1-1.0.0"
+  },
+  "analysis": {
+    "result": "ANOMALY",
+    "confidence": 0.77,
+    "similarity": 0.42,
+    "defect": null
+  },
+  "triage": {
+    "status": "REVIEW",
+    "reason": "ANOMALY sem classe conhecida: revisão obrigatória pela política baseline; nenhuma classe foi atribuída.",
+    "decided_by": "AUTO",
+    "decided_at": "2026-10-20T12:00:02.141Z"
+  },
+  "final_decision": null,
+  "evidence": {
+    "state": "PENDING",
+    "clip_id": null,
+    "url": null,
+    "expires_at": null,
+    "detail": "Snapshot solicitado a S4 (fake); aguardando reply."
+  }
+}

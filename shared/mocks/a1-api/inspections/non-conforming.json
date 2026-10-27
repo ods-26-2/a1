@@ -1,0 +1,55 @@
+{
+  "inspection_id": "INSP-c6d74fc3-30456-0",
+  "origin": {
+    "message_id": "a0dd2be3-6375-4633-98a0-418dc8bfa60b",
+    "schema": "ods.i8.piece_analysis",
+    "schema_version": "1.0",
+    "producer": "I8",
+    "source_id": "cam-linha1",
+    "session_id": "c6d74fc3-6a32-42a9-b3fd-4866732db39d",
+    "sequence": 30456,
+    "frame_index": 30456,
+    "detection_id": 0,
+    "bbox": [
+      600,
+      220,
+      980,
+      610
+    ]
+  },
+  "times": {
+    "captured_at": "2026-10-20T12:00:01.000Z",
+    "published_at": "2026-10-20T12:00:01.120Z",
+    "received_at": "2026-10-20T12:00:01.134Z"
+  },
+  "versions": {
+    "model": "piece-cls-0.9.2",
+    "taxonomy": "defects-a1-1.0.0",
+    "policy": "triage-a1-1.0.0"
+  },
+  "analysis": {
+    "result": "NON_CONFORMING",
+    "confidence": 0.88,
+    "similarity": 0.61,
+    "defect": {
+      "defect_class": "AMASSADO",
+      "name": "Amassado",
+      "description": "Deformação física na superfície da peça",
+      "severity": "HIGH"
+    }
+  },
+  "triage": {
+    "status": "REJECTED",
+    "reason": "Classe AMASSADO tem consequência REJECTED na política triage-a1-1.0.0.",
+    "decided_by": "AUTO",
+    "decided_at": "2026-10-20T12:00:01.139Z"
+  },
+  "final_decision": null,
+  "evidence": {
+    "state": "AVAILABLE",
+    "clip_id": "7c2a9e41-3b5d-4f60-8a17-9e0d1c2b3a44",
+    "url": "frontend/assets/images/mock-piece-defective.png",
+    "expires_at": "2026-10-27T12:00:01.000Z",
+    "detail": "Snapshot de S4 simulado (fake S4)."
+  }
+}

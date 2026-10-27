@@ -1,0 +1,50 @@
+{
+  "inspection_id": "INSP-c6d74fc3-30455-0",
+  "origin": {
+    "message_id": "b5eed71a-6974-4c22-90aa-909b7bf7a686",
+    "schema": "ods.i8.piece_analysis",
+    "schema_version": "1.0",
+    "producer": "I8",
+    "source_id": "cam-linha1",
+    "session_id": "c6d74fc3-6a32-42a9-b3fd-4866732db39d",
+    "sequence": 30455,
+    "frame_index": 30455,
+    "detection_id": 0,
+    "bbox": [
+      600,
+      220,
+      980,
+      610
+    ]
+  },
+  "times": {
+    "captured_at": "2026-10-20T12:00:00.000Z",
+    "published_at": "2026-10-20T12:00:00.120Z",
+    "received_at": "2026-10-20T12:00:00.135Z"
+  },
+  "versions": {
+    "model": "piece-cls-0.9.2",
+    "taxonomy": "defects-a1-1.0.0",
+    "policy": "triage-a1-1.0.0"
+  },
+  "analysis": {
+    "result": "CONFORMING",
+    "confidence": 0.97,
+    "similarity": 0.96,
+    "defect": null
+  },
+  "triage": {
+    "status": "APPROVED",
+    "reason": "I8 informou CONFORMING com versões conhecidas. Limiar de confiança ainda não calibrado (S3-05).",
+    "decided_by": "AUTO",
+    "decided_at": "2026-10-20T12:00:00.140Z"
+  },
+  "final_decision": null,
+  "evidence": {
+    "state": "AVAILABLE",
+    "clip_id": "5b0f3c2e-8d41-4a8e-9f1c-2d6e7a9b0c11",
+    "url": "frontend/assets/images/mock-piece-approved.png",
+    "expires_at": "2026-10-27T12:00:00.000Z",
+    "detail": "Snapshot de S4 simulado (fake S4)."
+  }
+}

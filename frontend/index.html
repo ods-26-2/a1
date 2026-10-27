@@ -7,6 +7,8 @@
       name="description"
       content="Interface de inspeção e triagem do projeto acadêmico VER-1."
     />
+    <!-- Implantação com backend A1: informar a base da API, ex.: /api/v1/ -->
+    <meta name="a1-api-base" content="" />
     <title>Inspeção Atual | VER-1</title>
     <link rel="stylesheet" href="./css/styles.css" />
   </head>
@@ -20,9 +22,17 @@
         </div>
       </div>
 
-      <div class="system-state" role="status">
+      <div
+        id="system-state"
+        class="system-state system-state--checking"
+        role="status"
+        aria-live="polite"
+      >
         <span class="system-state__dot" aria-hidden="true"></span>
-        SISTEMA ONLINE
+        <span>
+          <strong id="system-state-label">VERIFICANDO API</strong>
+          <small id="system-state-detail">Consultando saúde do backend A1</small>
+        </span>
       </div>
     </header>
 
@@ -32,44 +42,82 @@
           <p class="eyebrow">POSTO DE QUALIDADE · LINHA 01</p>
           <h1>Inspeção atual</h1>
         </div>
-        <p class="inspection-code">Evento <strong id="event-id">—</strong></p>
+        <p class="inspection-code">
+          Inspeção <strong id="inspection-id">—</strong>
+          <span id="api-mode-tag" class="api-mode-tag">API —</span>
+        </p>
       </div>
 
       <div id="app-error" class="app-error" role="alert" hidden>
-        Não foi possível carregar a inspeção simulada. Inicie a interface por um
-        servidor local e tente novamente.
+        <div>
+          <strong id="app-error-title">Falha ao carregar a inspeção</strong>
+          <p id="app-error-message">—</p>
+        </div>
+        <button id="retry-load" class="button button--ghost" type="button">
+          Tentar novamente
+        </button>
       </div>
 
-      <section class="inspection-layout" aria-label="Resultado da inspeção atual">
+      <div id="empty-state" class="empty-state" role="status" hidden>
+        <strong>Aguardando inspeção</strong>
+        <p>A API A1 ainda não recebeu nenhuma análise do I8.</p>
+      </div>
+
+      <section
+        id="inspection-layout"
+        class="inspection-layout"
+        aria-label="Resultado da inspeção atual"
+        aria-busy="true"
+        data-view-state="loading"
+      >
+        <div id="loading-state" class="loading-state" role="status">
+          <span class="loading-state__spinner" aria-hidden="true"></span>
+          Carregando inspeção da API A1…
+        </div>
+
         <article class="evidence-panel" aria-labelledby="evidence-title">
           <div class="panel-heading">
             <div>
-              <p class="panel-kicker">EVIDÊNCIA VISUAL</p>
+              <p class="panel-kicker">EVIDÊNCIA S4</p>
               <h2 id="evidence-title">Imagem da peça</h2>
             </div>
-            <span class="source-tag">MOCK · SPRINT 1</span>
+            <span id="evidence-state-tag" class="source-tag">—</span>
           </div>
 
           <figure class="evidence-frame">
-            <img
-              id="evidence-image"
-              alt=""
-              width="1536"
-              height="1024"
-            />
-            <figcaption>
-              Evidência local simulada — sem integração com I8/S4
-            </figcaption>
+            <img id="evidence-image" alt="" width="1536" height="1024" hidden />
+            <div id="evidence-placeholder" class="evidence-placeholder">
+              <span id="evidence-placeholder-icon" aria-hidden="true">…</span>
+              <strong id="evidence-placeholder-title">Evidência não carregada</strong>
+              <small>Nenhuma imagem substituta é exibida.</small>
+            </div>
+            <figcaption id="evidence-detail">—</figcaption>
           </figure>
 
           <dl class="evidence-meta">
             <div>
-              <dt>Peça</dt>
-              <dd id="piece-id">—</dd>
+              <dt>Origem</dt>
+              <dd id="origin-source">—</dd>
             </div>
             <div>
-              <dt>Inspecionada em</dt>
-              <dd id="inspection-time">—</dd>
+              <dt>Capturada em</dt>
+              <dd id="captured-at">—</dd>
+            </div>
+            <div>
+              <dt>Quadro · detecção</dt>
+              <dd id="origin-frame">—</dd>
+            </div>
+            <div>
+              <dt>Caixa (bbox)</dt>
+              <dd id="origin-bbox">—</dd>
+            </div>
+            <div>
+              <dt>Clipe S4</dt>
+              <dd id="evidence-clip">—</dd>
+            </div>
+            <div>
+              <dt>Validade da mídia</dt>
+              <dd id="evidence-expires">—</dd>
             </div>
           </dl>
         </article>
@@ -78,20 +126,24 @@
           <div id="status-banner" class="status-banner" role="status" aria-live="polite">
             <span id="status-icon" class="status-banner__icon" aria-hidden="true"></span>
             <div>
-              <span class="status-banner__label">RESULTADO DA TRIAGEM</span>
+              <span id="status-origin" class="status-banner__label">DECISÃO DA TRIAGEM</span>
               <strong id="status-text">—</strong>
+              <p id="status-reason" class="status-banner__reason">—</p>
             </div>
           </div>
 
           <div class="defect-summary">
-            <p class="panel-kicker">CLASSIFICAÇÃO DETECTADA</p>
+            <div class="defect-summary__kicker">
+              <p class="panel-kicker">RESULTADO I8</p>
+              <span id="analysis-result" class="result-badge">—</span>
+            </div>
             <div class="defect-heading">
               <h2 id="classification-name">—</h2>
-              <span id="severity" class="severity-badge">—</span>
+              <span id="severity" class="severity-badge" hidden>—</span>
             </div>
             <p id="classification-description">—</p>
             <p class="classification-code">
-              Código: <strong id="classification-id">—</strong>
+              Classe: <strong id="classification-id">—</strong>
             </p>
           </div>
 
@@ -100,7 +152,7 @@
               <div class="metric__heading">
                 <div>
                   <span>Confiança</span>
-                  <small>certeza da classificação</small>
+                  <small>na decisão do I8 · não calibrada</small>
                 </div>
                 <strong id="confidence-value">—</strong>
               </div>
@@ -108,7 +160,7 @@
                 id="confidence-bar"
                 class="confidence-bar"
                 role="progressbar"
-                aria-label="Confiança da classificação"
+                aria-label="Confiança na decisão do I8"
                 aria-valuemin="0"
                 aria-valuemax="100"
                 aria-valuenow="0"
@@ -120,18 +172,45 @@
             <div class="metric metric--similarity">
               <span>Similaridade</span>
               <strong id="similarity-value">—</strong>
-              <small>referência informada pelo I8</small>
+              <small>com a referência do normal</small>
             </div>
           </div>
+
+          <dl class="versions" aria-label="Versões usadas na inspeção">
+            <div>
+              <dt>Modelo</dt>
+              <dd id="version-model">—</dd>
+            </div>
+            <div>
+              <dt>Taxonomia</dt>
+              <dd id="version-taxonomy">—</dd>
+            </div>
+            <div>
+              <dt>Política</dt>
+              <dd id="version-policy">—</dd>
+            </div>
+          </dl>
 
           <div class="operator-actions">
             <div class="operator-actions__heading">
               <div>
                 <p class="panel-kicker">AÇÃO DO OPERADOR</p>
-                <h2>Revisão local</h2>
+                <h2>Revisão</h2>
               </div>
-              <span>Sem persistência</span>
+              <span id="persistence-tag">—</span>
             </div>
+
+            <label class="operator-field" for="operator-id">
+              <span>Operador</span>
+              <input
+                id="operator-id"
+                name="operator"
+                type="text"
+                autocomplete="username"
+                placeholder="Identificação do operador"
+                required
+              />
+            </label>
 
             <div class="action-buttons">
               <button id="confirm-result" class="button button--primary" type="button">
@@ -142,22 +221,30 @@
               </button>
             </div>
             <p id="action-feedback" class="action-feedback" aria-live="polite">
-              Nenhuma ação local realizada.
+              Nenhuma ação registrada.
             </p>
           </div>
         </section>
       </section>
 
-      <section class="demo-panel" aria-labelledby="demo-title">
-        <div>
-          <p class="panel-kicker">MODO DEMONSTRAÇÃO · SPRINT 1</p>
-          <h2 id="demo-title">Testar estados de triagem</h2>
-          <p>Controle temporário: carrega eventos reais de <code>shared/mocks/</code>.</p>
+      <section id="demo-panel" class="demo-panel" aria-labelledby="demo-title" hidden>
+        <div class="demo-panel__intro">
+          <p class="panel-kicker">API FAKE · S3-03</p>
+          <h2 id="demo-title">Cenários de demonstração</h2>
+          <p>
+            Fixtures em <code>shared/mocks/a1-api/</code>, derivadas dos eventos 6c
+            válidos. Some quando a API real é configurada.
+          </p>
         </div>
-        <div class="demo-controls" role="group" aria-label="Selecionar estado simulado">
-          <button type="button" data-demo-status="APPROVED">Peça aprovada</button>
-          <button type="button" data-demo-status="REJECTED">Peça reprovada</button>
-          <button type="button" data-demo-status="REVIEW">Caso duvidoso</button>
+        <div class="demo-groups">
+          <div class="demo-controls" role="group" aria-label="Resultado I8 simulado">
+            <span class="demo-controls__label">Resultado I8</span>
+            <div id="demo-scenarios" class="demo-controls__buttons"></div>
+          </div>
+          <div class="demo-controls" role="group" aria-label="Falha simulada">
+            <span class="demo-controls__label">Falha simulada</span>
+            <div id="demo-faults" class="demo-controls__buttons"></div>
+          </div>
         </div>
       </section>
     </main>

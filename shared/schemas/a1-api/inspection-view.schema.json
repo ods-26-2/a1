@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/a1/api/v1/inspection-view.schema.json",
+  "title": "A1 API v1 — InspectionView",
+  "description": "Modelo de dados entregue pelo backend A1 ao frontend. Rótulos, severidade e decisão já chegam resolvidos; o frontend não aplica política de triagem.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "inspection_id",
+    "origin",
+    "times",
+    "versions",
+    "analysis",
+    "triage",
+    "final_decision",
+    "evidence"
+  ],
+  "properties": {
+    "inspection_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Identificador de negócio da inspeção no A1."
+    },
+    "origin": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "message_id",
+        "schema",
+        "schema_version",
+        "producer",
+        "source_id",
+        "session_id",
+        "sequence",
+        "frame_index",
+        "detection_id",
+        "bbox"
+      ],
+      "properties": {
+        "message_id": { "type": "string", "format": "uuid" },
+        "schema": { "const": "ods.i8.piece_analysis" },
+        "schema_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+        "producer": { "const": "I8" },
+        "source_id": { "type": "string", "minLength": 1 },
+        "session_id": { "type": "string", "format": "uuid" },
+        "sequence": { "type": "integer", "minimum": 0 },
+        "frame_index": { "type": "integer", "minimum": 0 },
+        "detection_id": { "type": "integer", "minimum": 0 },
+        "bbox": {
+          "type": "array",
+          "prefixItems": [
+            { "type": "integer", "minimum": 0 },
+            { "type": "integer", "minimum": 0 },
+            { "type": "integer", "minimum": 0 },
+            { "type": "integer", "minimum": 0 }
+          ],
+          "minItems": 4,
+          "maxItems": 4
+        }
+      }
+    },
+    "times": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["captured_at", "published_at", "received_at"],
+      "properties": {
+        "captured_at": { "type": "string", "format": "date-time" },
+        "published_at": { "type": "string", "format": "date-time" },
+        "received_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "versions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["model", "taxonomy", "policy"],
+      "properties": {
+        "model": {
+          "type": "string",
+          "minLength": 1,
+          "description": "artifact_version do envelope I8."
+        },
+        "taxonomy": { "type": "string", "minLength": 1 },
+        "policy": { "type": "string", "minLength": 1 }
+      }
+    },
+    "analysis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["result", "confidence", "similarity", "defect"],
+      "properties": {
+        "result": {
+          "enum": ["CONFORMING", "NON_CONFORMING", "ANOMALY", "UNCERTAIN"]
+        },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "similarity": { "type": "number", "minimum": 0, "maximum": 1 },
+        "defect": {
+          "oneOf": [
+            { "type": "null" },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["defect_class", "name", "description", "severity"],
+              "properties": {
+                "defect_class": {
+                  "type": "string",
+                  "pattern": "^[A-Z][A-Z0-9_]*$"
+                },
+                "name": { "type": "string", "minLength": 1 },
+                "description": { "type": "string", "minLength": 1 },
+                "severity": { "enum": ["LOW", "MEDIUM", "HIGH"] }
+              }
+            }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "result": { "const": "NON_CONFORMING" } } },
+          "then": { "properties": { "defect": { "type": "object" } } },
+          "else": { "properties": { "defect": { "type": "null" } } }
+        }
+      ]
+    },
+    "triage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason", "decided_by", "decided_at"],
+      "properties": {
+        "status": { "enum": ["APPROVED", "REJECTED", "REVIEW"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "decided_by": {
+          "type": "string",
+          "minLength": 1,
+          "description": "AUTO para a decisão automática ou identificação do operador."
+        },
+        "decided_at": { "type": "string", "format": "date-time" }
+      }
+    },
+    "final_decision": {
+      "description": "Decisão do operador. A decisão automática em triage permanece imutável.",
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "reason", "decided_by", "decided_at"],
+          "properties": {
+            "status": { "enum": ["APPROVED", "REJECTED", "REVIEW"] },
+            "reason": { "type": "string", "minLength": 1 },
+            "decided_by": { "type": "string", "minLength": 1 },
+            "decided_at": { "type": "string", "format": "date-time" }
+          }
+        }
+      ]
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["state", "clip_id", "url", "expires_at", "detail"],
+      "properties": {
+        "state": { "enum": ["AVAILABLE", "PENDING", "UNAVAILABLE", "EXPIRED"] },
+        "clip_id": {
+          "oneOf": [{ "type": "null" }, { "type": "string", "format": "uuid" }]
+        },
+        "url": {
+          "oneOf": [{ "type": "null" }, { "type": "string", "minLength": 1 }]
+        },
+        "expires_at": {
+          "oneOf": [
+            { "type": "null" },
+            { "type": "string", "format": "date-time" }
+          ]
+        },
+        "detail": { "type": "string", "minLength": 1 }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "state": { "const": "AVAILABLE" } } },
+          "then": {
+            "properties": {
+              "clip_id": { "type": "string" },
+              "url": { "type": "string" }
+            }
+          },
+          "else": { "properties": { "url": { "type": "null" } } }
+        }
+      ]
+    }
+  }
+}

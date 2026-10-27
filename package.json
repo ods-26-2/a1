@@ -1,0 +1,10 @@
+{
+  "name": "ods-a1-frontend",
+  "private": true,
+  "type": "module",
+  "description": "Frontend A1 (VER-1). Sem dependências: testes com o runner nativo do Node.",
+  "scripts": {
+    "test": "node --test \"frontend/tests/*.test.js\"",
+    "evidence": "node scripts/capture_front_evidence.mjs"
+  }
+}

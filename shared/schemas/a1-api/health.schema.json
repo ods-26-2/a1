@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/a1/api/v1/health.schema.json",
+  "title": "A1 API v1 — Health",
+  "description": "Saúde do backend A1 e das integrações de que a tela depende. O frontend só exibe ONLINE quando esta resposta é recebida.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["status", "mode", "checked_at", "components"],
+  "properties": {
+    "status": { "enum": ["ONLINE", "DEGRADED"] },
+    "mode": {
+      "enum": ["REAL", "FAKE"],
+      "description": "FAKE identifica a API simulada usada antes de S3-07."
+    },
+    "checked_at": { "type": "string", "format": "date-time" },
+    "components": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "status", "detail"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "status": { "enum": ["UP", "DOWN", "SIMULATED"] },
+          "detail": { "type": "string" }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/a1/api/v1/review-receipt.schema.json",
+  "title": "A1 API v1 — ReviewReceipt",
+  "description": "Resposta de POST /inspections/{inspection_id}/reviews. persisted=false identifica a API fake ou uma gravação não confirmada.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["review_id", "action", "recorded_at", "persisted", "inspection"],
+  "properties": {
+    "review_id": { "type": "string", "minLength": 1 },
+    "action": { "enum": ["CONFIRM", "SEND_TO_REVIEW"] },
+    "recorded_at": { "type": "string", "format": "date-time" },
+    "persisted": { "type": "boolean" },
+    "inspection": { "$ref": "inspection-view.schema.json" }
+  }
+}
