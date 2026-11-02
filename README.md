@@ -34,6 +34,36 @@ Sem parâmetros, a tela usa a API A1 fake e mostra o painel de cenários. Para a
 API real, use `?api=http://localhost:8000/api/v1` ou preencha
 `<meta name="a1-api-base">` em `frontend/index.html`.
 
+## Executar com Docker
+
+Requer Docker com Compose. Na raiz deste repositório:
+
+```powershell
+docker compose up --build
+```
+
+O frontend fica em <http://localhost:5500/frontend/>, servido por nginx com
+`frontend/` e `shared/`. Depois de editar arquivos, rode o comando de novo:
+a imagem copia os arquivos no build.
+
+Para validar os contratos 6c e rodar `pytest` e `npm test` no container:
+
+```powershell
+docker compose run --rm tests
+```
+
+O `Dockerfile` tem os alvos `frontend` (padrão) e `tests`. O backend entra no
+`docker-compose.yml` quando a API A1 for implementada (S3-07).
+
+O `.gitattributes` impede a conversão de fim de linha em `shared/artifacts/`,
+porque o descritor guarda o SHA-256 dos bytes de `content.json`. Em um clone
+antigo no Windows com `core.autocrlf=true`, restaure esses arquivos uma vez:
+
+```powershell
+git rm --cached -r -q shared/artifacts
+git checkout HEAD -- shared/artifacts
+```
+
 ## Estado atual
 
 O frontend consome a camada de dados da API A1 (`docs/contratos/a1-api.md`),

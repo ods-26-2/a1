@@ -1,0 +1,3 @@
+# Artefatos versionados têm hash SHA-256 no descritor: o Git não pode converter
+# fim de linha (core.autocrlf), senão o hash deixa de bater no Windows e no Docker.
+shared/artifacts/** -text
