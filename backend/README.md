@@ -17,6 +17,7 @@ comandos pendentes e trilha de auditoria.
 | `repository.py` | `InspectionRepository` sobre PostgreSQL |
 | `schema.sql` | Esquema do banco, aplicado a cada inicialização |
 | `fake_producer.py` | Produtor fake 6c, até o I8 e o transporte B3 chegarem |
+| `mqtt_client.py` | Cliente MQTT que escuta os eventos do I8 | 
 
 ## Banco
 
@@ -38,15 +39,16 @@ não são gravadas.
 ## Ingestão
 
 O ponto de entrada é `IngestionService.ingest(evento)`, independente de
-transporte. O adaptador do barramento (Ícaro) chama esse método com o evento
-decodificado. Resultado: `ACCEPTED`, `DUPLICATE` ou `REJECTED` com motivo.
+transporte. O adaptador MQTT (`mqtt_client.py`) escuta o barramento, 
+descodifica o evento 6c e chama este método. Resultado: `ACCEPTED`, `DUPLICATE` ou `REJECTED`.
 
-Produtor fake, dentro do container do backend:
+Para testes locais sem hardware, o produtor fake pode ser injetado diretamente 
+dentro do contentor do backend:
 
 ```powershell
 docker compose exec backend python -m backend.fake_producer
 docker compose exec backend python -m backend.fake_producer --fresh
-docker compose exec backend python -m backend.fake_producer --invalid
+docker compose exec backend python -m backend.fake_producer --invalid python -m backend.fake_producer --invalid
 ```
 
 `--fresh` gera novos `message_id`, sessão e horários (inspeções novas).
@@ -57,4 +59,3 @@ docker compose exec backend python -m backend.fake_producer --invalid
 - S3-08: motor de triagem completo, motivo obrigatório e correção de classe;
 - S3-09: adaptador S4 (os pedidos de snapshot ficam em `commands` como
   `PENDING` e a evidência aparece como pendente);
-- transporte B3 do evento I8 (a ingestão hoje usa o produtor fake).
