@@ -7,7 +7,7 @@ operador.
 ## Conteúdo deste repositório
 
 - `frontend/`: interface web da inspeção;
-- `backend/`: local reservado para a API, persistência e serviços do A1;
+- `backend/`: API v1, persistência PostgreSQL, ingestão 6c e auditoria do A1;
 - `shared/artifacts/defect-taxonomy/`: taxonomia versionada `DEFECT_TAXONOMY`;
 - `shared/policies/triage/`: política de consequência do A1;
 - `shared/schemas/6c/`: contratos 6c recebidos do I8;
@@ -43,15 +43,24 @@ docker compose up --build
 ```
 
 O frontend fica em <http://localhost:5500/frontend/>, servido por nginx com
-`frontend/` e `shared/`. Depois de editar arquivos, rode o comando de novo:
-a imagem copia os arquivos no build.
+`frontend/` e `shared/`, e usa a API real em `/api/v1` (o nginx repassa `/api/`
+ao backend). `?api=fake` volta para a API fake. Depois de editar arquivos, rode
+o comando de novo: a imagem copia os arquivos no build.
 
-O mesmo comando sobe o PostgreSQL 17 do backend (serviço `db`, banco e usuário
-`a1`), com dados no volume `a1-db-data`. O banco não publica porta no host.
-A senha local padrão é `a1-local`; no servidor, defina `POSTGRES_PASSWORD` no
-arquivo `.env`, que não é versionado. A porta do frontend muda com `A1_PORT`.
+O mesmo comando sobe o backend (`backend`, porta 8000 só em `127.0.0.1`) e o
+PostgreSQL 17 (serviço `db`, banco e usuário `a1`), com dados no volume
+`a1-db-data`. O banco não publica porta no host. A senha local padrão é
+`a1-local`; no servidor, defina `POSTGRES_PASSWORD` no arquivo `.env`, que não é
+versionado. A porta do frontend muda com `A1_PORT`.
 
-Para validar os contratos 6c e rodar `pytest` e `npm test` no container:
+Para gerar inspeções com o produtor fake 6c (detalhes em `backend/README.md`):
+
+```powershell
+docker compose exec backend python -m backend.fake_producer --fresh
+```
+
+Para validar os contratos 6c e rodar `pytest` (com os testes de banco) e
+`npm test` no container:
 
 ```powershell
 docker compose run --rm tests
@@ -68,8 +77,7 @@ atualiza o código em `/opt/a1`, completa o `.env` (`POSTGRES_PASSWORD`,
 `A1_DOMAIN`, `A1_PORT`, `COMPOSE_PROFILES=https`) e sobe o compose. Para publicar
 uma nova versão depois do push, reinicie a VM ou rode o script de novo nela.
 
-O `Dockerfile` tem os alvos `frontend` (padrão) e `tests`. O backend entra no
-`docker-compose.yml` quando a API A1 for implementada (S3-07).
+O `Dockerfile` tem os alvos `frontend` (padrão), `backend` e `tests`.
 
 O `.gitattributes` impede a conversão de fim de linha em `shared/artifacts/`,
 porque o descritor guarda o SHA-256 dos bytes de `content.json`. Em um clone
@@ -82,9 +90,10 @@ git checkout HEAD -- shared/artifacts
 
 ## Estado atual
 
-O frontend consome a camada de dados da API A1 (`docs/contratos/a1-api.md`),
-com API fake até a entrega do backend (S3-07). A implementação da API e da
-persistência em PostgreSQL ainda pertence às próximas entregas.
+O frontend consome a API A1 real (`docs/contratos/a1-api.md`) servida pelo
+backend de S3-07, com persistência em PostgreSQL. A ingestão usa o produtor
+fake 6c até o I8 e o transporte B3 serem integrados; a evidência S4 fica
+pendente até S3-09.
 
 ## Sprint 3 — contratos 6c e taxonomia
 
@@ -124,3 +133,22 @@ node scripts/capture_front_evidence.mjs
 ```
 
 Evidências e roteiro de gravação: `docs/evidencias/s3-03/README.md`.
+
+## Sprint 3 — S3-07, backend, banco e auditoria
+
+- API v1 em `backend/app.py`, com rota nova de histórico
+  (`/inspections/{id}/history`);
+- PostgreSQL com resultado automático imutável, revisões e eventos de auditoria
+  só de inserção (o banco recusa `UPDATE`/`DELETE`/`TRUNCATE`);
+- deduplicação por `message_id` e recusa de contexto repetido por outra
+  mensagem;
+- pedido de snapshot S4 registrado como comando pendente;
+- produtor fake 6c em `backend/fake_producer.py`.
+
+Verificação (`tests/test_backend.py`, contra PostgreSQL real):
+
+```powershell
+docker compose run --rm tests
+```
+
+Evidências: `docs/evidencias/s3-07/README.md`.

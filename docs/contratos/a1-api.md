@@ -14,7 +14,8 @@ Schemas executáveis: `shared/schemas/a1-api/`. Fixtures da API fake:
 | GET | `/api/v1/health` | `Health` (200). Falha de rede ou timeout = OFFLINE no front |
 | GET | `/api/v1/inspections/current` | `InspectionView` (200) ou `204` sem inspeção |
 | GET | `/api/v1/inspections/{inspection_id}` | `InspectionView` (200) ou `404` |
-| POST | `/api/v1/inspections/{inspection_id}/reviews` | `ReviewReceipt` (201/200) |
+| GET | `/api/v1/inspections/{inspection_id}/history` | `InspectionHistory` (200) ou `404` |
+| POST | `/api/v1/inspections/{inspection_id}/reviews` | `ReviewReceipt` (201) ou `404` |
 
 Corpo do POST:
 
@@ -22,8 +23,15 @@ Corpo do POST:
 { "action": "CONFIRM", "operator": "op-samuel" }
 ```
 
-`action` é `CONFIRM` ou `SEND_TO_REVIEW`. Motivo obrigatório e correção de
-classe pertencem a S3-08 e entram como campos aditivos.
+`action` é `CONFIRM` ou `SEND_TO_REVIEW`; `operator` tem de 1 a 64
+caracteres. Campo desconhecido, ação inválida ou operador vazio retornam `422`.
+Motivo obrigatório e correção de classe pertencem a S3-08 e entram como campos
+aditivos. Cada POST grava uma revisão nova: `CONFIRM` mantém o status final
+vigente e `SEND_TO_REVIEW` muda para `REVIEW`. A decisão automática nunca é
+alterada.
+
+Banco indisponível retorna `503` nas rotas de inspeção; `/health` responde
+`DEGRADED` com o componente `database` em `DOWN`.
 
 ## InspectionView
 
@@ -42,6 +50,16 @@ O backend entrega a inspeção já resolvida:
   existe em `AVAILABLE`; nos demais estados o front mostra placeholder
   explícito, nunca a imagem de outra peça.
 
+## InspectionHistory
+
+Trilha de auditoria (`shared/schemas/a1-api/inspection-history.schema.json`):
+
+- `triage`: decisão automática original;
+- `final_decision`: última revisão ou `null`;
+- `reviews`: todas as revisões em ordem de gravação;
+- `events`: `INGESTED`, `TRIAGED`, `EVIDENCE_REQUESTED` e `REVIEW_RECORDED`,
+  com ator, instante e detalhes (por exemplo, status anterior da revisão).
+
 ## Health
 
 `status` é `ONLINE` ou `DEGRADED`; `mode` é `REAL` ou `FAKE`. Componentes com
@@ -52,7 +70,9 @@ uma resposta válida desta rota.
 
 - `frontend/?api=fake` (padrão): API fake, painel de cenários visível;
 - `frontend/?api=http://localhost:8000/api/v1`: API real;
-- `<meta name="a1-api-base">` em `index.html`: API real da implantação.
+- `<meta name="a1-api-base">` em `index.html`: API real da implantação. No
+  Docker, o nginx preenche o meta com `A1_API_BASE` (padrão `/api/v1`) e
+  repassa `/api/` ao backend; `A1_API_BASE=fake` mantém a API fake.
 
 Os dois adaptadores (`frontend/js/data/fakeA1Api.js` e `httpA1Api.js`) têm a
 mesma interface e passam pela mesma guarda (`inspectionView.js`). Trocar o fake
