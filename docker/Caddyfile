@@ -1,0 +1,6 @@
+# HTTPS automático (Let's Encrypt) para o domínio em A1_DOMAIN.
+# HTTP na porta 80 é redirecionado para HTTPS.
+{$A1_DOMAIN} {
+	encode gzip
+	reverse_proxy frontend:80
+}

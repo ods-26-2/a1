@@ -57,6 +57,17 @@ Para validar os contratos 6c e rodar `pytest` e `npm test` no container:
 docker compose run --rm tests
 ```
 
+### Servidor (GCP)
+
+O A1 roda numa VM do Compute Engine com HTTPS. O serviço `caddy` (profile
+`https`) emite o certificado Let's Encrypt para `A1_DOMAIN` e repassa para o
+frontend. Sem domínio próprio, usa-se `<ip-com-hifens>.sslip.io`.
+
+`docker/gcp-startup.sh` é o startup-script da VM: a cada boot instala Docker,
+atualiza o código em `/opt/a1`, completa o `.env` (`POSTGRES_PASSWORD`,
+`A1_DOMAIN`, `A1_PORT`, `COMPOSE_PROFILES=https`) e sobe o compose. Para publicar
+uma nova versão depois do push, reinicie a VM ou rode o script de novo nela.
+
 O `Dockerfile` tem os alvos `frontend` (padrão) e `tests`. O backend entra no
 `docker-compose.yml` quando a API A1 for implementada (S3-07).
 
