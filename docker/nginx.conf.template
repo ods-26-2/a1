@@ -1,0 +1,36 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+
+    # Redirecionamentos relativos: funcionam com qualquer porta publicada no host
+    absolute_redirect off;
+
+    # Aponta o frontend para a API desta implantação (A1_API_BASE; "fake"
+    # mantém a API fake). ?api= na URL continua tendo precedência.
+    sub_filter '<meta name="a1-api-base" content="" />' '<meta name="a1-api-base" content="${A1_API_BASE}" />';
+    sub_filter_once on;
+
+    # A tela fica em /frontend/, o mesmo caminho de "python -m http.server"
+    location = / {
+        return 302 /frontend/;
+    }
+
+    # API v1 do backend. O nome é resolvido a cada requisição, então o nginx
+    # sobe mesmo com o backend parado (a tela mostra OFFLINE)
+    location /api/ {
+        resolver 127.0.0.11 valid=10s;
+        set $a1_backend http://backend:8000;
+        proxy_pass $a1_backend;
+        proxy_set_header Host $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Sem build com hash nos nomes: o navegador revalida a cada acesso para
+    # não usar HTML/JS de uma versão anterior
+    location / {
+        add_header Cache-Control "no-cache";
+        try_files $uri $uri/ =404;
+    }
+}

@@ -5,8 +5,28 @@ services:
     build:
       context: .
       target: frontend
+    environment:
+      # Base da API usada pela tela; "fake" volta para a API fake
+      A1_API_BASE: ${A1_API_BASE:-/api/v1}
     ports:
       - "${A1_PORT:-5500}:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  # API v1 do A1 (S3-07), acessada pelo frontend em /api/. A porta 8000 só
+  # abre em 127.0.0.1, para desenvolvimento
+  backend:
+    build:
+      context: .
+      target: backend
+    environment:
+      DATABASE_URL: postgresql://a1:${POSTGRES_PASSWORD:-a1-local}@db:5432/a1
+    ports:
+      - "127.0.0.1:${A1_BACKEND_PORT:-8000}:8000"
+    depends_on:
+      db:
+        condition: service_healthy
     restart: unless-stopped
 
   # PostgreSQL do backend A1 (S3-07). Sem porta publicada: só os serviços
@@ -46,11 +66,17 @@ services:
 
   # Validação dos contratos 6c, pytest e testes do frontend:
   #   docker compose run --rm tests
+  # Os testes de banco usam schemas temporários no mesmo PostgreSQL
   tests:
     build:
       context: .
       target: tests
     profiles: ["tests"]
+    environment:
+      A1_TEST_DATABASE_URL: postgresql://a1:${POSTGRES_PASSWORD:-a1-local}@db:5432/a1
+    depends_on:
+      db:
+        condition: service_healthy
 
 volumes:
   a1-db-data:

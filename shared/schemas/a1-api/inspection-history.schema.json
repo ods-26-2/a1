@@ -1,0 +1,61 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/a1/api/v1/inspection-history.schema.json",
+  "title": "A1 API v1 — InspectionHistory",
+  "description": "Trilha de auditoria de uma inspeção: decisão automática imutável, revisões em ordem e eventos registrados pelo A1.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["inspection_id", "triage", "final_decision", "reviews", "events"],
+  "$defs": {
+    "decision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "reason", "decided_by", "decided_at"],
+      "properties": {
+        "status": { "enum": ["APPROVED", "REJECTED", "REVIEW"] },
+        "reason": { "type": "string", "minLength": 1 },
+        "decided_by": { "type": "string", "minLength": 1 },
+        "decided_at": { "type": "string", "format": "date-time" }
+      }
+    }
+  },
+  "properties": {
+    "inspection_id": { "type": "string", "minLength": 1 },
+    "triage": { "$ref": "#/$defs/decision" },
+    "final_decision": {
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/decision" }]
+    },
+    "reviews": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["review_id", "action", "status", "reason", "decided_by", "decided_at"],
+        "properties": {
+          "review_id": { "type": "string", "format": "uuid" },
+          "action": { "enum": ["CONFIRM", "SEND_TO_REVIEW"] },
+          "status": { "enum": ["APPROVED", "REJECTED", "REVIEW"] },
+          "reason": { "type": "string", "minLength": 1 },
+          "decided_by": { "type": "string", "minLength": 1 },
+          "decided_at": { "type": "string", "format": "date-time" }
+        }
+      }
+    },
+    "events": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["event_type", "actor", "occurred_at", "details"],
+        "properties": {
+          "event_type": {
+            "enum": ["INGESTED", "TRIAGED", "EVIDENCE_REQUESTED", "REVIEW_RECORDED"]
+          },
+          "actor": { "type": "string", "minLength": 1 },
+          "occurred_at": { "type": "string", "format": "date-time" },
+          "details": { "type": "object" }
+        }
+      }
+    }
+  }
+}
