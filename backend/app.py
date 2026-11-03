@@ -5,6 +5,7 @@ Run with: uvicorn backend.app:create_app --factory --host 0.0.0.0 --port 8000
 
 from __future__ import annotations
 
+import os
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Annotated, Callable, Literal
@@ -19,6 +20,7 @@ from pydantic import BaseModel, ConfigDict, StringConstraints
 from .config import Settings
 from .db import apply_schema, open_pool, to_iso, utc_now
 from .services import Services, build_services
+from .mqtt_client import A1IngestionClient
 
 
 API_PREFIX = "/api/v1"
@@ -41,11 +43,27 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         pool = open_pool(settings)
+        mqtt_client = None
         try:
             apply_schema(pool)
+            
+            # Inicializa os serviços que lidam com a regra de negócio e banco de dados
             app.state.services = build_services(pool, clock)
+            
+            # Configuração e arranque do cliente MQTT em background
+            # Utiliza o host 'mqtt-broker' no Docker, ou '127.0.0.1' se corrido localmente
+            broker_url = os.environ.get("MQTT_BROKER_URL", "mqtt-broker")
+            mqtt_client = A1IngestionClient(
+                broker_url=broker_url,
+                ingestion_service=app.state.services.ingestion
+            )
+            mqtt_client.start()
+            
             yield
         finally:
+            #Encerramento para não deixar threads presas (Clean teardown)
+            if mqtt_client:
+                mqtt_client.stop()
             pool.close()
 
     app = FastAPI(title="A1 — API de inspeção", version="1.0", lifespan=lifespan)
@@ -84,8 +102,8 @@ def create_app(
                 database,
                 {
                     "name": "i8-subscriber",
-                    "status": "SIMULATED",
-                    "detail": "Ingestão pelo produtor fake 6c; transporte B3 não integrado.",
+                    "status": "UP",
+                    "detail": "Cliente MQTT A1 ligado e à escuta no tópico ods/i8/piece_analysis.",
                 },
                 {
                     "name": "s4",
