@@ -90,6 +90,11 @@ Responsável por histórico e relatórios.
 
 Responsável por persistir as inspeções.
 
+Banco: PostgreSQL 17, serviço `db` do `docker-compose.yml`, com volume
+persistente e sem porta publicada. Guarda só metadados: mensagens processadas,
+inspeção automática original, revisões, referências S4 e comandos. Imagens
+não são gravadas no banco nem no A1.
+
 ### ReviewController
 
 Responsável pela revisão humana.

@@ -46,6 +46,11 @@ O frontend fica em <http://localhost:5500/frontend/>, servido por nginx com
 `frontend/` e `shared/`. Depois de editar arquivos, rode o comando de novo:
 a imagem copia os arquivos no build.
 
+O mesmo comando sobe o PostgreSQL 17 do backend (serviço `db`, banco e usuário
+`a1`), com dados no volume `a1-db-data`. O banco não publica porta no host.
+A senha local padrão é `a1-local`; no servidor, defina `POSTGRES_PASSWORD` no
+arquivo `.env`, que não é versionado. A porta do frontend muda com `A1_PORT`.
+
 Para validar os contratos 6c e rodar `pytest` e `npm test` no container:
 
 ```powershell
@@ -68,7 +73,7 @@ git checkout HEAD -- shared/artifacts
 
 O frontend consome a camada de dados da API A1 (`docs/contratos/a1-api.md`),
 com API fake até a entrega do backend (S3-07). A implementação da API e da
-persistência ainda pertence às próximas entregas.
+persistência em PostgreSQL ainda pertence às próximas entregas.
 
 ## Sprint 3 — contratos 6c e taxonomia
 

@@ -129,7 +129,8 @@ a decisão do sistema.
 
 ## RNF09 — Persistência
 
-Inspeções e decisões devem ser armazenadas.
+Inspeções e decisões devem ser armazenadas em PostgreSQL e preservadas após
+reinício do sistema.
 
 ## RNF10 — Manutenibilidade
 

@@ -1,11 +1,30 @@
 services:
   # Interface de inspeção em http://localhost:5500/frontend/
+  # (A1_PORT=80 no servidor)
   frontend:
     build:
       context: .
       target: frontend
     ports:
-      - "5500:80"
+      - "${A1_PORT:-5500}:80"
+    restart: unless-stopped
+
+  # PostgreSQL do backend A1 (S3-07). Sem porta publicada: só os serviços
+  # do compose acessam. No servidor, POSTGRES_PASSWORD vem do arquivo .env
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: a1
+      POSTGRES_USER: a1
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-a1-local}
+    volumes:
+      - a1-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U a1 -d a1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
 
   # Validação dos contratos 6c, pytest e testes do frontend:
   #   docker compose run --rm tests
@@ -14,3 +33,6 @@ services:
       context: .
       target: tests
     profiles: ["tests"]
+
+volumes:
+  a1-db-data:
