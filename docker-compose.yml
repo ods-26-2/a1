@@ -28,8 +28,6 @@ services:
     depends_on:
       db:
         condition: service_healthy
-      mqtt-broker:                  
-        condition: service_started
     restart: unless-stopped
 
   # PostgreSQL do backend A1 (S3-07). Sem porta publicada: só os serviços
