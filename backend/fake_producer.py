@@ -1,4 +1,4 @@
-"""Fake 6c producer: sends ods.i8.piece_analysis events via MQTT.
+"""Fake 6c producer: sends ods.industria.defeito_classificado events via Kafka.
 
 Replaces the I8 publisher and the B3 transport until they are integrated.
 
@@ -12,12 +12,13 @@ import argparse
 import copy
 import json
 import time
-from datetime import timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-import paho.mqtt.publish as publish
+# Trocamos a biblioteca paho-mqtt pelo confluent-kafka
+from confluent_kafka import Producer
 
 ROOT = Path(__file__).resolve().parents[1]
 MOCKS_6C = ROOT / "shared" / "mocks" / "6c"
@@ -35,13 +36,18 @@ def default_events(include_invalid: bool) -> list[dict[str, Any]]:
 
 def refresh(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
     session_id = str(uuid4())
-    start = time.time()
     fresh = []
     for index, event in enumerate(events):
         event = copy.deepcopy(event)
         event["message_id"] = str(uuid4())
         event["session_id"] = session_id
         event["sequence"] = index
+        
+        # O campo schema deve manter a identificação do contrato 6c:
+        event["schema"] = "ods.i8.piece_analysis"
+        event["producer"] = "I8"
+        event["occurred_at"] = datetime.now(timezone.utc).isoformat()
+        
         fresh.append(event)
     return fresh
 
@@ -51,29 +57,38 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--fresh", action="store_true", help="gera novas inspeções")
     parser.add_argument("--invalid", action="store_true", help="inclui fixtures inválidas")
     parser.add_argument("--interval", type=float, default=0.0, help="segundos entre eventos")
-    parser.add_argument("--broker", type=str, default="127.0.0.1", help="Endereço do broker MQTT")
+    
+    # Atualizamos o default para apontar para o Kafka de testes B2
+    parser.add_argument("--broker", type=str, default="34.66.235.91:9093", help="Endereço do broker Kafka")
     args = parser.parse_args(argv)
 
     events = load_events(args.files) if args.files else default_events(args.invalid)
     if args.fresh:
         events = refresh(events)
 
-    print(f"A iniciar publicação de {len(events)} eventos MQTT para {args.broker}:1883...")
+    print(f"A iniciar publicação de {len(events)} eventos Kafka para {args.broker}...")
     
+    # Inicializa o produtor Kafka
+    producer = Producer({'bootstrap.servers': args.broker})
+    topico = "ods.industria.defeito_classificado"
+
     for index, event in enumerate(events):
         if index and args.interval:
             time.sleep(args.interval)
         
-        # Publica no broker com QoS 1
-        publish.single(
-            topic="ods/i8/piece_analysis",
-            payload=json.dumps(event).encode("utf-8"),
-            hostname=args.broker,
-            port=1883,
-            qos=1
+        # Publica no Kafka (assíncrono)
+        producer.produce(
+            topic=topico,
+            value=json.dumps(event).encode("utf-8")
         )
-        print(f"Publicado MQTT: {event.get('payload', {}).get('result', 'INVALID'):<15} ID: {event.get('message_id')}")
+        # Força o envio imediato (poll)
+        producer.poll(0)
+        
+        print(f"Publicado Kafka: {event.get('payload', {}).get('result', 'INVALID'):<15} ID: {event.get('message_id')}")
 
+    # Garante que todas as mensagens saíram do buffer antes de encerrar o script
+    producer.flush()
+    print("Todas as mensagens foram entregues.")
     return 0
 
 if __name__ == "__main__":

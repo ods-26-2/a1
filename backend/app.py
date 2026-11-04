@@ -6,6 +6,7 @@ Run with: uvicorn backend.app:create_app --factory --host 0.0.0.0 --port 8000
 from __future__ import annotations
 
 import os
+import threading
 from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Annotated, Callable, Literal
@@ -20,7 +21,7 @@ from pydantic import BaseModel, ConfigDict, StringConstraints
 from .config import Settings
 from .db import apply_schema, open_pool, to_iso, utc_now
 from .services import Services, build_services
-from .mqtt_client import A1IngestionClient
+from .kafka_client import A1KafkaConsumer
 
 
 API_PREFIX = "/api/v1"
@@ -46,27 +47,25 @@ def create_app(
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         pool = open_pool(settings)
-        mqtt_client = None
+        kafka_consumer = None
+        kafka_thread = None
         try:
             apply_schema(pool)
             
-            # Inicializa os serviços que lidam com a regra de negócio e banco de dados
             app.state.services = build_services(pool, clock)
             
-            # Configuração e arranque do cliente MQTT em background
-            # Utiliza o host 'mqtt-broker' no Docker, ou '127.0.0.1' se corrido localmente
-            broker_url = os.environ.get("MQTT_BROKER_URL", "mqtt-broker")
-            mqtt_client = A1IngestionClient(
-                broker_url=broker_url,
-                ingestion_service=app.state.services.ingestion
-            )
-            mqtt_client.start()
+            # Instancia o consumidor passando o serviço do banco de dados já existente
+            kafka_consumer = A1KafkaConsumer(ingestion_service=app.state.services.ingestion)
+            
+            # Executa o consumidor Kafka em uma thread separada para não bloquear o Uvicorn/FastAPI
+            kafka_thread = threading.Thread(target=kafka_consumer.comecar_a_consumir, daemon=True)
+            kafka_thread.start()
             
             yield
         finally:
-            #Encerramento para não deixar threads presas (Clean teardown)
-            if mqtt_client:
-                mqtt_client.stop()
+            # Encerramento limpo e fecho da BD
+            if kafka_consumer:
+                kafka_consumer.parar() # Pode chamar o shutdown do Kafka aqui
             pool.close()
 
     app = FastAPI(title="A1 — API de inspeção", version="1.0", lifespan=lifespan)
@@ -106,7 +105,7 @@ def create_app(
                 {
                     "name": "i8-subscriber",
                     "status": "UP",
-                    "detail": "Cliente MQTT A1 ligado e à escuta no tópico ods/i8/piece_analysis.",
+                    "detail": "Cliente Kafka A1 ligado e à escuta no tópico ods.industria.defeito_classificado.",
                 },
                 {
                     "name": "s4",
@@ -114,7 +113,7 @@ def create_app(
                     "detail": "Adaptador S4 não implementado (S3-09); pedidos ficam pendentes.",
                 },
             ],
-        }
+        }   
 
     @app.get(f"{API_PREFIX}/inspections/current")
     def current_inspection(request: Request):
