@@ -49,14 +49,14 @@ o comando de novo: a imagem copia os arquivos no build.
 
 O mesmo comando sobe o backend (`backend`, porta 8000 só em `127.0.0.1`), o
 PostgreSQL 17 (serviço `db`, banco e usuário `a1`).O consumo de eventos é feito
-diretamente via Kafka (configurado pela variável `KAFKA_BROKER_URL).
+diretamente via Kafka (configurado pela variável `KAFKA_BROKER_URL`).
 O banco não publica porta no host. A senha local padrão é `a1-local`; no servidor, 
 defina `POSTGRES_PASSWORD` no arquivo `.env`, que não é versionado. A porta do frontend muda com `A1_PORT`.
 
-Para simular o I8 a enviar inspeções via MQTT (transporte B3), use o produtor fake:
+Para simular o I8 a enviar inspeções via Kafka, use o produtor fake:
 
 ```powershell
-docker compose exec backend python -m backend.fake_producer --fresh --broker mqtt-broker
+docker compose exec backend python -m backend.fake_producer --fresh
 ```
 
 Para validar os contratos 6c e rodar `pytest` (com os testes de banco) e
@@ -90,9 +90,9 @@ git checkout HEAD -- shared/artifacts
 
 ## Estado atual
 
-O frontend consome a API A1 real (docs/contratos/a1-api.md) servida pelo
+O frontend consome a API A1 real (`docs/contratos/a1-api.md`) servida pelo
 backend de S3-07, com persistência em PostgreSQL. A ingestão escuta ativamente o
-barramento Kafka no tópico ods.industria.defeito_classificado para receber as
+barramento Kafka no tópico `ods.industria.defeito_classificado` para receber as
 inspeções do I8 em tempo real. A evidência S4 fica pendente até S3-09.
 
 ## Sprint 3 — contratos 6c e taxonomia
