@@ -48,7 +48,8 @@ ao backend). `?api=fake` volta para a API fake. Depois de editar arquivos, rode
 o comando de novo: a imagem copia os arquivos no build.
 
 O mesmo comando sobe o backend (`backend`, porta 8000 só em `127.0.0.1`), o
-PostgreSQL 17 (serviço `db`, banco e usuário `a1`) e o Mosquitto (broker MQTT, porta 1883). 
+PostgreSQL 17 (serviço `db`, banco e usuário `a1`).O consumo de eventos é feito
+diretamente via Kafka (configurado pela variável `KAFKA_BROKER_URL).
 O banco não publica porta no host. A senha local padrão é `a1-local`; no servidor, 
 defina `POSTGRES_PASSWORD` no arquivo `.env`, que não é versionado. A porta do frontend muda com `A1_PORT`.
 
@@ -73,7 +74,7 @@ frontend. Sem domínio próprio, usa-se `<ip-com-hifens>.sslip.io`.
 
 `docker/gcp-startup.sh` é o startup-script da VM: a cada boot instala Docker,
 atualiza o código em `/opt/a1`, completa o `.env` (`POSTGRES_PASSWORD`,
-`A1_DOMAIN`, `A1_PORT`, `COMPOSE_PROFILES=https`) e sobe o compose. Para publicar
+`A1_DOMAIN`, `A1_PORT`, `COMPOSE_PROFILES=https`,`KAFKA_BROKER_URL`) e sobe o compose. Para publicar
 uma nova versão depois do push, reinicie a VM ou rode o script de novo nela.
 
 O `Dockerfile` tem os alvos `frontend` (padrão), `backend` e `tests`.
@@ -89,10 +90,10 @@ git checkout HEAD -- shared/artifacts
 
 ## Estado atual
 
-O frontend consome a API A1 real (`docs/contratos/a1-api.md`) servida pelo
-backend de S3-07, com persistência em PostgreSQL. A ingestão escuta ativamente o 
-barramento (transporte B3 via MQTT) para receber as inspeções do I8 em tempo real. 
-A evidência S4 fica pendente até S3-09.
+O frontend consome a API A1 real (docs/contratos/a1-api.md) servida pelo
+backend de S3-07, com persistência em PostgreSQL. A ingestão escuta ativamente o
+barramento Kafka no tópico ods.industria.defeito_classificado para receber as
+inspeções do I8 em tempo real. A evidência S4 fica pendente até S3-09.
 
 ## Sprint 3 — contratos 6c e taxonomia
 

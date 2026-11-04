@@ -8,7 +8,7 @@ comandos pendentes e trilha de auditoria.
 
 | Módulo | Papel |
 |---|---|
-| `app.py` | Rotas HTTP da API v1 (FastAPI) |
+| `app.py` | Rotas HTTP da API v1 (FastAPI) e orquestração da thread do Kafka |
 | `inspections.py` | `InspectionService` (detalhe, atual, histórico) e `ReviewService` |
 | `ingestion.py` | `IngestionService`: valida o 6c, aplica a triagem e grava |
 | `triage.py` | Política mínima 7.2 (`TriageService`); o motor completo é S3-08 |
@@ -16,8 +16,8 @@ comandos pendentes e trilha de auditoria.
 | `contracts.py` | Guarda da fronteira I8 → A1 |
 | `repository.py` | `InspectionRepository` sobre PostgreSQL |
 | `schema.sql` | Esquema do banco, aplicado a cada inicialização |
-| `fake_producer.py` | Produtor fake 6c, até o I8 e o transporte B3 chegarem |
-| `mqtt_client.py` | Cliente MQTT que escuta os eventos do I8 | 
+| `fake_producer.py` | Produtor fake 6c, até o I8 e o transporte definitivo (Kafka) chegarem |
+| `kafka_client.py` | Cliente Kafka que escuta os eventos do I8 no tópico `ods.industria.defeito_classificado` |
 
 ## Banco
 
@@ -39,7 +39,7 @@ não são gravadas.
 ## Ingestão
 
 O ponto de entrada é `IngestionService.ingest(evento)`, independente de
-transporte. O adaptador MQTT (`mqtt_client.py`) escuta o barramento, 
+transporte. O adaptador Kafka (`kafka_client.py`) escuta o barramento na nuvem, 
 descodifica o evento 6c e chama este método. Resultado: `ACCEPTED`, `DUPLICATE` ou `REJECTED`.
 
 Para testes locais sem hardware, o produtor fake pode ser injetado diretamente 
@@ -48,7 +48,7 @@ dentro do contentor do backend:
 ```powershell
 docker compose exec backend python -m backend.fake_producer
 docker compose exec backend python -m backend.fake_producer --fresh
-docker compose exec backend python -m backend.fake_producer --invalid python -m backend.fake_producer --invalid
+docker compose exec backend python -m backend.fake_producer --invalid
 ```
 
 `--fresh` gera novos `message_id`, sessão e horários (inspeções novas).
