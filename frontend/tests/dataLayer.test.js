@@ -112,6 +112,7 @@ describe("API fake", () => {
     const receipt = await source.submitReview(view.inspection_id, {
       action: "SEND_TO_REVIEW",
       operator: " op-1 ",
+      reason: "Conferir a classificação.",
     });
 
     assert.equal(receipt.persisted, false);
@@ -130,6 +131,35 @@ describe("API fake", () => {
       view.evidence.url,
       new URL("frontend/assets/images/mock-piece-approved.png", ROOT).href,
     );
+  });
+
+  it("corrige estado/classe, relê a decisão e atualiza a fila preservando I8", async () => {
+    const source = fakeSource({ scenario: "UNCERTAIN" });
+    const view = await source.loadCurrentInspection();
+    const initial = await source.loadReviewQueue();
+    assert.equal(initial.total, 2);
+    const options = await source.loadReviewOptions(view.inspection_id);
+    assert(options.classes.some((item) => item.defect_class === "FURADO"));
+    await source.submitReview(view.inspection_id, { action: "CORRECT", operator: "op-1", reason: "Furo confirmado.", status: "REJECTED", defect_class: "FURADO" });
+    const loaded = await source.loadInspection(view.inspection_id);
+    assert.equal(loaded.analysis.result, "UNCERTAIN");
+    assert.equal(loaded.triage.status, "REVIEW");
+    assert.equal(loaded.final_decision.defect_class, "FURADO");
+    assert.equal((await source.loadReviewQueue()).total, 1);
+    await source.submitReview(view.inspection_id, { action: "CONFIRM", operator: "op-2", reason: "Concordo com a correção." });
+    const history = await source.loadHistory(view.inspection_id);
+    assert.equal(history.reviews.length, 2);
+    assert.equal(history.final_decision.status, "REJECTED");
+    assert.equal(history.final_decision.defect_class, "FURADO");
+    assert.equal(history.reviews[0].reason, "Furo confirmado.");
+  });
+
+  it("exige motivo e recusa classe desconhecida ou correção inconsistente", async () => {
+    const source = fakeSource({ scenario: "UNCERTAIN" });
+    const { inspection_id: id } = await source.loadCurrentInspection();
+    await assert.rejects(source.submitReview(id, { action: "CONFIRM", operator: "op", reason: " " }), /motivo/);
+    await assert.rejects(source.submitReview(id, { action: "CORRECT", operator: "op", reason: "Revisão", status: "REJECTED", defect_class: null }), /classe/);
+    await assert.rejects(source.submitReview(id, { action: "CORRECT", operator: "op", reason: "Revisão", status: "REJECTED", defect_class: "UNKNOWN" }), /desconhecida/);
   });
 });
 

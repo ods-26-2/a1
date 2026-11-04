@@ -26,6 +26,7 @@ export function cacheInspectionElements(root = document) {
     versionModel: root.querySelector("#version-model"),
     versionTaxonomy: root.querySelector("#version-taxonomy"),
     versionPolicy: root.querySelector("#version-policy"),
+    finalClass: root.querySelector("#final-class"),
     status: {
       banner: root.querySelector("#status-banner"),
       text: root.querySelector("#status-text"),
@@ -79,6 +80,7 @@ export function renderInspection(view, elements, evidenceElements) {
   elements.versionModel.textContent = view.versions.model;
   elements.versionTaxonomy.textContent = view.versions.taxonomy;
   elements.versionPolicy.textContent = view.versions.policy;
+  elements.finalClass.textContent = `Classe final: ${view.final_decision ? view.final_decision.defect_class ?? "sem classe conhecida" : view.analysis.defect?.defect_class ?? "sem classe conhecida"}`;
 
   renderAnalysis(view.analysis, elements);
   renderDecision(view, elements);

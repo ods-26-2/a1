@@ -1,7 +1,8 @@
 {
-  "policy_version": "triage-a1-1.0.0",
+  "policy_version": "triage-a1-1.1.0",
   "taxonomy_version": "defects-a1-1.0.0",
   "default_status": "REVIEW",
+  "minimum_confidence": {"CONFORMING": null, "NON_CONFORMING": null},
   "consequences": [
     {
       "defect_class": "AMASSADO",

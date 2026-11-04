@@ -33,8 +33,13 @@ PostgreSQL (serviço `db` do `docker-compose.yml`). Tabelas:
 
 O banco recusa `UPDATE`, `DELETE` e `TRUNCATE` em `inspections`, `reviews` e
 `audit_events`. Mensagem repetida é reconhecida por `message_id` e não grava
-nada. Outra mensagem com a mesma sessão, quadro e detecção é recusada. Imagens
+nada. Outra mensagem com a mesma fonte, sessão, quadro e detecção é recusada. Imagens
 não são gravadas.
+
+Novas inspeções usam `INSP-<message_id completo>` como ID interno para evitar
+colisões entre prefixos de sessão ou fontes. IDs históricos continuam válidos.
+A inicialização atualiza a chave de observação de bancos S3-07 existentes para
+incluir `source_id`, sem reescrever inspeções, revisões ou auditoria.
 
 ## Ingestão
 
@@ -54,8 +59,40 @@ docker compose exec backend python -m backend.fake_producer --invalid python -m 
 `--fresh` gera novos `message_id`, sessão e horários (inspeções novas).
 `--invalid` inclui as fixtures inválidas, que devem ser recusadas.
 
-## Pendências fora de S3-07
+## S3-08 — triagem, fila e revisão
 
-- S3-08: motor de triagem completo, motivo obrigatório e correção de classe;
+A política ativa é `triage-a1-1.1.0`. `minimum_confidence` declara separadamente
+os limiares de `CONFORMING` e `NON_CONFORMING`. Um valor `null` significa que a
+calibração ainda não foi aceita: a decisão vai para `REVIEW`, sem aprovação ou
+reprovação automática. Depois de calibrar, publique uma nova versão da política;
+o limite é inclusivo (`confidence >= limiar`). `ANOMALY` e `UNCERTAIN` sempre vão
+para revisão. Versão/classe inválida é recusada na ingestão. A política antiga
+permanece em `shared/policies/triage/archive/` para referência histórica.
+
+`GET /api/v1/inspections/review-queue?limit=20&offset=0` consulta a fila persistida
+em ordem de recebimento. A fila é a projeção da última decisão de cada inspeção,
+não uma lista em memória. Uma correção final remove a inspeção da fila; enviar
+para revisão a recoloca. Confirmar uma decisão `REVIEW` mantém a pendência.
+
+`GET /api/v1/inspections/{id}/review-options` entrega as classes da versão da
+taxonomia usada pela inspeção. `POST .../{id}/reviews` exige `operator` e `reason`
+não vazios e aceita:
+
+- `CONFIRM`: preserva a decisão/classe final atual;
+- `SEND_TO_REVIEW`: muda o estado final para `REVIEW`, preservando a classe;
+- `CORRECT`: exige `status`; `REJECTED` exige classe conhecida, `APPROVED` exige
+  classe nula e `REVIEW` admite classe conhecida ou nula.
+
+Cada revisão é uma inserção auditável com motivo, ator, hora, estado e classe.
+`analysis` e `triage` nunca mudam. `final_decision` expõe classe e versão usadas
+pelo operador; `.../{id}/history` contém todas as revisões. A migração adiciona
+colunas sem reescrever revisões antigas ou alterar as proteções S3-07.
+
+A tela inclui fila paginada, motivo, correção, classe e histórico. A API fake
+implementa o mesmo fluxo sem persistência; suas fixtures S3-03 são exemplos da
+política histórica 1.0, não limiares calibrados da política ativa.
+
+## Pendências externas
+
 - S3-09: adaptador S4 (os pedidos de snapshot ficam em `commands` como
   `PENDING` e a evidência aparece como pendente);

@@ -13,22 +13,37 @@ Schemas executáveis: `shared/schemas/a1-api/`. Fixtures da API fake:
 |---|---|---|
 | GET | `/api/v1/health` | `Health` (200). Falha de rede ou timeout = OFFLINE no front |
 | GET | `/api/v1/inspections/current` | `InspectionView` (200) ou `204` sem inspeção |
+| GET | `/api/v1/inspections/review-queue?limit=20&offset=0` | `ReviewQueue` com items, total, limit e offset |
 | GET | `/api/v1/inspections/{inspection_id}` | `InspectionView` (200) ou `404` |
+| GET | `/api/v1/inspections/{inspection_id}/review-options` | Classes da taxonomia da inspeção |
 | GET | `/api/v1/inspections/{inspection_id}/history` | `InspectionHistory` (200) ou `404` |
 | POST | `/api/v1/inspections/{inspection_id}/reviews` | `ReviewReceipt` (201) ou `404` |
 
 Corpo do POST:
 
 ```json
-{ "action": "CONFIRM", "operator": "op-samuel" }
+{ "action": "CONFIRM", "operator": "op-samuel", "reason": "Conferência manual concluída." }
 ```
 
-`action` é `CONFIRM` ou `SEND_TO_REVIEW`; `operator` tem de 1 a 64
-caracteres. Campo desconhecido, ação inválida ou operador vazio retornam `422`.
-Motivo obrigatório e correção de classe pertencem a S3-08 e entram como campos
-aditivos. Cada POST grava uma revisão nova: `CONFIRM` mantém o status final
-vigente e `SEND_TO_REVIEW` muda para `REVIEW`. A decisão automática nunca é
-alterada.
+`action` é `CONFIRM`, `SEND_TO_REVIEW` ou `CORRECT`; `operator` tem de 1 a 64
+caracteres e `reason` de 1 a 1000, após remover espaços externos. Campo
+desconhecido, ação inválida, operador/motivo vazio ou correção inconsistente
+retornam `422`. Cada POST grava uma revisão nova: `CONFIRM` mantém estado e
+classe final vigentes, `SEND_TO_REVIEW` mantém a classe e muda para `REVIEW`.
+A decisão automática e a análise I8 nunca são alteradas.
+
+Em `CORRECT`, enviar `status` e `defect_class` (ou `null`). Reprovar exige classe
+conhecida na versão da inspeção; aprovar exige classe nula. `REVIEW` aceita classe
+conhecida ou nula. Estado/classe não são aceitos nas outras ações.
+
+```json
+{ "action": "CORRECT", "operator": "op-samuel", "reason": "Furo verificado manualmente.", "status": "REJECTED", "defect_class": "FURADO" }
+```
+
+A fila contém inspeções cuja última decisão é `REVIEW`; confirmá-la mantém a
+pendência. `limit` aceita 1–100 e `offset` é não negativo. É uma projeção do banco
+e sobrevive a reinício. `review-options` retorna `{taxonomy_version, classes}`
+com os rótulos daquela versão, sem usar a versão mais recente silenciosamente.
 
 Banco indisponível retorna `503` nas rotas de inspeção; `/health` responde
 `DEGRADED` com o componente `database` em `DOWN`.
@@ -45,7 +60,8 @@ O backend entrega a inspeção já resolvida:
   descrição e severidade resolvidos pela versão de taxonomia. `defect` só
   existe em `NON_CONFORMING`;
 - `triage`: decisão automática, motivo, `decided_by: "AUTO"`; imutável;
-- `final_decision`: decisão do operador ou `null`;
+- `final_decision`: decisão do operador ou `null`; inclui `defect_class` final
+  (possivelmente nula) e `taxonomy_version`, separadas da análise original;
 - `evidence`: `AVAILABLE`, `PENDING`, `UNAVAILABLE` ou `EXPIRED`. `url` só
   existe em `AVAILABLE`; nos demais estados o front mostra placeholder
   explícito, nunca a imagem de outra peça.
@@ -56,7 +72,7 @@ Trilha de auditoria (`shared/schemas/a1-api/inspection-history.schema.json`):
 
 - `triage`: decisão automática original;
 - `final_decision`: última revisão ou `null`;
-- `reviews`: todas as revisões em ordem de gravação;
+- `reviews`: todas as revisões em ordem, incluindo motivo, operador, classe e versão;
 - `events`: `INGESTED`, `TRIAGED`, `EVIDENCE_REQUESTED` e `REVIEW_RECORDED`,
   com ator, instante e detalhes (por exemplo, status anterior da revisão).
 

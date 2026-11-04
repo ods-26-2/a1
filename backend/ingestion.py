@@ -45,11 +45,9 @@ class IngestResult:
 
 
 def inspection_id_for(event: Mapping[str, Any]) -> str:
-    payload = event["payload"]
-    return (
-        f"INSP-{str(event['session_id'])[:8]}-"
-        f"{payload['frame_index']}-{payload['detection_id']}"
-    )
+    # The complete message UUID avoids collisions between session prefixes and
+    # cameras. Existing inspection IDs remain stored and queryable unchanged.
+    return f"INSP-{event['message_id']}"
 
 
 class IngestionService:

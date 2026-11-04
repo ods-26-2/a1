@@ -30,9 +30,16 @@ CREATE TABLE IF NOT EXISTS inspections (
         CHECK (triage_status IN ('APPROVED', 'REJECTED', 'REVIEW')),
     triage_reason     text NOT NULL,
     triage_decided_at timestamptz NOT NULL,
-    raw_event         jsonb NOT NULL,
-    UNIQUE (session_id, frame_index, detection_id)
+    raw_event         jsonb NOT NULL
 );
+
+-- Upgrade existing S3-07 databases without changing inspections or audit IDs.
+-- A session can contain multiple sources; frame/detection identity is local
+-- to the source (6c), not globally unique within the session.
+ALTER TABLE inspections
+    DROP CONSTRAINT IF EXISTS inspections_session_id_frame_index_detection_id_key;
+CREATE UNIQUE INDEX IF NOT EXISTS inspections_observation_idx
+    ON inspections (source_id, session_id, frame_index, detection_id);
 
 CREATE INDEX IF NOT EXISTS inspections_received_at_idx
     ON inspections (received_at DESC);
@@ -49,6 +56,14 @@ CREATE TABLE IF NOT EXISTS reviews (
 );
 
 CREATE INDEX IF NOT EXISTS reviews_inspection_idx ON reviews (inspection_id, seq);
+
+-- S3-08: additive migration; existing immutable reviews keep their original
+-- classification implicitly. New reviews store the complete final class.
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS defect_class text;
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS classification_set boolean NOT NULL DEFAULT false;
+ALTER TABLE reviews DROP CONSTRAINT IF EXISTS reviews_action_check;
+ALTER TABLE reviews ADD CONSTRAINT reviews_action_check
+    CHECK (action IN ('CONFIRM', 'SEND_TO_REVIEW', 'CORRECT'));
 
 -- Estado da evidência S4. Muda com as respostas de S4 (S3-09); não é auditoria.
 CREATE TABLE IF NOT EXISTS evidence (

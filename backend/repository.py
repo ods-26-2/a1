@@ -13,7 +13,7 @@ from psycopg_pool import ConnectionPool
 
 
 class ConflictingContextError(ValueError):
-    """Another message already registered the same session/frame/detection."""
+    """Another message already registered the same source/session/frame/detection."""
 
 
 @dataclass(frozen=True)
@@ -73,11 +73,12 @@ SELECT i.*,
        e.url AS evidence_url, e.expires_at AS evidence_expires_at,
        e.detail AS evidence_detail,
        r.status AS final_status, r.reason AS final_reason,
-       r.operator AS final_operator, r.recorded_at AS final_recorded_at
+       r.operator AS final_operator, r.recorded_at AS final_recorded_at,
+       CASE WHEN r.classification_set THEN r.defect_class ELSE i.defect_class END AS final_defect_class
 FROM inspections i
 LEFT JOIN evidence e ON e.inspection_id = i.inspection_id
 LEFT JOIN LATERAL (
-    SELECT status, reason, operator, recorded_at
+    SELECT status, reason, operator, recorded_at, defect_class, classification_set
     FROM reviews
     WHERE reviews.inspection_id = i.inspection_id
     ORDER BY seq DESC
@@ -169,7 +170,7 @@ class InspectionRepository:
                 return SaveResult(record.inspection_id, created=True)
         except errors.UniqueViolation as exc:
             raise ConflictingContextError(
-                "sessão, quadro e detecção já registrados por outra mensagem"
+                "fonte, sessão, quadro e detecção já registrados por outra mensagem"
             ) from exc
 
     def record_failure(
@@ -213,9 +214,10 @@ class InspectionRepository:
         action: str,
         operator: str,
         recorded_at: datetime,
-        decide: Callable[[str], tuple[str, str]],
+        reason: str,
+        decide: Callable[[str, str | None], tuple[str, str | None]],
     ) -> dict[str, Any] | None:
-        """Append a review. ``decide`` maps the current final status to (status, reason).
+        """Append a review under the inspection lock, preserving the automatic row.
 
         Returns ``None`` when the inspection does not exist.
         """
@@ -223,10 +225,13 @@ class InspectionRepository:
         with self.pool.connection() as conn:
             current = conn.execute(
                 """
-                SELECT i.triage_status,
+                SELECT i.triage_status, i.defect_class,
                        (SELECT status FROM reviews r
                         WHERE r.inspection_id = i.inspection_id
-                        ORDER BY seq DESC LIMIT 1) AS final_status
+                        ORDER BY seq DESC LIMIT 1) AS final_status,
+                       (SELECT CASE WHEN r.classification_set THEN r.defect_class ELSE i.defect_class END
+                        FROM reviews r WHERE r.inspection_id = i.inspection_id
+                        ORDER BY seq DESC LIMIT 1) AS final_defect_class
                 FROM inspections i
                 WHERE i.inspection_id = %s
                 FOR UPDATE
@@ -236,16 +241,18 @@ class InspectionRepository:
             if current is None:
                 return None
 
-            status, reason = decide(current["final_status"] or current["triage_status"])
+            previous_status = current["final_status"] or current["triage_status"]
+            previous_class = current["final_defect_class"] if current["final_status"] else current["defect_class"]
+            status, defect_class = decide(previous_status, previous_class)
             review = conn.execute(
                 """
                 INSERT INTO reviews (
                     review_id, inspection_id, action, status, reason, operator,
-                    recorded_at
-                ) VALUES (%s, %s, %s, %s, %s, %s, %s)
-                RETURNING review_id, action, status, reason, operator, recorded_at
+                    recorded_at, defect_class, classification_set
+                ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, true)
+                RETURNING review_id, action, status, reason, operator, recorded_at, defect_class
                 """,
-                (uuid4(), inspection_id, action, status, reason, operator, recorded_at),
+                (uuid4(), inspection_id, action, status, reason, operator, recorded_at, defect_class),
             ).fetchone()
             self._audit(
                 conn,
@@ -260,6 +267,9 @@ class InspectionRepository:
                             "previous_status": current["final_status"]
                             or current["triage_status"],
                             "status": status,
+                            "previous_defect_class": previous_class,
+                            "defect_class": defect_class,
+                            "reason": reason,
                         },
                     )
                 ],
@@ -271,11 +281,20 @@ class InspectionRepository:
         with self.pool.connection() as conn:
             return conn.execute(
                 """
-                SELECT review_id, action, status, reason, operator, recorded_at
+                SELECT review_id, action, status, reason, operator, recorded_at, defect_class, classification_set
                 FROM reviews WHERE inspection_id = %s ORDER BY seq
                 """,
                 (inspection_id,),
             ).fetchall()
+
+    def pending_reviews(self, *, limit: int = 50, offset: int = 0) -> tuple[list[dict[str, Any]], int]:
+        # The queue is a projection of persisted immutable inspections/reviews;
+        # it survives restart and cannot drift from the final decision.
+        query = _VIEW_QUERY + " WHERE COALESCE(r.status, i.triage_status) = 'REVIEW'"
+        with self.pool.connection() as conn:
+            total = conn.execute("SELECT count(*) AS total FROM (" + query + ") pending").fetchone()["total"]
+            rows = conn.execute(query + " ORDER BY i.received_at, i.inspection_id LIMIT %s OFFSET %s", (limit, offset)).fetchall()
+            return rows, total
 
     def audit_events(self, inspection_id: str) -> list[dict[str, Any]]:
         with self.pool.connection() as conn:

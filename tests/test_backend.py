@@ -15,8 +15,8 @@ from conftest import api_validator, invalid_events, valid_events
 
 
 EXPECTED_STATUS = {
-    "CONFORMING": "APPROVED",
-    "NON_CONFORMING": "REJECTED",
+    "CONFORMING": "REVIEW",
+    "NON_CONFORMING": "REVIEW",
     "ANOMALY": "REVIEW",
     "UNCERTAIN": "REVIEW",
 }
@@ -73,10 +73,40 @@ def test_four_results_are_stored_and_served(client, ingest):
     assert defect["name"] == "Amassado"
 
 
-def test_inspection_id_follows_session_frame_detection(ingest):
-    outcome = ingest(valid_events()["NON_CONFORMING"])
+def test_inspection_id_preserves_complete_message_identity(ingest):
+    event = valid_events()["NON_CONFORMING"]
+    outcome = ingest(event)
 
-    assert outcome.inspection_id == "INSP-c6d74fc3-30456-0"
+    assert outcome.inspection_id == f"INSP-{event['message_id']}"
+
+
+def test_session_prefix_collision_cannot_reuse_inspection_id():
+    from backend.ingestion import inspection_id_for
+
+    first = copy.deepcopy(valid_events()["CONFORMING"])
+    second = copy.deepcopy(first)
+    second["message_id"] = str(uuid4())
+    second["session_id"] = first["session_id"][:8] + "-0000-4000-8000-000000000001"
+
+    assert inspection_id_for(first) != inspection_id_for(second)
+
+
+@pytest.mark.parametrize("context_change", ["session_prefix", "source"])
+def test_distinct_observation_contexts_do_not_collide(ingest, sql, context_change):
+    first = copy.deepcopy(valid_events()["CONFORMING"])
+    second = copy.deepcopy(first)
+    second["message_id"] = str(uuid4())
+    if context_change == "session_prefix":
+        # Different valid UUIDs with the same first eight characters.
+        second["session_id"] = first["session_id"][:8] + "-0000-4000-8000-000000000001"
+    else:
+        second["source_id"] = "cam-linha2"
+
+    left, right = ingest(first), ingest(second)
+
+    assert left.status.value == right.status.value == "ACCEPTED"
+    assert left.inspection_id != right.inspection_id
+    assert sql("SELECT count(*) FROM inspections")[0][0] == 2
 
 
 def test_repeated_message_is_not_duplicated(ingest, sql):
@@ -135,21 +165,21 @@ def test_review_keeps_automatic_decision_and_history(client, ingest):
     inspection_id = ingest(valid_events()["NON_CONFORMING"]).inspection_id
     url = f"/api/v1/inspections/{inspection_id}/reviews"
 
-    sent = client.post(url, json={"action": "SEND_TO_REVIEW", "operator": "op-samuel"})
-    confirmed = client.post(url, json={"action": "CONFIRM", "operator": "op-icaro"})
+    sent = client.post(url, json={"action": "SEND_TO_REVIEW", "operator": "op-samuel", "reason": "Conferir peça."})
+    confirmed = client.post(url, json={"action": "CONFIRM", "operator": "op-icaro", "reason": "Dúvida mantida."})
 
     assert sent.status_code == 201
     receipt = confirmed.json()
     assert list(api_validator("review-receipt.schema.json").iter_errors(receipt)) == []
     assert receipt["persisted"] is True
     view = receipt["inspection"]
-    assert view["triage"]["status"] == "REJECTED"
+    assert view["triage"]["status"] == "REVIEW"
     assert view["final_decision"]["status"] == "REVIEW"
     assert view["final_decision"]["decided_by"] == "op-icaro"
 
     history = client.get(f"/api/v1/inspections/{inspection_id}/history").json()
     assert list(api_validator("inspection-history.schema.json").iter_errors(history)) == []
-    assert history["triage"]["status"] == "REJECTED"
+    assert history["triage"]["status"] == "REVIEW"
     assert [review["action"] for review in history["reviews"]] == ["SEND_TO_REVIEW", "CONFIRM"]
     assert [event["event_type"] for event in history["events"]] == [
         "INGESTED",
@@ -158,7 +188,7 @@ def test_review_keeps_automatic_decision_and_history(client, ingest):
         "REVIEW_RECORDED",
         "REVIEW_RECORDED",
     ]
-    assert history["events"][3]["details"]["previous_status"] == "REJECTED"
+    assert history["events"][3]["details"]["previous_status"] == "REVIEW"
 
 
 @pytest.mark.parametrize(
@@ -183,15 +213,17 @@ def test_unknown_inspection_is_404(client):
     assert client.get("/api/v1/inspections/INSP-x-0-0/history").status_code == 404
     response = client.post(
         "/api/v1/inspections/INSP-x-0-0/reviews",
-        json={"action": "CONFIRM", "operator": "op-samuel"},
+        json={"action": "CONFIRM", "operator": "op-samuel", "reason": "Conferido."},
     )
     assert response.status_code == 404
 
 
-def test_data_survives_restart(settings):
+def test_data_survives_restart(settings, monkeypatch):
     from fastapi.testclient import TestClient
 
     from backend.app import create_app
+    monkeypatch.setattr("backend.app.A1IngestionClient.start", lambda _: None)
+    monkeypatch.setattr("backend.app.A1IngestionClient.stop", lambda _: None)
 
     with TestClient(create_app(settings)) as first:
         inspection_id = first.app.state.services.ingestion.ingest(
@@ -199,7 +231,7 @@ def test_data_survives_restart(settings):
         ).inspection_id
         first.post(
             f"/api/v1/inspections/{inspection_id}/reviews",
-            json={"action": "CONFIRM", "operator": "op-samuel"},
+            json={"action": "CONFIRM", "operator": "op-samuel", "reason": "Conferido."},
         )
 
     with TestClient(create_app(settings)) as second:
@@ -227,9 +259,55 @@ def test_audit_records_are_immutable(client, ingest, sql, statement):
     inspection_id = ingest(valid_events()["NON_CONFORMING"]).inspection_id
     client.post(
         f"/api/v1/inspections/{inspection_id}/reviews",
-        json={"action": "CONFIRM", "operator": "op-samuel"},
+        json={"action": "CONFIRM", "operator": "op-samuel", "reason": "Conferido."},
     )
 
     with pytest.raises(psycopg.errors.RaiseException, match="imutável"):
         sql(statement)
-    assert sql("SELECT triage_status FROM inspections")[0][0] == "REJECTED"
+    assert sql("SELECT triage_status FROM inspections")[0][0] == "REVIEW"
+
+
+def test_correction_updates_queue_without_mutating_original(client, ingest, sql):
+    inspection_id = ingest(valid_events()["NON_CONFORMING"]).inspection_id
+    assert client.get("/api/v1/inspections/review-queue").json()["total"] == 1
+    options = client.get(f"/api/v1/inspections/{inspection_id}/review-options").json()
+    assert options["taxonomy_version"] == "defects-a1-1.0.0"
+    assert any(item["defect_class"] == "FURADO" for item in options["classes"])
+    receipt = client.post(f"/api/v1/inspections/{inspection_id}/reviews", json={
+        "action": "CORRECT", "operator": "op-1", "reason": "Furo confirmado manualmente.",
+        "status": "REJECTED", "defect_class": "FURADO",
+    })
+    assert receipt.status_code == 201, receipt.text
+    assert list(api_validator("review-receipt.schema.json").iter_errors(receipt.json())) == []
+    view = client.get(f"/api/v1/inspections/{inspection_id}").json()
+    assert view["analysis"]["defect"]["defect_class"] == "AMASSADO"
+    assert view["triage"]["status"] == "REVIEW"
+    assert view["final_decision"]["status"] == "REJECTED"
+    assert view["final_decision"]["defect_class"] == "FURADO"
+    queue = client.get("/api/v1/inspections/review-queue").json()
+    assert list(api_validator("review-queue.schema.json").iter_errors(queue)) == []
+    assert queue["total"] == 0
+    client.post(f"/api/v1/inspections/{inspection_id}/reviews", json={
+        "action": "SEND_TO_REVIEW", "operator": "op-2", "reason": "Solicitar segunda avaliação.",
+    })
+    assert client.get("/api/v1/inspections/review-queue").json()["total"] == 1
+    assert sql("SELECT defect_class FROM inspections")[0][0] == "AMASSADO"
+    history = client.get(f"/api/v1/inspections/{inspection_id}/history").json()
+    assert list(api_validator("inspection-history.schema.json").iter_errors(history)) == []
+    assert history["reviews"][0]["reason"] == "Furo confirmado manualmente."
+    assert history["events"][-1]["details"]["previous_defect_class"] == "FURADO"
+
+
+@pytest.mark.parametrize("review", [
+    {"action": "CORRECT", "status": "REJECTED", "defect_class": "UNKNOWN"},
+    {"action": "CORRECT", "status": "REJECTED"},
+    {"action": "CORRECT", "status": "APPROVED", "defect_class": "FURADO"},
+    {"action": "CORRECT"},
+    {"action": "CONFIRM", "status": "APPROVED"},
+])
+def test_inconsistent_correction_is_rejected(client, ingest, review):
+    inspection_id = ingest(valid_events()["UNCERTAIN"]).inspection_id
+    response = client.post(f"/api/v1/inspections/{inspection_id}/reviews", json={
+        "operator": "op", "reason": "Análise manual.", **review,
+    })
+    assert response.status_code == 422

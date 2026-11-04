@@ -63,6 +63,18 @@
         <p>A API A1 ainda não recebeu nenhuma análise do I8.</p>
       </div>
 
+      <section class="review-queue" aria-labelledby="queue-title">
+        <div class="panel-heading"><h2 id="queue-title">Fila de revisão</h2>
+          <button id="queue-refresh" class="button button--ghost" type="button">Atualizar fila</button></div>
+        <p id="queue-summary" role="status">Carregando fila…</p>
+        <div id="queue-items" class="queue-items"></div>
+        <div class="queue-navigation">
+          <button id="queue-previous" type="button">Anterior</button>
+          <button id="queue-next" type="button">Próximas</button>
+          <button id="show-current" type="button">Voltar à inspeção atual</button>
+        </div>
+      </section>
+
       <section
         id="inspection-layout"
         class="inspection-layout"
@@ -212,6 +224,19 @@
               />
             </label>
 
+            <label class="operator-field" for="review-reason"><span>Motivo obrigatório</span>
+              <textarea id="review-reason" maxlength="1000" rows="3" required placeholder="Justifique a revisão"></textarea>
+            </label>
+            <div class="review-correction">
+              <label class="operator-field" for="review-status"><span>Decisão corrigida</span>
+                <select id="review-status"><option value="REVIEW">Revisão pendente</option><option value="APPROVED">Aprovar</option><option value="REJECTED">Reprovar</option></select>
+              </label>
+              <label class="operator-field" for="review-class"><span>Classe final</span>
+                <select id="review-class"><option value="">Sem classe conhecida</option></select>
+              </label>
+            </div>
+            <p id="final-class" class="classification-code">Classe final: —</p>
+
             <div class="action-buttons">
               <button id="confirm-result" class="button button--primary" type="button">
                 Confirmar resultado
@@ -219,10 +244,12 @@
               <button id="send-review" class="button button--secondary" type="button">
                 Enviar para revisão
               </button>
+              <button id="correct-result" class="button button--secondary" type="button">Gravar correção</button>
             </div>
             <p id="action-feedback" class="action-feedback" aria-live="polite">
               Nenhuma ação registrada.
             </p>
+            <details><summary>Histórico de revisões</summary><ul id="review-history"></ul></details>
           </div>
         </section>
       </section>

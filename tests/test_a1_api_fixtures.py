@@ -46,7 +46,7 @@ EVENTS_BY_ID = {
 
 
 def _policy(version: str) -> dict:
-    for path in POLICY_DIR.glob("*.json"):
+    for path in POLICY_DIR.rglob("*.json"):
         policy = _load(path)
         if policy["policy_version"] == version:
             return policy

@@ -14,12 +14,6 @@ from .repository import InspectionRepository
 from .taxonomy import TaxonomyCatalog
 
 
-REVIEW_REASONS = {
-    "CONFIRM": "Decisão confirmada pelo operador.",
-    "SEND_TO_REVIEW": "Encaminhada para revisão pelo operador.",
-}
-
-
 def _optional_iso(value: datetime | None) -> str | None:
     return to_iso(value) if value is not None else None
 
@@ -41,6 +35,17 @@ class InspectionService:
         row = self.repository.find(inspection_id)
         return self.view(row) if row else None
 
+    def queue(self, *, limit: int = 50, offset: int = 0) -> dict[str, Any]:
+        rows, total = self.repository.pending_reviews(limit=limit, offset=offset)
+        return {"items": [self.view(row) for row in rows], "total": total, "limit": limit, "offset": offset}
+
+    def review_options(self, inspection_id: str) -> dict[str, Any] | None:
+        row = self.repository.find(inspection_id)
+        if row is None:
+            return None
+        taxonomy = self.taxonomy.load(row["taxonomy_version"])
+        return {"taxonomy_version": taxonomy.version, "classes": list(taxonomy.classes.values())}
+
     def history(self, inspection_id: str) -> dict[str, Any] | None:
         row = self.repository.find(inspection_id)
         if row is None:
@@ -58,6 +63,8 @@ class InspectionService:
                     "reason": review["reason"],
                     "decided_by": review["operator"],
                     "decided_at": to_iso(review["recorded_at"]),
+                    "defect_class": review["defect_class"] if review["classification_set"] else row["defect_class"],
+                    "taxonomy_version": row["taxonomy_version"],
                 }
                 for review in self.repository.reviews(inspection_id)
             ],
@@ -87,6 +94,8 @@ class InspectionService:
                 "reason": row["final_reason"],
                 "decided_by": row["final_operator"],
                 "decided_at": to_iso(row["final_recorded_at"]),
+                "defect_class": row["final_defect_class"],
+                "taxonomy_version": row["taxonomy_version"],
             }
 
         return {
@@ -147,12 +156,34 @@ class ReviewService:
         self.inspections = inspections
         self.clock = clock
 
-    def submit(self, inspection_id: str, *, action: str, operator: str) -> dict[str, Any] | None:
+    def submit(self, inspection_id: str, *, action: str, operator: str, reason: str,
+               status: str | None = None, defect_class: str | None = None) -> dict[str, Any] | None:
         """Record a review as a new row; the automatic decision is never changed."""
 
-        def decide(current_status: str) -> tuple[str, str]:
-            status = "REVIEW" if action == "SEND_TO_REVIEW" else current_status
-            return status, REVIEW_REASONS[action]
+        operator, reason = operator.strip(), reason.strip()
+        if not operator or len(operator) > 64 or not reason or len(reason) > 1000:
+            raise ValueError("operador e motivo são obrigatórios (máximos: 64 e 1000 caracteres)")
+        if action not in {"CONFIRM", "CORRECT", "SEND_TO_REVIEW"}:
+            raise ValueError("ação de revisão inválida")
+        if action != "CORRECT" and (status is not None or defect_class is not None):
+            raise ValueError("estado e classe só podem ser enviados em CORRECT")
+        row = self.repository.find(inspection_id)
+        if row is None:
+            return None
+        if action == "CORRECT":
+            if status not in {"APPROVED", "REJECTED", "REVIEW"}:
+                raise ValueError("CORRECT exige estado final válido")
+            if status == "REJECTED" and defect_class is None:
+                raise ValueError("reprovação exige uma classe de defeito")
+            if status == "APPROVED" and defect_class is not None:
+                raise ValueError("aprovação não admite classe de defeito")
+            if defect_class is not None:
+                self.inspections.taxonomy.resolve(row["taxonomy_version"], defect_class)
+
+        def decide(current_status: str, current_class: str | None) -> tuple[str, str | None]:
+            if action == "CORRECT":
+                return status, defect_class
+            return ("REVIEW" if action == "SEND_TO_REVIEW" else current_status), current_class
 
         recorded_at = self.clock()
         review = self.repository.add_review(
@@ -160,6 +191,7 @@ class ReviewService:
             action=action,
             operator=operator,
             recorded_at=recorded_at,
+            reason=reason,
             decide=decide,
         )
         if review is None:

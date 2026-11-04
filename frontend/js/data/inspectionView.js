@@ -19,7 +19,7 @@ export const EVIDENCE_STATES = Object.freeze([
 export const SEVERITIES = Object.freeze(["LOW", "MEDIUM", "HIGH"]);
 export const HEALTH_STATUSES = Object.freeze(["ONLINE", "DEGRADED"]);
 export const API_MODES = Object.freeze(["REAL", "FAKE"]);
-export const REVIEW_ACTIONS = Object.freeze(["CONFIRM", "SEND_TO_REVIEW"]);
+export const REVIEW_ACTIONS = Object.freeze(["CONFIRM", "SEND_TO_REVIEW", "CORRECT"]);
 
 function fail(path, message) {
   throw new A1ApiError(
@@ -159,6 +159,10 @@ export function validateInspectionView(view) {
   validateDecision(view.triage, "triage");
   if (view.final_decision !== null) {
     validateDecision(view.final_decision, "final_decision");
+    if ("defect_class" in view.final_decision) {
+      requireNullableString(view.final_decision.defect_class, "final_decision.defect_class");
+      requireString(view.final_decision.taxonomy_version, "final_decision.taxonomy_version");
+    }
   }
 
   const evidence = requireObject(view.evidence, "evidence");
