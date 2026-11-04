@@ -22,11 +22,14 @@ services:
       target: backend
     environment:
       DATABASE_URL: postgresql://a1:${POSTGRES_PASSWORD:-a1-local}@db:5432/a1
+      MQTT_BROKER_URL: mqtt-broker
     ports:
       - "127.0.0.1:${A1_BACKEND_PORT:-8000}:8000"
     depends_on:
       db:
         condition: service_healthy
+      mqtt-broker:                  
+        condition: service_started
     restart: unless-stopped
 
   # PostgreSQL do backend A1 (S3-07). Sem porta publicada: só os serviços
@@ -44,6 +47,15 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  # Consume os eventos de análise de peças (ods.i8.piece_analysis) gerados pelo motor de inferência (I8)
+  mqtt-broker:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+    volumes:
+      - ./docker/mosquitto.conf:/mosquitto/config/mosquitto.conf
     restart: unless-stopped
 
   # HTTPS no servidor (profile https): o Caddy emite o certificado para
@@ -77,7 +89,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
-
+      mqtt-broker:                  
+        condition: service_started
 volumes:
   a1-db-data:
   caddy-data:

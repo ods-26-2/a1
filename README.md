@@ -47,16 +47,15 @@ O frontend fica em <http://localhost:5500/frontend/>, servido por nginx com
 ao backend). `?api=fake` volta para a API fake. Depois de editar arquivos, rode
 o comando de novo: a imagem copia os arquivos no build.
 
-O mesmo comando sobe o backend (`backend`, porta 8000 só em `127.0.0.1`) e o
-PostgreSQL 17 (serviço `db`, banco e usuário `a1`), com dados no volume
-`a1-db-data`. O banco não publica porta no host. A senha local padrão é
-`a1-local`; no servidor, defina `POSTGRES_PASSWORD` no arquivo `.env`, que não é
-versionado. A porta do frontend muda com `A1_PORT`.
+O mesmo comando sobe o backend (`backend`, porta 8000 só em `127.0.0.1`), o
+PostgreSQL 17 (serviço `db`, banco e usuário `a1`) e o Mosquitto (broker MQTT, porta 1883). 
+O banco não publica porta no host. A senha local padrão é `a1-local`; no servidor, 
+defina `POSTGRES_PASSWORD` no arquivo `.env`, que não é versionado. A porta do frontend muda com `A1_PORT`.
 
-Para gerar inspeções com o produtor fake 6c (detalhes em `backend/README.md`):
+Para simular o I8 a enviar inspeções via MQTT (transporte B3), use o produtor fake:
 
 ```powershell
-docker compose exec backend python -m backend.fake_producer --fresh
+docker compose exec backend python -m backend.fake_producer --fresh --broker mqtt-broker
 ```
 
 Para validar os contratos 6c e rodar `pytest` (com os testes de banco) e
@@ -91,9 +90,9 @@ git checkout HEAD -- shared/artifacts
 ## Estado atual
 
 O frontend consome a API A1 real (`docs/contratos/a1-api.md`) servida pelo
-backend de S3-07, com persistência em PostgreSQL. A ingestão usa o produtor
-fake 6c até o I8 e o transporte B3 serem integrados; a evidência S4 fica
-pendente até S3-09.
+backend de S3-07, com persistência em PostgreSQL. A ingestão escuta ativamente o 
+barramento (transporte B3 via MQTT) para receber as inspeções do I8 em tempo real. 
+A evidência S4 fica pendente até S3-09.
 
 ## Sprint 3 — contratos 6c e taxonomia
 
