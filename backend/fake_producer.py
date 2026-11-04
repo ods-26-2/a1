@@ -12,7 +12,7 @@ import argparse
 import copy
 import json
 import time
-from datetime import timedelta
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 from uuid import uuid4
@@ -42,9 +42,12 @@ def refresh(events: list[dict[str, Any]]) -> list[dict[str, Any]]:
         event["message_id"] = str(uuid4())
         event["session_id"] = session_id
         event["sequence"] = index
-        # Atualiza o envelope para garantir que bate com o contrato do Kafka
-        event["schema"] = "ods.industria.defeito_classificado"
+        
+        # O campo schema deve manter a identificação do contrato 6c:
+        event["schema"] = "ods.i8.piece_analysis"
         event["producer"] = "I8"
+        event["occurred_at"] = datetime.now(timezone.utc).isoformat()
+        
         fresh.append(event)
     return fresh
 

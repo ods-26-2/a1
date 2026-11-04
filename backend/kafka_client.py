@@ -34,12 +34,13 @@ class A1KafkaConsumer:
             'message_id', 'message_type', 'schema', 'schema_version',
             'producer', 'occurred_at', 'payload'
         ]
-        self.SCHEMA_ESPERADO = 'ods.industria.defeito_classificado'
+        self.TOPICO_KAFKA = 'ods.industria.defeito_classificado'
+        self.SCHEMA_ESPERADO = 'ods.i8.piece_analysis' # Valor interno exigido pelo ingestion.py
         self.PRODUTOR_ESPERADO = 'I8'
 
     def assinar_topico(self):
-        self.consumer.subscribe([self.SCHEMA_ESPERADO])
-        logging.info(f"Consumidor assinou o tópico: {self.SCHEMA_ESPERADO}")
+        self.consumer.subscribe([self.TOPICO_KAFKA])
+        logging.info(f"Consumidor assinou o tópico Kafka: {self.TOPICO_KAFKA}")
 
     def _validar_envelope(self, evento):
         for campo in self.CAMPOS_OBRIGATORIOS:
