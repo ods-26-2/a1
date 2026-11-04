@@ -1,0 +1,16 @@
+{
+  "mode": "FAKE",
+  "persisted": false,
+  "checks": [
+    "fila inicial",
+    "operador obrigatório",
+    "correção com motivo",
+    "classe final",
+    "análise original",
+    "nova leitura",
+    "saída e retorno à fila",
+    "histórico",
+    "mobile sem overflow"
+  ],
+  "browserErrors": []
+}

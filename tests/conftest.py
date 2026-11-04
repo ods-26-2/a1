@@ -74,8 +74,11 @@ def client(settings):
 
     from backend.app import create_app
 
-    with TestClient(create_app(settings)) as test_client:
-        yield test_client
+    from unittest.mock import patch
+    # These are business/database integration tests; transport has its own suite.
+    with patch("backend.app.A1IngestionClient.start"), patch("backend.app.A1IngestionClient.stop"):
+        with TestClient(create_app(settings)) as test_client:
+            yield test_client
 
 
 @pytest.fixture

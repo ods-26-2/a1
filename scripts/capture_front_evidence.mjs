@@ -26,6 +26,7 @@ const SHOTS = [
     name: "04-revisao-operador",
     query: "scenario=NON_CONFORMING&fault=NONE",
     action: `document.querySelector('#operator-id').value = 'op-samuel';
+             document.querySelector('#review-reason').value = 'Solicitar conferência manual.';
              document.querySelector('#send-review').click();`,
   },
   { name: "03-mobile-390-nao-conforme", query: "scenario=NON_CONFORMING&fault=NONE", width: 390, height: 844 },

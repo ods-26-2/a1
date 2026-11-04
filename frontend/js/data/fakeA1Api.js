@@ -52,6 +52,7 @@ export function createFakeA1Api({
 } = {}) {
   const root = new URL(rootUrl);
   const reviews = new Map();
+  const history = new Map();
   let reviewCounter = 0;
   let currentScenario = findById(FAKE_SCENARIOS, scenario, "Cenário");
   let currentFault = findById(FAKE_FAULTS, fault, "Falha");
@@ -146,35 +147,57 @@ export function createFakeA1Api({
       });
     },
 
-    async submitReview(inspectionId, { action, operator }) {
+    async getReviewQueue({ limit = 20, offset = 0 } = {}) {
       await simulateLatency();
-      const view = await buildCurrentView();
-      if (view.inspection_id !== inspectionId) {
-        throw new A1ApiError(API_ERROR_KINDS.HTTP, `Inspeção ${inspectionId} não é a atual.`, {
-          status: 409,
-        });
+      const pending = [];
+      for (const entry of FAKE_SCENARIOS) {
+        const view = await loadFixture(entry);
+        view.final_decision = reviews.get(view.inspection_id) ?? null;
+        if ((view.final_decision ?? view.triage).status === "REVIEW") pending.push(applyFault(view));
+      }
+      return { items: pending.slice(offset, offset + limit), total: pending.length, limit, offset };
+    },
+
+    async getReviewOptions(inspectionId) {
+      const view = await this.getInspection(inspectionId);
+      const response = await fetchImpl(new URL(`shared/artifacts/defect-taxonomy/${view.versions.taxonomy}/content.json`, root));
+      if (!response.ok) throw new Error("Taxonomia da inspeção não disponível.");
+      return { taxonomy_version: view.versions.taxonomy, classes: (await response.json()).classes };
+    },
+
+    async getHistory(inspectionId) {
+      const view = await this.getInspection(inspectionId);
+      return { inspection_id: inspectionId, triage: view.triage, final_decision: view.final_decision,
+        reviews: structuredClone(history.get(inspectionId) ?? []), events: [] };
+    },
+
+    async submitReview(inspectionId, { action, operator, reason, status, defect_class = null }) {
+      await simulateLatency();
+      const view = await this.getInspection(inspectionId);
+      if (!operator?.trim() || !reason?.trim()) throw new Error("Operador e motivo são obrigatórios.");
+      if (!["CONFIRM", "CORRECT", "SEND_TO_REVIEW"].includes(action)) throw new Error("Ação inválida.");
+      if (action === "CORRECT") {
+        if (!["APPROVED", "REJECTED", "REVIEW"].includes(status)) throw new Error("Decisão inválida.");
+        if (status === "REJECTED" && !defect_class) throw new Error("Reprovação exige classe.");
+        if (status === "APPROVED" && defect_class) throw new Error("Aprovação não admite classe.");
+        const options = await this.getReviewOptions(inspectionId);
+        if (defect_class && !options.classes.some((item) => item.defect_class === defect_class)) throw new Error("Classe desconhecida.");
       }
 
       const recordedAt = now().toISOString();
-      const decision =
-        action === "SEND_TO_REVIEW"
-          ? {
-              status: "REVIEW",
-              reason: "Encaminhada para revisão pelo operador.",
-              decided_by: operator,
-              decided_at: recordedAt,
-            }
-          : {
-              status: (view.final_decision ?? view.triage).status,
-              reason: "Decisão confirmada pelo operador.",
-              decided_by: operator,
-              decided_at: recordedAt,
-            };
+      const previous = view.final_decision ?? { ...view.triage, defect_class: view.analysis.defect?.defect_class ?? null };
+      const decision = { status: action === "CORRECT" ? status : action === "SEND_TO_REVIEW" ? "REVIEW" : previous.status,
+        defect_class: action === "CORRECT" ? defect_class : previous.defect_class,
+        taxonomy_version: view.versions.taxonomy, reason: reason.trim(), decided_by: operator.trim(), decided_at: recordedAt };
 
       reviews.set(inspectionId, decision);
       reviewCounter += 1;
+      const reviewId = `00000000-0000-4000-8000-${String(reviewCounter).padStart(12, "0")}`;
+      const entries = history.get(inspectionId) ?? [];
+      entries.push({ review_id: reviewId, action, ...decision });
+      history.set(inspectionId, entries);
       return {
-        review_id: `fake-review-${reviewCounter}`,
+        review_id: reviewId,
         action,
         recorded_at: recordedAt,
         persisted: false,

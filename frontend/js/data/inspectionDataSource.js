@@ -42,15 +42,28 @@ export function createInspectionDataSource(config, { fetchImpl } = {}) {
       return validateInspectionView(await api.getInspection(inspectionId));
     },
 
-    async submitReview(inspectionId, { action, operator }) {
+    async loadReviewQueue(options) {
+      const queue = await api.getReviewQueue(options);
+      if (!Array.isArray(queue.items) || !Number.isInteger(queue.total)) throw new Error("Fila fora do contrato.");
+      queue.items.forEach(validateInspectionView);
+      return queue;
+    },
+    async loadReviewOptions(inspectionId) { return api.getReviewOptions(inspectionId); },
+    async loadHistory(inspectionId) { return api.getHistory(inspectionId); },
+
+    async submitReview(inspectionId, { action, operator, reason, status, defect_class }) {
       if (!REVIEW_ACTIONS.includes(action)) {
         throw new Error(`Ação de revisão desconhecida: ${action}.`);
       }
       if (typeof operator !== "string" || operator.trim() === "") {
         throw new Error("Informe a identificação do operador.");
       }
+      if (typeof reason !== "string" || !reason.trim() || reason.trim().length > 1000) {
+        throw new Error("Informe o motivo da revisão (até 1000 caracteres).");
+      }
       return validateReviewReceipt(
-        await api.submitReview(inspectionId, { action, operator: operator.trim() }),
+        await api.submitReview(inspectionId, { action, operator: operator.trim(), reason: reason.trim(),
+          ...(action === "CORRECT" ? { status, defect_class: defect_class || null } : {}) }),
       );
     },
   });

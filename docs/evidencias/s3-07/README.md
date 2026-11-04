@@ -21,10 +21,10 @@ Resultado da suíte no container: 63 testes aprovados, nenhum ignorado.
 docker compose up -d --build
 docker compose exec backend python -m backend.fake_producer --invalid
 docker compose exec backend python -m backend.fake_producer
-curl http://localhost:5500/api/v1/inspections/INSP-c6d74fc3-30458-0/history
+curl http://localhost:5500/api/v1/inspections/INSP-3fbff51e-3e45-433c-b69a-6753e0f4ebd7/history
 docker compose down
 docker compose up -d
-curl http://localhost:5500/api/v1/inspections/INSP-c6d74fc3-30458-0
+curl http://localhost:5500/api/v1/inspections/INSP-3fbff51e-3e45-433c-b69a-6753e0f4ebd7
 docker compose run --rm tests
 ```
 
@@ -38,6 +38,10 @@ docker compose run --rm tests
 5. Depois de `down`/`up`, a inspeção e a revisão continuam na API.
 
 ## Limitações registradas
+
+Após a correção de identidade de 03/11, novas inspeções usam o UUID completo da
+mensagem. Se a fixture já existia no banco anterior, use o ID retornado pelo
+produtor (`DUPLICATE` mantém o ID histórico); a migração não reescreve registros.
 
 - Ingestão pelo produtor fake: o transporte B3 do evento I8 não está integrado.
 - S4 não integrado (S3-09): todo pedido de snapshot fica `PENDING` e o

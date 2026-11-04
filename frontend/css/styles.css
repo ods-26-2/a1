@@ -913,6 +913,12 @@ h2 {
   }
 }
 
+.review-queue { margin-bottom: 1.5rem; padding: 1rem; border: 1px solid var(--border, #d5dce5); border-radius: .75rem; }
+.queue-items, .queue-navigation { display: flex; flex-wrap: wrap; gap: .6rem; margin: .75rem 0; }
+.queue-items button, .queue-navigation button { min-height: 2.75rem; padding: .6rem 1rem; cursor: pointer; }
+.review-correction { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .75rem; }
+.operator-field textarea, .operator-field select { width: 100%; font: inherit; padding: .7rem; border: 1px solid #8a96a6; border-radius: .4rem; color: #172333; background: white; }
+.review-history { line-height: 1.6; }
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

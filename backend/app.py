@@ -11,7 +11,7 @@ from datetime import datetime
 from typing import Annotated, Callable, Literal
 
 import psycopg
-from fastapi import FastAPI, HTTPException, Request, Response
+from fastapi import FastAPI, HTTPException, Query, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from psycopg_pool import PoolTimeout
@@ -29,10 +29,13 @@ API_PREFIX = "/api/v1"
 class ReviewRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    action: Literal["CONFIRM", "SEND_TO_REVIEW"]
+    action: Literal["CONFIRM", "SEND_TO_REVIEW", "CORRECT"]
     operator: Annotated[
         str, StringConstraints(strip_whitespace=True, min_length=1, max_length=64)
     ]
+    reason: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=1000)]
+    status: Literal["APPROVED", "REJECTED", "REVIEW"] | None = None
+    defect_class: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1)] | None = None
 
 
 def create_app(
@@ -120,6 +123,18 @@ def create_app(
             return Response(status_code=204)
         return view
 
+    @app.get(f"{API_PREFIX}/inspections/review-queue")
+    def review_queue(request: Request, limit: Annotated[int, Query(ge=1, le=100)] = 50,
+                     offset: Annotated[int, Query(ge=0)] = 0) -> dict:
+        return services(request).inspections.queue(limit=limit, offset=offset)
+
+    @app.get(f"{API_PREFIX}/inspections/{{inspection_id}}/review-options")
+    def review_options(inspection_id: str, request: Request) -> dict:
+        options = services(request).inspections.review_options(inspection_id)
+        if options is None:
+            raise HTTPException(404, "Inspeção não encontrada.")
+        return options
+
     @app.get(f"{API_PREFIX}/inspections/{{inspection_id}}")
     def get_inspection(inspection_id: str, request: Request) -> dict:
         view = services(request).inspections.get(inspection_id)
@@ -136,9 +151,10 @@ def create_app(
 
     @app.post(f"{API_PREFIX}/inspections/{{inspection_id}}/reviews", status_code=201)
     def submit_review(inspection_id: str, body: ReviewRequest, request: Request) -> dict:
-        receipt = services(request).reviews.submit(
-            inspection_id, action=body.action, operator=body.operator
-        )
+        try:
+            receipt = services(request).reviews.submit(inspection_id, **body.model_dump())
+        except ValueError as exc:
+            raise HTTPException(422, str(exc)) from exc
         if receipt is None:
             raise HTTPException(404, f"Inspeção {inspection_id} não encontrada.")
         return receipt

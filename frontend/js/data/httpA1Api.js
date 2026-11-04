@@ -70,6 +70,10 @@ export function createHttpA1Api({
     getCurrentInspection: () => request("inspections/current"),
     getInspection: (inspectionId) =>
       request(`inspections/${encodeURIComponent(inspectionId)}`),
+    getReviewQueue: ({ limit = 20, offset = 0 } = {}) =>
+      request(`inspections/review-queue?limit=${limit}&offset=${offset}`),
+    getReviewOptions: (inspectionId) => request(`inspections/${encodeURIComponent(inspectionId)}/review-options`),
+    getHistory: (inspectionId) => request(`inspections/${encodeURIComponent(inspectionId)}/history`),
     submitReview: (inspectionId, review) =>
       request(`inspections/${encodeURIComponent(inspectionId)}/reviews`, {
         method: "POST",
