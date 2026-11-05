@@ -1,0 +1,22 @@
+name: PR6 Docker PostgreSQL verification
+
+on:
+  push:
+    branches:
+      - codex/pr6-docker-postgres-check
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Run Docker and PostgreSQL suite
+        run: docker compose -p ver1-pr6-ci run --rm --build tests
+      - name: Remove isolated containers and volumes
+        if: always()
+        run: docker compose -p ver1-pr6-ci down --volumes --remove-orphans
