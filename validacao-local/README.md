@@ -99,7 +99,7 @@ docker compose -p ver1-lab -f validacao-local/compose.yml run --rm prova --verif
 
 O segundo comando publica uma mensagem enquanto o PostgreSQL está indisponível. Ele exige `--no-deps` para não tentar restaurar o banco automaticamente. O script aguarda o health indicar `DEGRADED` e registrar falha de persistência no consumidor. Só então confirma que o offset permanece pendente. Depois da restauração, a mensagem deve aparecer uma vez no banco. Uma nova publicação do mesmo ID não pode duplicar inspeção, comando ou evento `INGESTED`.
 
-A automação [Validação da fase 2](../.github/workflows/validacao-fase-2.yml) executa a sequência completa e publica os JSON como artefato.
+A automação [Validação da fase 2](../.github/workflows/validacao-fase-2.yml) executa a sequência completa e publica os JSON como artefato. A execução de referência foi [aprovada no GitHub Actions](https://github.com/ods-26-2/a1/actions/runs/42031483908).
 
 Para diagnóstico:
 

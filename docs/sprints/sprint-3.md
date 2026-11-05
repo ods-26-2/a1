@@ -20,9 +20,17 @@ Escopo: consumidor, confirmação após persistência/rejeição durável, retry
 
 As evidências distinguem testes unitários com Kafka simulado de uma prova local com broker e banco reais. A prova usa eventos sintéticos; não comprova inferência industrial I8.
 
-## Publicação e integração I8 — atividade 06 e provas 07–09/18
+## Publicação I8 — atividade 06
 
-O publisher Kafka I8 é o próximo incremento de implementação, com João como responsável principal e apoio de Ícaro no transporte. Samuel participa das provas A1. O fluxo real e os testes de recuperação em falhas precisam de aceite próprio.
+O publisher Kafka I8 continua fora deste incremento, conforme decisão da equipe. A prova A1 usa o produtor fake e não declara inferência I8.
+
+## Provas A1 — atividades 07–09
+
+Transporte fake, deduplicação, reinício, falha do PostgreSQL e regressão da S3-08 foram aprovados com Kafka e PostgreSQL reais.
+
+- [Evidências das etapas 07–09](../evidencias/etapas-07-09/README.md).
+- [Execução automatizada](https://github.com/ods-26-2/a1/actions/runs/42031483908).
+- [PR A1 #7](https://github.com/ods-26-2/a1/pull/7).
 
 ## Outros escopos do fechamento
 
