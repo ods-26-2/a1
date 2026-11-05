@@ -50,24 +50,38 @@ Após falha permanente do processamento, o backend continua disponível para con
 
 ## Evidências de verificação
 
-- A suíte Python A1 completa passou: **147 testes**, sem testes ignorados, com PostgreSQL 17 descartável no localhost.
-- Após o ajuste final do healthcheck Docker, sua camada afetada foi revalidada: **6 testes de health/shutdown passaram**, incluindo dois testes novos do comando Docker. Há **149 testes distintos aprovados** considerando os dois conjuntos; a suíte completa não foi repetida depois dessa alteração isolada.
-- A prova de banco usa PostgreSQL real para persistência, deduplicação, revisão, auditoria e reinício da aplicação. As falhas transitórias/permanentes de repositório foram injetadas nos testes; não se afirma um ensaio de queda física da rede ou do servidor PostgreSQL.
-- Os testes de transporte usam doubles Kafka. Verificam ordem de persistência/commit, retry, falha de confirmação, rejeição durável, parada e callbacks. Não comprovam roteamento ou offsets em um broker real.
-- O PostgreSQL temporário foi encerrado e removido ao terminar os testes.
-- Ambiente de teste: Python 3.13.5; versões resolvidas em `dependencias-testadas.txt`. O build Docker completo em Python 3.11 não foi executado nesta etapa.
-- Houve um aviso de depreciação do TestClient Starlette/httpx, sem falhas. Não foi alterado o conjunto de dependências da aplicação para suprimir esse aviso.
+### Reteste do alvo Docker original, sem montagem adicional
 
-As fixtures de banco/API deixaram de referenciar a classe inexistente `A1IngestionClient`; elas injetam um assinante offline, sem construir cliente da nuvem.
+A atualização remove a exclusão de `Dockerfile` em `.dockerignore`. O alvo `tests` passa a receber o arquivo inspecionado por dois testes de saúde. Não foi necessário ignorar testes, modificar o comando de teste ou montar `/app/Dockerfile` por volume.
 
-Comando principal, na raiz A1:
+Comando executado na raiz A1, com projeto de banco descartável isolado:
 
 ```bash
-# Definir A1_TEST_DATABASE_URL para um banco de teste descartável.
-python -m pytest -q
-# Verificação focada posterior ao ajuste Docker:
-python -m pytest -q tests/test_kafka_lifecycle.py
+docker compose -p ver1-pr6-test run --rm --build tests
 ```
+
+Resultado: **149 testes Python e 13 testes do frontend aprovados**. O alvo também executou o validador de contratos, conforme seu comando padrão. O PostgreSQL foi real, dentro de um container descartável. Os testes de transporte dessa suíte continuam usando doubles Kafka.
+
+A saída está em [testes-docker.txt](testes-docker.txt), o resumo em [RESULTADOS.txt](RESULTADOS.txt) e as versões Python do container em [dependencias-docker.txt](dependencias-docker.txt). A configuração do [roteiro Linux](../../../validacao-local/README.md) foi validada com `docker compose config --quiet`.
+
+### Prova anterior com Kafka e PostgreSQL reais
+
+A prova estruturada em [kafka-real/resultado.json](kafka-real/resultado.json) foi executada no commit `d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4`, anterior a esta correção de contexto. A lógica do consumidor, fake e backend não foi alterada na atualização atual, portanto a evidência foi preservada com sua identificação original.
+
+Foram **12 publicações de eventos sintéticos, oito inspeções únicas e offset final confirmado em 12**. O reenvio de quatro IDs não criou inspeções, comandos S4 ou registros INGESTED adicionais. Depois de reiniciar normalmente o backend, as oito inspeções e seus registros permaneceram disponíveis; o offset continuou em 12.
+
+Esse teste usa broker Kafka 3.9.1 e PostgreSQL 17 reais em Docker, além da API A1. Não executa inferência I8. O roteiro e o script finito estão em [validacao-local](../../../validacao-local/README.md); os relatórios gerados pelo usuário nesse diretório ficam fora do versionamento.
+
+### Limites e histórico
+
+- Os resultados publicados são **locais**, não execuções de GitHub Actions.
+- Os testes anteriores no host registraram 147 aprovações e depois seis testes focados, incluindo dois novos. O novo reteste Docker executou os **149 juntos**, além dos 13 Node.
+- A primeira tentativa Docker anterior à correção falhou em dois testes por ausência de `/app/Dockerfile`. A montagem somente leitura usada no laboratório anterior não é mais necessária após esta correção.
+- O banco prova persistência, deduplicação, revisão, auditoria e reinício normal. As falhas de repositório dos testes unitários foram injetadas.
+- Não houve ensaio de queda física do banco/broker durante gravação ou falha entre persistência e commit.
+- O broker compartilhado, a inferência real, P2/P4/I1/P6, S4/S5/P7 e desempenho industrial permanecem fora desta prova.
+- O aviso Starlette/httpx de depreciação apareceu, sem falhas; não foi alterado o conjunto de dependências para suprimi-lo.
+- Os containers e volumes descartáveis dos testes foram encerrados. Não foram versionados imagens, volumes, caches ou dados locais de desenvolvimento.
 
 ## Aplicação e revisão
 
@@ -77,13 +91,13 @@ Para conferir sem usar o Codex:
 
 1. Abra a descrição do PR e leia os resultados de testes.
 2. Na aba **Files changed**, consulte `backend/kafka_client.py` e os três arquivos novos de testes Kafka.
-3. Abra `docs/evidencias/parte2/RESULTADOS.txt` para os resultados locais e `dependencias-testadas.txt` para as versões utilizadas.
+3. Abra `docs/evidencias/parte2/RESULTADOS.txt` para o resumo, `testes-docker.txt` para a saída e `dependencias-docker.txt` para as versões do reteste.
 4. A aba **Checks** mostra somente execuções automáticas do GitHub. Os resultados locais descritos aqui não devem ser confundidos com um workflow aprovado.
 
 I8 não recebeu alterações novas nesta parte. A reconciliação main/develop da similaridade continua na parte 4. As branches main e develop não foram alteradas. Este PR permanece em rascunho para revisão; não houve merge.
 
 ## Próximo aceite
 
-A parte 2 está pronta para revisão local. A parte 3 deverá integrar o publisher Kafka do I8 e demonstrar o fluxo com broker, confirmando reentrega e deduplicação no ambiente escolhido. A disponibilidade presumida das dependências não foi tratada como evidência de integração concluída.
+A parte 2 está pronta para revisão local. A parte 3 deverá integrar o publisher Kafka do I8 e demonstrar o fluxo de inferência real, além de ampliar a prova de recuperação em falhas no ambiente escolhido. A disponibilidade presumida das dependências não foi tratada como evidência de integração concluída.
 
 Referências de API utilizadas: [cliente Python Confluent](https://docs.confluent.io/kafka-clients/python/current/overview.html) e [API Consumer/Producer](https://docs.confluent.io/platform/8.0/clients/confluent-kafka-python/html/index.html).

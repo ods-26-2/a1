@@ -1,0 +1,54 @@
+{
+  "status": "passed-local-real-kafka",
+  "scope": "synthetic events; real Kafka, A1 API and PostgreSQL; no I8 model inference",
+  "broker": "kafka:9092",
+  "topic": "ods.i8.piece_analysis",
+  "group": "ver1-lab-a1",
+  "message_ids": [
+    "6715fde2-4232-40ff-86f7-9a23ffbe049c",
+    "5cab20b9-cc48-4478-bcd8-d3a642a93ac7",
+    "f9d3a69c-9a35-446f-b7bb-85d0ec7200c1",
+    "fd42b9f4-b77f-41c9-bd2b-6969c825d81b",
+    "5c91ca1c-4649-4176-a12b-999db4c0ffb2",
+    "a081f221-f1a0-46b2-b7fd-808565188c8a",
+    "0ecab777-ae22-42d0-bba2-bf765991b623",
+    "085909cc-9e93-48be-8b47-4b4b8b2f4d51"
+  ],
+  "candidate_1_1": {
+    "inspections": 4,
+    "commands": 4,
+    "ingested": 4
+  },
+  "same_ids_replayed": {
+    "inspections": 4,
+    "commands": 4,
+    "ingested": 4
+  },
+  "offsets_after_replay": {
+    "low": 0,
+    "high": 8,
+    "committed": 8
+  },
+  "including_fresh_1_0": {
+    "inspections": 8,
+    "commands": 8,
+    "ingested": 8
+  },
+  "offsets_final": {
+    "low": 0,
+    "high": 12,
+    "committed": 12
+  },
+  "api_reads": 8,
+  "events_published": 12,
+  "after_backend_restart": {
+    "inspections": 8,
+    "commands": 8,
+    "ingested": 8
+  },
+  "offsets_after_restart": {
+    "low": 0,
+    "high": 12,
+    "committed": 12
+  }
+}

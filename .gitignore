@@ -10,3 +10,6 @@ coverage/
 
 # Track only the Kafka configuration template, never local credentials.
 !.env.kafka.example
+
+# Generated local validation reports are not source files.
+/validacao-local/evidencias/

@@ -1,27 +1,25 @@
-PARTE 2 — VERIFICAÇÃO LOCAL
+PARTE 2 — EVIDÊNCIAS LOCAIS ATUALIZADAS EM 05/11/2026
 
-Suíte completa A1, com PostgreSQL descartável:
-  python -m pytest -q
-  147 passed, 1 warning in 2.63s
-  Nenhum teste ignorado.
+RETESTE DO ALVO DOCKER ORIGINAL APÓS CORRIGIR .dockerignore
+Comando: docker compose -p ver1-pr6-test run --rm --build tests
+Sem volume extra para /app/Dockerfile.
+149 passed, 1 warning in 2.72s
+Frontend Node: 13 testes, 13 aprovados, zero falhas ou ignorados.
+A saída completa dos testes está em testes-docker.txt.
+Versões do container: dependencias-docker.txt.
 
-Verificação focada após o ajuste final no healthcheck Docker:
-  python -m pytest -q tests/test_kafka_lifecycle.py
-  6 passed, 1 warning in 0.24s
-  Dois testes novos; quatro testes já presentes na suíte completa.
+PROVA KAFKA REAL ANTERIOR, NO COMMIT d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4
+12 publicações sintéticas; 8 eventos únicos persistidos.
+Reenvio dos mesmos quatro IDs: 4 inspeções e 4 comandos, sem duplicação.
+Novos IDs 1.0: totais da execução chegaram a 8 inspeções e 8 comandos.
+Offsets: high=12; committed=12.
+API: oito inspeções consultadas.
+Reinício normal do backend: registros preservados; offset continuou em 12.
+Relatório: kafka-real/resultado.json.
+Esta atualização não modifica a lógica backend/fake/consumidor da prova.
 
-Total de testes distintos aprovados: 149.
-Não somar 147 + 6 como testes distintos.
-
-O aviso é StarletteDeprecationWarning sobre uso do httpx pelo TestClient.
-O sandbox bloqueou a comunicação usada pelo TestClient; a verificação passou
-fora do sandbox, exclusivamente com dependências locais de teste.
-
-Kafka: doubles; nenhum broker real ou compartilhado acessado.
-PostgreSQL: container postgres:17-alpine restrito ao localhost, encerrado e
-removido após a suíte.
-Falhas de repositório: injeção controlada; não houve queda física do servidor.
-Python: 3.13.5.
-Build Docker completo: não executado.
-Desenvolvimento e testes ocorreram antes da publicação. Código agora disponível
-em branch nova e PR de rascunho; nenhum merge foi realizado.
+LIMITES
+Resultados locais; não são check-runs do GitHub.
+Nenhuma inferência industrial real ou acesso ao broker compartilhado.
+Não comprovados: queda física durante persistência, P2 e serviços externos.
+Contrato TRA-1 ainda pendente; PR permanece em rascunho, sem merge.
