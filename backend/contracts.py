@@ -1,6 +1,6 @@
 """Validation at the I8 -> A1 contract boundary.
 
-The publisher schema is deliberately strict for schema version 1.0.  The
+The publisher schemas are strict for 1.0 and the local 1.1 candidate.  The
 consumer schema accepts additive fields from future 1.x versions while still
 rejecting fields from the pre-6c contract.
 """
@@ -8,6 +8,8 @@ rejecting fields from the pre-6c contract.
 from __future__ import annotations
 
 import json
+import math
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Mapping
 from uuid import UUID
@@ -50,13 +52,15 @@ def validate_piece_analysis(
 ) -> dict[str, Any]:
     """Validate an ``ods.i8.piece_analysis`` event received by A1.
 
-    ``strict_publisher=True`` applies the exact producer contract for version
-    1.0.  The default is the A1 consumer gate: it accepts additive 1.x changes
+    ``strict_publisher=True`` selects the exact 1.0 or candidate 1.1 producer
+    contract. The default A1 consumer gate accepts additive 1.x changes
     but never accepts the old ``ods.ver1`` payload vocabulary.
     """
 
     schema_name = (
-        "i8-piece-analysis.publish.schema.json"
+        ("i8-piece-analysis.publish.1.1.schema.json"
+         if isinstance(event, Mapping) and event.get("schema_version") == "1.1"
+         else "i8-piece-analysis.publish.schema.json")
         if strict_publisher
         else "i8-piece-analysis.consume.schema.json"
     )
@@ -66,6 +70,18 @@ def validate_piece_analysis(
     errors = sorted(validator.iter_errors(event), key=lambda item: list(item.path))
     if errors:
         raise ContractValidationError(_format_error(errors[0]))
+
+    # JSON Schema date-time checking can be unavailable without optional extras.
+    # Keep impossible dates and non-finite Python numbers out of the runtime gate.
+    for field in ("captured_at", "published_at", "occurred_at"):
+        if field in event:
+            try:
+                datetime.strptime(event[field], "%Y-%m-%dT%H:%M:%S.%fZ")
+            except ValueError as exc:
+                raise ContractValidationError(f"{field}: data/hora inválida") from exc
+    for field in ("confidence", "similarity"):
+        if not math.isfinite(event["payload"][field]):
+            raise ContractValidationError(f"payload.{field}: deve ser finito")
 
     _validate_uuid4(str(event["message_id"]), "message_id")
     _validate_uuid4(str(event["session_id"]), "session_id")

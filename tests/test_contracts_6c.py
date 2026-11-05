@@ -43,6 +43,7 @@ def test_invalid_examples_are_rejected(path: Path):
 def test_consumer_accepts_additive_minor_but_publisher_stays_strict():
     event = read_json(VALID / "i8-piece-conforming.json")
     event["schema_version"] = "1.1"
+    event["occurred_at"] = event["published_at"]
     event["payload"]["model_diagnostics"] = {"latency_ms": 18.2}
 
     validate_piece_analysis(event)

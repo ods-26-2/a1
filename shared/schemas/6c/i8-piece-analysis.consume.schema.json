@@ -18,18 +18,53 @@
     "payload"
   ],
   "properties": {
-    "message_type": { "const": "event" },
-    "message_id": { "type": "string", "format": "uuid" },
-    "schema": { "const": "ods.i8.piece_analysis" },
-    "schema_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
-    "producer": { "const": "I8" },
-    "published_at": { "type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$" },
-    "captured_at": { "type": "string", "format": "date-time", "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$" },
-    "source_id": { "type": "string", "minLength": 1 },
-    "session_id": { "type": "string", "format": "uuid" },
-    "sequence": { "type": "integer", "minimum": 0 },
-    "artifact_version": { "type": "string", "minLength": 1 },
-    "correlation_id": { "type": "string", "format": "uuid" },
+    "message_type": {
+      "const": "event"
+    },
+    "message_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "schema": {
+      "const": "ods.i8.piece_analysis"
+    },
+    "schema_version": {
+      "type": "string",
+      "pattern": "^1\\.[0-9]+$"
+    },
+    "producer": {
+      "const": "I8"
+    },
+    "published_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "captured_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
+    },
+    "source_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "session_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "sequence": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "artifact_version": {
+      "type": "string",
+      "minLength": 1
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
     "payload": {
       "type": "object",
       "required": [
@@ -42,44 +77,143 @@
         "similarity"
       ],
       "properties": {
-        "frame_index": { "type": "integer", "minimum": 0 },
-        "detection_id": { "type": "integer", "minimum": 0 },
+        "frame_index": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "detection_id": {
+          "type": "integer",
+          "minimum": 0
+        },
         "bbox": {
           "type": "array",
-          "items": { "type": "integer", "minimum": 0 },
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
           "minItems": 4,
           "maxItems": 4
         },
         "result": {
-          "enum": ["CONFORMING", "NON_CONFORMING", "ANOMALY", "UNCERTAIN"]
+          "enum": [
+            "CONFORMING",
+            "NON_CONFORMING",
+            "ANOMALY",
+            "UNCERTAIN"
+          ]
         },
-        "defect_class": { "type": "string", "minLength": 1 },
-        "taxonomy_version": { "type": "string", "minLength": 1 },
-        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
-        "similarity": { "type": "number", "minimum": 0, "maximum": 1 }
+        "defect_class": {
+          "type": "string",
+          "minLength": 1
+        },
+        "taxonomy_version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "similarity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        }
       },
       "allOf": [
         {
-          "if": { "properties": { "result": { "const": "NON_CONFORMING" } } },
-          "then": { "required": ["defect_class"] },
-          "else": { "not": { "required": ["defect_class"] } }
+          "if": {
+            "properties": {
+              "result": {
+                "const": "NON_CONFORMING"
+              }
+            }
+          },
+          "then": {
+            "required": [
+              "defect_class"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "defect_class"
+              ]
+            }
+          }
         },
         {
           "not": {
             "anyOf": [
-              { "required": ["piece_id"] },
-              { "required": ["classification"] },
-              { "required": ["evidence"] },
-              { "required": ["status"] },
-              { "required": ["consequence"] },
-              { "required": ["image_url"] }
+              {
+                "required": [
+                  "piece_id"
+                ]
+              },
+              {
+                "required": [
+                  "classification"
+                ]
+              },
+              {
+                "required": [
+                  "evidence"
+                ]
+              },
+              {
+                "required": [
+                  "status"
+                ]
+              },
+              {
+                "required": [
+                  "consequence"
+                ]
+              },
+              {
+                "required": [
+                  "image_url"
+                ]
+              }
             ]
           }
         }
       ],
       "additionalProperties": true
+    },
+    "occurred_at": {
+      "type": "string",
+      "format": "date-time",
+      "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}\\.[0-9]{3}Z$"
     }
   },
-  "not": { "required": ["target"] },
-  "additionalProperties": true
+  "not": {
+    "required": [
+      "target"
+    ]
+  },
+  "additionalProperties": true,
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "schema_version": {
+            "not": {
+              "const": "1.0"
+            }
+          }
+        },
+        "required": [
+          "schema_version"
+        ]
+      },
+      "then": {
+        "required": [
+          "occurred_at"
+        ]
+      }
+    }
+  ],
+  "$comment": "Migração candidata: 1.0 mantém compatibilidade; 1.1 e futuros 1.x preservam occurred_at tipado. Aceite externo pendente."
 }
