@@ -1,4 +1,4 @@
-# Parte 1 — testes do contrato Kafka 1.1
+# Sprint 3 — Evidências do contrato Kafka 1.1
 
 Esta alteração prepara o contrato que I8 publica e A1 recebe. Não implementa o publisher Kafka nem conclui a integração com broker real. O aceite externo de TRA-1 permanece pendente.
 
@@ -30,4 +30,9 @@ python scripts/validar_interoperabilidade_kafka_1_1.py --a1 /caminho/a1 --i8 /ca
 
 Leia primeiro a descrição do PR. Depois abra **Files changed** para ver o código, os exemplos e os testes. A aba **Checks** mostra apenas testes automáticos do GitHub, quando houver uma execução. Não é necessário usar o Codex para ler esses resultados.
 
-A suíte completa de inferência com Torch não foi executada para esta alteração de contrato. A suíte completa de backend A1 e os testes de transporte pertencem ao PR separado da parte 2.
+A suíte completa de inferência com Torch não foi executada para esta alteração de contrato. A suíte completa de backend A1 e os testes de transporte pertencem ao PR de ingestão Kafka A1.
+
+
+## Referência de planejamento
+
+Este escopo integra a Sprint 3 do plano coletivo de fechamento. O [índice da Sprint 3](../../sprints/sprint-3.md) relaciona os assuntos e as atividades do plano.
