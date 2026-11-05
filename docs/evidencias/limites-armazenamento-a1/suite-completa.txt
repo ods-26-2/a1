@@ -1,0 +1,140 @@
+ Container ver1-a1-bounds-db-1 Running
+ Container ver1-a1-bounds-db-1 Waiting
+ Container ver1-a1-bounds-db-1 Healthy
+ Container ver1-a1-bounds-tests-run-f9239fcebf8a Creating
+ Container ver1-a1-bounds-tests-run-f9239fcebf8a Created
+Contratos 6c válidos: 4 resultados; taxonomia defects-a1-1.0.0; 3 classes.
+........................................................................ [ 40%]
+........................................................................ [ 80%]
+...................................                                      [100%]
+=============================== warnings summary ===============================
+../opt/venv/lib/python3.11/site-packages/fastapi/testclient.py:1
+  /opt/venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+179 passed, 1 warning in 4.29s
+
+> test
+> node --test "frontend/tests/*.test.js"
+
+TAP version 13
+# Subtest: guarda de contrato InspectionView
+    # Subtest: aceita as quatro fixtures da API fake
+    ok 1 - aceita as quatro fixtures da API fake
+      ---
+      duration_ms: 4.945846
+      type: 'test'
+      ...
+    # Subtest: aceita somente os pares de origem legado 1.0 e industrial 2.0
+    ok 2 - aceita somente os pares de origem legado 1.0 e industrial 2.0
+      ---
+      duration_ms: 0.979568
+      type: 'test'
+      ...
+    # Subtest: recusa vocabulário legado e defeito fora de NON_CONFORMING
+    ok 3 - recusa vocabulário legado e defeito fora de NON_CONFORMING
+      ---
+      duration_ms: 0.949903
+      type: 'test'
+      ...
+    # Subtest: exige placeholder sem URL quando a evidência não está disponível
+    ok 4 - exige placeholder sem URL quando a evidência não está disponível
+      ---
+      duration_ms: 0.512893
+      type: 'test'
+      ...
+    # Subtest: recusa confiança fora de 0–1
+    ok 5 - recusa confiança fora de 0–1
+      ---
+      duration_ms: 0.535239
+      type: 'test'
+      ...
+    1..5
+ok 1 - guarda de contrato InspectionView
+  ---
+  duration_ms: 8.78334
+  type: 'suite'
+  ...
+# Subtest: API fake
+    # Subtest: representa os quatro result e os três estados de triagem
+    ok 1 - representa os quatro result e os três estados de triagem
+      ---
+      duration_ms: 1006.422941
+      type: 'test'
+      ...
+    # Subtest: simula API offline, S4 indisponível e contrato inválido
+    ok 2 - simula API offline, S4 indisponível e contrato inválido
+      ---
+      duration_ms: 755.741101
+      type: 'test'
+      ...
+    # Subtest: registra revisão sem apagar a decisão automática e sem persistir
+    ok 3 - registra revisão sem apagar a decisão automática e sem persistir
+      ---
+      duration_ms: 754.870866
+      type: 'test'
+      ...
+    # Subtest: resolve a URL da evidência a partir da raiz do repositório
+    ok 4 - resolve a URL da evidência a partir da raiz do repositório
+      ---
+      duration_ms: 251.891719
+      type: 'test'
+      ...
+    # Subtest: corrige estado/classe, relê a decisão e atualiza a fila preservando I8
+    ok 5 - corrige estado/classe, relê a decisão e atualiza a fila preservando I8
+      ---
+      duration_ms: 2775.300457
+      type: 'test'
+      ...
+    # Subtest: exige motivo e recusa classe desconhecida ou correção inconsistente
+    ok 6 - exige motivo e recusa classe desconhecida ou correção inconsistente
+      ---
+      duration_ms: 1510.406877
+      type: 'test'
+      ...
+    1..6
+ok 2 - API fake
+  ---
+  duration_ms: 7055.1253
+  type: 'suite'
+  ...
+# Subtest: API real (HTTP)
+    # Subtest: usa as mesmas rotas e a mesma guarda que a API fake
+    ok 1 - usa as mesmas rotas e a mesma guarda que a API fake
+      ---
+      duration_ms: 1.434596
+      type: 'test'
+      ...
+    # Subtest: trata 204 como ausência de inspeção e erro de rede como OFFLINE
+    ok 2 - trata 204 como ausência de inspeção e erro de rede como OFFLINE
+      ---
+      duration_ms: 0.242627
+      type: 'test'
+      ...
+    # Subtest: converte HTTP de erro em A1ApiError
+    ok 3 - converte HTTP de erro em A1ApiError
+      ---
+      duration_ms: 0.109429
+      type: 'test'
+      ...
+    1..3
+ok 3 - API real (HTTP)
+  ---
+  duration_ms: 1.901267
+  type: 'suite'
+  ...
+1..3
+# tests 14
+# suites 3
+# pass 14
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 7108.227579
+npm notice
+npm notice New major version of npm available! 10.9.9 -> 12.2.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.2
+npm notice To update run: npm install -g npm@12.2.2
+npm notice

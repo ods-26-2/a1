@@ -85,6 +85,27 @@ def inspection_id_for(event: Mapping[str, Any]) -> str:
     return f"INSP-{event['message_id']}"
 
 
+def _validate_storage_bounds(event: Mapping[str, Any]) -> None:
+    """Check A1 column limits after the shared contract has validated types.
+
+    These are local persistence limits, not changes to the I8 wire contract.
+    Permanent input errors must be recorded as rejections before Kafka commits,
+    rather than retried as if PostgreSQL were temporarily unavailable.
+    """
+    payload = event["payload"]
+    for path, value, maximum in (
+        ("sequence", event["sequence"], 2**63 - 1),
+        ("payload.frame_index", payload["frame_index"], 2**63 - 1),
+        ("payload.detection_id", payload["detection_id"], 2**31 - 1),
+        *((f"payload.bbox[{index}]", value, 2**31 - 1)
+          for index, value in enumerate(payload["bbox"])),
+    ):
+        if value > maximum:
+            raise ContractValidationError(
+                f"{path}: excede limite de armazenamento A1 ({maximum})"
+            )
+
+
 class IngestionService:
     def __init__(
         self,
@@ -102,6 +123,7 @@ class IngestionService:
             if not isinstance(event, Mapping):
                 raise ContractValidationError("$: o evento deve ser um objeto JSON")
             validated = validate_piece_analysis(event)
+            _validate_storage_bounds(validated)
             decision = self.triage.decide(validated["payload"])
         except (ContractValidationError, TaxonomyError, TriageError) as exc:
             return self._reject(event, received_at, str(exc))

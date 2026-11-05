@@ -1,0 +1,67 @@
+ Container ver1-a1-bounds-db-1 Running
+ Image ver1-a1-bounds-tests Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 703B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.53kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:22-bookworm-slim
+#3 DONE 1.1s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 194B done
+#4 DONE 0.0s
+
+#5 [internal] load build context
+#5 transferring context: 16.08kB done
+#5 DONE 0.0s
+
+#6 [tests 1/6] FROM docker.io/library/node:22-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d
+#6 resolve docker.io/library/node:22-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d 0.0s done
+#6 DONE 0.0s
+
+#7 [tests 2/6] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-venv     && rm -rf /var/lib/apt/lists/*     && python3 -m venv /opt/venv
+#7 CACHED
+
+#8 [tests 3/6] WORKDIR /app
+#8 CACHED
+
+#9 [tests 4/6] COPY requirements-contracts.txt requirements-backend.txt requirements-tests.txt ./
+#9 CACHED
+
+#10 [tests 5/6] RUN pip install --no-cache-dir -r requirements-tests.txt
+#10 CACHED
+
+#11 [tests 6/6] COPY . .
+#11 DONE 0.0s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 0.2s done
+#12 exporting manifest sha256:2d1498c9a23274bd15bb05ef96eeb1c36fa74a20be33cb081a63b954cf3d93ed done
+#12 exporting config sha256:7c352e7ff83488aa4ffd564495cd3ff840bae5746a664e83f0d8e29f86511505 done
+#12 exporting attestation manifest sha256:8e8060f1b484a83b8b3e739bc94d2b6255735cc86ec9e23b9f881853470aef4d done
+#12 exporting manifest list sha256:e9e7b1d9c1fd0a123c421d2091873a953a3f0b9ef81138629830f53861570e09 done
+#12 naming to docker.io/library/ver1-a1-bounds-tests:latest done
+#12 unpacking to docker.io/library/ver1-a1-bounds-tests:latest 0.0s done
+#12 DONE 0.3s
+
+#13 resolving provenance for metadata file
+#13 DONE 0.0s
+ Image ver1-a1-bounds-tests Built
+ Container ver1-a1-bounds-db-1 Waiting
+ Container ver1-a1-bounds-db-1 Healthy
+ Container ver1-a1-bounds-tests-run-9f869e550192 Creating
+ Container ver1-a1-bounds-tests-run-9f869e550192 Created
+........................................................................ [ 97%]
+..                                                                       [100%]
+=============================== warnings summary ===============================
+../opt/venv/lib/python3.11/site-packages/fastapi/testclient.py:1
+  /opt/venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+74 passed, 1 warning in 2.26s

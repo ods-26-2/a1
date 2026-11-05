@@ -1,0 +1,121 @@
+ Volume ver1-a1-bounds_a1-db-data Creating
+ Volume ver1-a1-bounds_a1-db-data Creating
+ Network ver1-a1-bounds_default Creating
+ Network ver1-a1-bounds_default Creating
+ Volume ver1-a1-bounds_a1-db-data Created
+ Volume ver1-a1-bounds_a1-db-data Created
+ Network ver1-a1-bounds_default Created
+ Network ver1-a1-bounds_default Created
+ Container ver1-a1-bounds-db-1 Creating
+ Container ver1-a1-bounds-db-1 Created
+ Container ver1-a1-bounds-db-1 Starting
+ Container ver1-a1-bounds-db-1 Started
+ Image ver1-a1-bounds-tests Building
+#1 [internal] load local bake definitions
+#1 reading from stdin 703B done
+#1 DONE 0.0s
+
+#2 [internal] load build definition from Dockerfile
+#2 transferring dockerfile: 2.53kB done
+#2 DONE 0.0s
+
+#3 [internal] load metadata for docker.io/library/node:22-bookworm-slim
+#3 DONE 1.2s
+
+#4 [internal] load .dockerignore
+#4 transferring context: 194B done
+#4 DONE 0.0s
+
+#5 [tests 1/6] FROM docker.io/library/node:22-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d
+#5 resolve docker.io/library/node:22-bookworm-slim@sha256:5ec23b7c622b00547753bc6ffd78085dd868a68aeb41c8e0a1418f033e13d96d 0.0s done
+#5 DONE 0.0s
+
+#6 [internal] load build context
+#6 transferring context: 7.50MB 0.0s done
+#6 DONE 0.0s
+
+#7 [tests 2/6] RUN apt-get update     && apt-get install -y --no-install-recommends python3 python3-venv     && rm -rf /var/lib/apt/lists/*     && python3 -m venv /opt/venv
+#7 CACHED
+
+#8 [tests 3/6] WORKDIR /app
+#8 CACHED
+
+#9 [tests 4/6] COPY requirements-contracts.txt requirements-backend.txt requirements-tests.txt ./
+#9 CACHED
+
+#10 [tests 5/6] RUN pip install --no-cache-dir -r requirements-tests.txt
+#10 CACHED
+
+#11 [tests 6/6] COPY . .
+#11 DONE 0.0s
+
+#12 exporting to image
+#12 exporting layers
+#12 exporting layers 0.2s done
+#12 exporting manifest sha256:9da1daff723269a87e67511f8604df4eeeaedf0008927f605968e0a231ad774b done
+#12 exporting config sha256:65d8942fd3b23c24f3e40ac05d2248ab1eb8e9b0470bd121aa9744e7504bd4b4 done
+#12 exporting attestation manifest sha256:da7549b666e433fb271942c8304fc1e2511d97ecec72bcb49cdf93e15dca9174 done
+#12 exporting manifest list sha256:dc74632d832840d6cd873c7fb812f7e7791de8e148947d937bc7ded8e203e905 done
+#12 naming to docker.io/library/ver1-a1-bounds-tests:latest done
+#12 unpacking to docker.io/library/ver1-a1-bounds-tests:latest 0.0s done
+#12 DONE 0.3s
+
+#13 resolving provenance for metadata file
+#13 DONE 0.0s
+ Image ver1-a1-bounds-tests Built
+ Container ver1-a1-bounds-db-1 Waiting
+ Container ver1-a1-bounds-db-1 Healthy
+ Container ver1-a1-bounds-tests-run-aedf14d7acca Creating
+ Container ver1-a1-bounds-tests-run-aedf14d7acca Created
+F                                                                        [100%]
+=================================== FAILURES ===================================
+__ test_oversized_metadata_is_rejected_before_next_message[detection_id-2.0] ___
+
+client = <starlette.testclient.TestClient object at 0x7f186f7de9d0>
+sql = <function sql.<locals>.run at 0x7f186f7f4cc0>, version = '2.0'
+field = 'detection_id', value = 2147483648, path = 'payload.detection_id'
+
+    @pytest.mark.parametrize('version', ['1.0', '2.0'])
+    @pytest.mark.parametrize('field,value,path', OVERSIZED_METADATA)
+    def test_oversized_metadata_is_rejected_before_next_message(client, sql, version, field, value, path):
+        valid = default_events(False, version)[0]
+        invalid = copy.deepcopy(valid)
+        invalid['message_id'] = str(uuid4())
+        target = invalid if field == 'sequence' else invalid['payload']
+        target[field] = value
+        # The shared contract remains unchanged; storage bounds belong to A1 ingestion.
+        validate_piece_analysis(invalid)
+        worker, kafka = subscriber(client.app.state.services.ingestion, [
+            Message(json.dumps(invalid).encode(), 0), Message(json.dumps(valid).encode(), 1),
+        ])
+        original_commit = kafka.commit
+
+        def commit_after_durable_result(*, message, asynchronous):
+            if message.offset() == 0:
+                assert sql('SELECT count(*) FROM ingestion_failures')[0][0] == 1
+            else:
+                assert sql('SELECT count(*) FROM inspections')[0][0] == 1
+            return original_commit(message=message, asynchronous=asynchronous)
+
+        kafka.commit = commit_after_durable_result
+        worker.comecar_a_consumir()
+>       assert kafka.commits == [0, 1] and kafka.closed
+E       assert ([] == [0, 1]
+E
+E         Right contains 2 more items, first extra item: 0
+E         Use -v to get more diff)
+
+tests/test_kafka_ingestion_db.py:124: AssertionError
+------------------------------ Captured log call -------------------------------
+WARNING  backend.kafka_client:kafka_client.py:115 Falha ao persistir mensagem: NumericValueOutOfRange: integer out of range; tentativa 1/3
+WARNING  backend.kafka_client:kafka_client.py:115 Falha ao persistir mensagem: NumericValueOutOfRange: integer out of range; tentativa 2/3
+WARNING  backend.kafka_client:kafka_client.py:115 Falha ao persistir mensagem: NumericValueOutOfRange: integer out of range; tentativa 3/3
+=============================== warnings summary ===============================
+tests/test_kafka_ingestion_db.py::test_oversized_metadata_is_rejected_before_next_message[detection_id-2.0]
+  /opt/venv/lib/python3.11/site-packages/fastapi/testclient.py:1: StarletteDeprecationWarning: Using `httpx` with `starlette.testclient` is deprecated; install `httpx2` instead.
+    from starlette.testclient import TestClient as TestClient  # noqa
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+=========================== short test summary info ============================
+FAILED tests/test_kafka_ingestion_db.py::test_oversized_metadata_is_rejected_before_next_message[detection_id-2.0]
+1 failed, 1 warning in 0.37s

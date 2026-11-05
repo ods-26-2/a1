@@ -1,7 +1,12 @@
 """Real PostgreSQL ingestion through the subscriber, with Kafka I/O doubled."""
+import copy
 import json
+from uuid import uuid4
+
+import pytest
 
 from backend.config import KafkaSettings
+from backend.contracts import validate_piece_analysis
 from backend.fake_producer import default_events
 from backend.kafka_client import A1KafkaConsumer
 from test_kafka_transport import ConsumerDouble, Message
@@ -77,5 +82,86 @@ def test_failed_rejection_storage_blocks_offset_and_later_record(client, sql, mo
     worker, kafka = subscriber(client.app.state.services.ingestion,
                                [Message(b'invalid', 0), Message(b'{}', 1)])
     worker.comecar_a_consumir()
+    assert kafka.commits == [] and len(kafka.messages) == 1
+    assert sql('SELECT count(*) FROM inspections')[0][0] == 0
+
+
+OVERSIZED_METADATA = [
+    pytest.param('sequence', 2**63, 'sequence', id='sequence'),
+    pytest.param('frame_index', 2**63, 'payload.frame_index', id='frame_index'),
+    pytest.param('detection_id', 2**31, 'payload.detection_id', id='detection_id'),
+    pytest.param('bbox', [2**31, 0, 2**31 + 1, 10], 'payload.bbox[0]', id='bbox_x_min'),
+    pytest.param('bbox', [0, 2**31, 10, 2**31 + 1], 'payload.bbox[1]', id='bbox_y_min'),
+    pytest.param('bbox', [0, 0, 2**31, 10], 'payload.bbox[2]', id='bbox_x_max'),
+    pytest.param('bbox', [0, 0, 10, 2**31], 'payload.bbox[3]', id='bbox_y_max'),
+]
+
+
+@pytest.mark.parametrize('version', ['1.0', '2.0'])
+@pytest.mark.parametrize('field,value,path', OVERSIZED_METADATA)
+def test_oversized_metadata_is_rejected_before_next_message(client, sql, version, field, value, path):
+    valid = default_events(False, version)[0]
+    invalid = copy.deepcopy(valid)
+    invalid['message_id'] = str(uuid4())
+    target = invalid if field == 'sequence' else invalid['payload']
+    target[field] = value
+    # The shared contract remains unchanged; storage bounds belong to A1 ingestion.
+    validate_piece_analysis(invalid)
+    worker, kafka = subscriber(client.app.state.services.ingestion, [
+        Message(json.dumps(invalid).encode(), 0), Message(json.dumps(valid).encode(), 1),
+    ])
+    original_commit = kafka.commit
+
+    def commit_after_durable_result(*, message, asynchronous):
+        if message.offset() == 0:
+            assert sql('SELECT count(*) FROM ingestion_failures')[0][0] == 1
+        else:
+            assert sql('SELECT count(*) FROM inspections')[0][0] == 1
+        return original_commit(message=message, asynchronous=asynchronous)
+
+    kafka.commit = commit_after_durable_result
+    worker.comecar_a_consumir()
+    assert kafka.commits == [0, 1] and kafka.closed
+    assert sql('SELECT count(*) FROM inspections')[0][0] == 1
+    assert sql('SELECT count(*) FROM commands')[0][0] == 1
+    assert sql("SELECT count(*) FROM audit_events WHERE event_type='INGESTED'")[0][0] == 1
+    failures = sql('SELECT message_id, reason, event FROM ingestion_failures')
+    assert len(failures) == 1
+    assert failures[0][0] == invalid['message_id']
+    assert path in failures[0][1] and 'armazenamento' in failures[0][1]
+    assert failures[0][2] == invalid
+
+
+@pytest.mark.parametrize('version', ['1.0', '2.0'])
+def test_maximum_storage_integers_remain_accepted(client, sql, version):
+    event = copy.deepcopy(default_events(False, version)[0])
+    event['sequence'] = 2**63 - 1
+    event['payload'].update(frame_index=2**63 - 1, detection_id=2**31 - 1,
+                            bbox=[2**31 - 2, 2**31 - 2, 2**31 - 1, 2**31 - 1])
+    worker, kafka = subscriber(client.app.state.services.ingestion,
+                               [Message(json.dumps(event).encode())])
+    worker.comecar_a_consumir()
+    assert kafka.commits == [0]
+    assert sql('SELECT sequence, frame_index, detection_id, bbox FROM inspections') == [
+        (2**63 - 1, 2**63 - 1, 2**31 - 1, event['payload']['bbox'])]
+    assert sql('SELECT count(*) FROM ingestion_failures')[0][0] == 0
+
+
+def test_failed_storage_rejection_never_commits_or_skips_message(client, sql, monkeypatch):
+    valid = default_events(False)[0]
+    invalid = copy.deepcopy(valid)
+    invalid['payload']['detection_id'] = 2**31
+    calls = []
+
+    def fail(**kwargs):
+        calls.append(kwargs)
+        raise RuntimeError('failure store offline')
+
+    monkeypatch.setattr(client.app.state.services.repository, 'record_failure', fail)
+    worker, kafka = subscriber(client.app.state.services.ingestion, [
+        Message(json.dumps(invalid).encode(), 0), Message(json.dumps(valid).encode(), 1),
+    ])
+    worker.comecar_a_consumir()
+    assert len(calls) == 3
     assert kafka.commits == [] and len(kafka.messages) == 1
     assert sql('SELECT count(*) FROM inspections')[0][0] == 0

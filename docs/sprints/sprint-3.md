@@ -15,6 +15,7 @@ Escopo: tópico/schema funcional, versão final 2.0, captured_at/occurred_at/pub
 Escopo: consumidor, confirmação após persistência/rejeição durável, retry, produtor fake, saúde, shutdown e contexto de testes Docker.
 
 - [PR A1 #6](https://github.com/ods-26-2/a1/pull/6).
+- [Correção de números fora do limite de armazenamento](../evidencias/limites-armazenamento-a1/README.md).
 - [Evidências da ingestão](https://github.com/ods-26-2/a1/blob/fix/consumidor-kafka-confiavel/docs/evidencias/ingestao-kafka-a1/README.md).
 - [Roteiro Linux e laboratório](https://github.com/ods-26-2/a1/blob/fix/consumidor-kafka-confiavel/validacao-local/README.md).
 
