@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:ods:i8:piece-analysis:1.1-candidate",
-  "title": "Candidato VER-1: produtor I8 1.1 — aceite TRA-1 pendente",
+  "$id": "urn:ods:industria:defeito-classificado:2.0",
+  "title": "I8 industrial defect classification 2.0",
   "type": "object",
   "required": [
     "message_type",
@@ -48,10 +48,10 @@
       "$ref": "#/$defs/uuid"
     },
     "schema": {
-      "const": "ods.i8.piece_analysis"
+      "const": "ods.industria.defeito_classificado"
     },
     "schema_version": {
-      "const": "1.1"
+      "const": "2.0"
     },
     "producer": {
       "const": "I8"
@@ -153,5 +153,5 @@
       "$ref": "#/$defs/time"
     }
   },
-  "$comment": "Candidato local, não homologado. occurred_at = conclusão da análise I8; captured_at = captura original; published_at = publicação inicial. Runtime valida área da bbox, valores finitos e taxonomia carregada. Não altera os contratos 1.0 existentes."
+  "$comment": "Contrato industrial 2.0. occurred_at = conclusao da analise I8; captured_at = captura original; published_at = preparacao da primeira publicacao. Runtime valida bbox, scores finitos e taxonomia. Legado ods.i8.piece_analysis 1.0 permanece explicito; candidata 1.1 substituida."
 }

@@ -1,6 +1,6 @@
-"""Validate the local 1.1 candidate against the actual A1 and I8 adapters.
+"""Validate the final Kafka 2.0 contract against the A1 and I8 adapters.
 
-Usage: python scripts/validar_interoperabilidade_kafka_1_1.py --a1 /repo/a1 --i8 /repo/i8
+Usage: python scripts/validar_interoperabilidade_kafka_2_0.py --a1 /repo/a1 --i8 /repo/i8
 Requires jsonschema. Does not import Torch, open a database or connect to Kafka.
 """
 import argparse
@@ -44,7 +44,7 @@ def read(path):
 
 
 def fixture(name='conforming'):
-    return read(A1 / f'shared/mocks/kafka-1.1-candidate/i8-piece-{name}.json')
+    return read(A1 / f'shared/mocks/kafka-2.0/i8-piece-{name}.json')
 
 
 def schema(path):
@@ -53,7 +53,7 @@ def schema(path):
     return Draft202012Validator(value, format_checker=FormatChecker())
 
 
-class CandidateContract(unittest.TestCase):
+class FinalContract(unittest.TestCase):
     def assert_both_reject(self, event):
         with self.assertRaises(i8.ContractError):
             i8.validate_piece_analysis(event, taxonomy)
@@ -64,19 +64,19 @@ class CandidateContract(unittest.TestCase):
 
     def test_01_schema_bytes_are_identical_and_schemas_well_formed(self):
         self.assertEqual(
-            (I8 / 'shared/schemas/6c/i8-piece-analysis.1.1.schema.json').read_bytes(),
-            (A1 / 'shared/schemas/6c/i8-piece-analysis.publish.1.1.schema.json').read_bytes())
+            (I8 / 'shared/schemas/6c/i8-defeito-classificado.2.0.schema.json').read_text(encoding='utf-8'),
+            (A1 / 'shared/schemas/6c/i8-defeito-classificado.publish.2.0.schema.json').read_text(encoding='utf-8'))
         for root in (A1, I8):
             for path in (root / 'shared/schemas/6c').glob('*.json'):
                 with self.subTest(path=path):
                     Draft202012Validator.check_schema(read(path))
 
     def test_02_four_results_pass_all_real_contract_validators(self):
-        strict = schema(I8 / 'shared/schemas/6c/i8-piece-analysis.1.1.schema.json')
+        strict = schema(I8 / 'shared/schemas/6c/i8-defeito-classificado.2.0.schema.json')
         for result in ('conforming', 'non-conforming', 'anomaly', 'uncertain'):
             with self.subTest(result=result):
                 event = fixture(result)
-                self.assertEqual(event, read(I8 / f'shared/mocks/kafka-1.1-candidate/i8-piece-{result}.json'))
+                self.assertEqual(event, read(I8 / f'shared/mocks/kafka-2.0/i8-piece-{result}.json'))
                 strict.validate(event)
                 self.assertEqual(i8.validate_piece_analysis(event, taxonomy), event)
                 self.assertEqual(a1.validate_piece_analysis(event), event)
@@ -110,8 +110,8 @@ class CandidateContract(unittest.TestCase):
 
     def test_05_wrong_envelope_values_and_time_formats(self):
         changes = [
-            ('schema_version', '2.0'), ('schema_version', '1.1.0'),
-            ('schema', 'ods.industria.defeito_classificado'),
+            ('schema_version', '1.1'), ('schema_version', '2.1'),
+            ('schema', 'ods.i8.piece_analysis'),
             ('schema', 'ods.ver1.i8_piece_analyzed'),
             ('message_type', 'command'), ('producer', 'A1'),
             ('message_id', 'not-a-uuid'), ('session_id', 'not-a-uuid'),
@@ -177,15 +177,11 @@ class CandidateContract(unittest.TestCase):
                 a1.validate_piece_analysis(event)
                 a1.validate_piece_analysis(event, strict_publisher=True)
 
-    def test_10_additive_consumption_stays_separate_from_strict_publication(self):
+    def test_10_unreleased_minor_and_additive_payload_are_rejected(self):
         event = fixture()
-        event['schema_version'] = '1.2'
+        event['schema_version'] = '2.1'
         event['payload']['diagnostics'] = {'local_ms': 12}
-        a1.validate_piece_analysis(event)
-        with self.assertRaises(a1.ContractValidationError):
-            a1.validate_piece_analysis(event, strict_publisher=True)
-        with self.assertRaises(i8.ContractError):
-            i8.validate_piece_analysis(event, taxonomy)
+        self.assert_both_reject(event)
 
     def test_11_revalidation_does_not_mutate_event_identity_or_times(self):
         event = fixture()
@@ -195,19 +191,20 @@ class CandidateContract(unittest.TestCase):
             a1.validate_piece_analysis(event)
         self.assertEqual(event, before)
 
-    def test_12_topic_and_schema_are_an_explicit_candidate_decision(self):
-        self.assertEqual(fixture()['schema'], 'ods.i8.piece_analysis')
+    def test_12_topic_and_schema_are_the_final_functional_identity(self):
+        self.assertEqual(fixture()['schema'], 'ods.industria.defeito_classificado')
+        self.assertEqual(fixture()['schema_version'], '2.0')
         self.assertNotIn('torch', sys.modules)
 
     def test_13_persisted_negative_examples_are_identical_and_rejected(self):
-        for path in (A1 / 'shared/mocks/kafka-1.1-candidate/invalid').glob('*.json'):
+        for path in (A1 / 'shared/mocks/kafka-2.0/invalid').glob('*.json'):
             with self.subTest(path=path):
                 event = read(path)
-                self.assertEqual(event, read(I8 / 'shared/mocks/kafka-1.1-candidate/invalid' / path.name))
+                self.assertEqual(event, read(I8 / 'shared/mocks/kafka-2.0/invalid' / path.name))
                 self.assert_both_reject(event)
 
 
 if __name__ == '__main__':
-    suite = unittest.defaultTestLoader.loadTestsFromTestCase(CandidateContract)
+    suite = unittest.defaultTestLoader.loadTestsFromTestCase(FinalContract)
     result = unittest.TextTestRunner(verbosity=2).run(suite)
     sys.exit(0 if result.wasSuccessful() else 1)

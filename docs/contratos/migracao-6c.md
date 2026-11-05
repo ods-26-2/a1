@@ -6,15 +6,18 @@ dependem dos acordos com B1/B5.
 
 ## I8 para A1
 
-O evento canônico é `ods.i8.piece_analysis`, perfil EV-SINAL. I8 publica por
-peça e A1 consome. O payload contém `frame_index`, `detection_id`, `bbox`,
+O contrato 6c legado é `ods.i8.piece_analysis` 1.0, perfil EV-SINAL. O contrato
+Kafka final é `ods.industria.defeito_classificado` 2.0. I8 publica por peça e
+A1 consome. O payload contém `frame_index`, `detection_id`, `bbox`,
 `result`, `taxonomy_version`, `confidence`, `similarity` e, somente em
 `NON_CONFORMING`, `defect_class`.
 
-O schema de publicação é estrito para `1.0`. O schema de consumo aceita campos
-aditivos de versões `1.x`, mas rejeita campos legados como `piece_id`,
-`classification` e `evidence`. O I8 não inclui mídia, consequência de negócio,
-nome, descrição ou severidade. O A1 solicita evidência a S4 em outro fluxo.
+Durante a migração, o A1 aceita somente os pares explícitos
+`ods.i8.piece_analysis` 1.0 e `ods.industria.defeito_classificado` 2.0. A versão
+2.0 exige `occurred_at`. A candidata 1.1 foi substituída antes da ativação. Os
+schemas rejeitam campos legados como `piece_id`, `classification` e `evidence`.
+O I8 não inclui mídia, consequência de negócio, nome, descrição ou severidade.
+O A1 solicita evidência a S4 em outro fluxo.
 
 Os arquivos antigos `ods.ver1.*`, a taxonomia `shared/defect-categories.json` e
 os mocks usados pelo frontend permanecem apenas para a demonstração anterior.
