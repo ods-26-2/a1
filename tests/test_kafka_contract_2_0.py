@@ -1,10 +1,10 @@
-"""Candidate 1.1 contract examples; runs offline without ML or transport."""
+"""Final Kafka 2.0 contract examples; runs without ML or transport."""
 import json
 from pathlib import Path
 import pytest
 
 ROOT = Path(__file__).resolve().parents[1]
-EXAMPLES = ROOT / 'shared/mocks/kafka-1.1-candidate'
+EXAMPLES = ROOT / 'shared/mocks/kafka-2.0'
 if (ROOT / 'backend').is_dir():
     from backend.contracts import ContractValidationError as Error, validate_piece_analysis
     def validate(event):
@@ -21,11 +21,11 @@ else:
         return validate_piece_analysis(event, Taxonomy())
 
 @pytest.mark.parametrize('path', sorted(EXAMPLES.glob('i8-piece-*.json')))
-def test_candidate_valid_examples(path):
+def test_final_valid_examples(path):
     event = json.loads(path.read_text())
     assert validate(event) == event
 
 @pytest.mark.parametrize('path', sorted((EXAMPLES / 'invalid').glob('*.json')))
-def test_candidate_invalid_examples(path):
+def test_final_invalid_examples(path):
     with pytest.raises(Error):
         validate(json.loads(path.read_text()))

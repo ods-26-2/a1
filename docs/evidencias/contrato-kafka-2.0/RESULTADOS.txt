@@ -1,0 +1,15 @@
+SPRINT 3 — CONTRATO KAFKA 2.0 — RESULTADOS LOCAIS
+Data: 05/11/2026
+
+A1
+75 passed, 29 skipped
+
+I8
+110 passed
+
+Interoperabilidade A1/I8
+13 passed
+
+Os testes ignorados no A1 exigem PostgreSQL configurado. A verificação conjunta
+usa os validadores e catálogos reais, sem abrir conexão com Kafka ou carregar
+Torch. O schema 2.0 e os quatro exemplos válidos são iguais nos dois repositórios.

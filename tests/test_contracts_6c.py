@@ -40,21 +40,34 @@ def test_invalid_examples_are_rejected(path: Path):
         validate_piece_analysis(read_json(path))
 
 
-def test_consumer_accepts_additive_minor_but_publisher_stays_strict():
-    event = read_json(VALID / "i8-piece-conforming.json")
-    event["schema_version"] = "1.1"
-    event["occurred_at"] = event["published_at"]
-    event["payload"]["model_diagnostics"] = {"latency_ms": 18.2}
+def test_final_2_0_passes_publisher_and_consumer_gates():
+    event = read_json(ROOT / "shared/mocks/kafka-2.0/i8-piece-conforming.json")
+    assert validate_piece_analysis(event) == event
+    assert validate_piece_analysis(event, strict_publisher=True) == event
 
-    validate_piece_analysis(event)
-    with pytest.raises(ContractValidationError):
-        validate_piece_analysis(event, strict_publisher=True)
+
+@pytest.mark.parametrize(
+    ("schema", "version"),
+    [
+        ("ods.i8.piece_analysis", "1.1"),
+        ("ods.i8.piece_analysis", "2.0"),
+        ("ods.industria.defeito_classificado", "1.0"),
+        ("ods.industria.defeito_classificado", "2.1"),
+    ],
+)
+def test_only_explicit_legacy_and_final_contract_pairs_are_accepted(schema, version):
+    event = read_json(VALID / "i8-piece-conforming.json")
+    event["schema"] = schema
+    event["schema_version"] = version
+    event["occurred_at"] = event["published_at"]
+    with pytest.raises(ContractValidationError, match="contrato não suportado"):
+        validate_piece_analysis(event)
 
 
 def test_consumer_rejects_unknown_major_and_zero_area_bbox():
     event = read_json(VALID / "i8-piece-conforming.json")
     other_major = copy.deepcopy(event)
-    other_major["schema_version"] = "2.0"
+    other_major["schema_version"] = "3.0"
     with pytest.raises(ContractValidationError):
         validate_piece_analysis(other_major)
 

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://ods.local/contracts/1.x/ods.i8.piece_analysis.consume.schema.json",
-  "title": "ods.i8.piece_analysis - consumidor A1 compatível com 1.x",
+  "$id": "https://ods.local/contracts/1.0/ods.i8.piece_analysis.consume.schema.json",
+  "title": "ods.i8.piece_analysis - consumidor A1 legado 1.0",
   "type": "object",
   "required": [
     "message_type",
@@ -29,8 +29,7 @@
       "const": "ods.i8.piece_analysis"
     },
     "schema_version": {
-      "type": "string",
-      "pattern": "^1\\.[0-9]+$"
+      "const": "1.0"
     },
     "producer": {
       "const": "I8"
@@ -194,26 +193,5 @@
     ]
   },
   "additionalProperties": true,
-  "allOf": [
-    {
-      "if": {
-        "properties": {
-          "schema_version": {
-            "not": {
-              "const": "1.0"
-            }
-          }
-        },
-        "required": [
-          "schema_version"
-        ]
-      },
-      "then": {
-        "required": [
-          "occurred_at"
-        ]
-      }
-    }
-  ],
-  "$comment": "Migração candidata: 1.0 mantém compatibilidade; 1.1 e futuros 1.x preservam occurred_at tipado. Aceite externo pendente."
+  "$comment": "Janela de compatibilidade: somente ods.i8.piece_analysis 1.0. O contrato final usa outro schema e versão major 2.0."
 }

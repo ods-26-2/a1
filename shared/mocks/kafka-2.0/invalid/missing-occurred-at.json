@@ -1,8 +1,8 @@
 {
   "message_type": "event",
   "message_id": "b5eed71a-6974-4c22-90aa-909b7bf7a686",
-  "schema": "ods.i8.piece_analysis",
-  "schema_version": "1.1",
+  "schema": "ods.industria.defeito_classificado",
+  "schema_version": "2.0",
   "producer": "I8",
   "published_at": "2026-11-05T13:00:00.120Z",
   "captured_at": "2026-11-05T13:00:00.000Z",
@@ -23,6 +23,5 @@
     "taxonomy_version": "defects-a1-1.0.0",
     "confidence": 0.97,
     "similarity": 0.96
-  },
-  "occurred_at": "2026-11-05T13:00:00.080Z"
+  }
 }

@@ -98,8 +98,9 @@ inspeções do I8 em tempo real. A evidência S4 fica pendente até S3-09.
 ## Sprint 3 — contratos 6c e taxonomia
 
 S3-01 e S3-02 estão implementados como uma fronteira contratual independente da
-API futura: schemas de publicação/consumo de `ods.i8.piece_analysis`, quatro
-resultados válidos, exemplos inválidos, catálogo versionado
+API futura: contrato Kafka final `ods.industria.defeito_classificado` 2.0,
+leitura temporária do legado `ods.i8.piece_analysis` 1.0, quatro resultados
+válidos, exemplos inválidos e catálogo versionado
 `DEFECT_TAXONOMY`, descritor com hash e anúncio local. A consequência de negócio
 permanece em uma política A1 separada do artefato consumido pelo I8.
 
