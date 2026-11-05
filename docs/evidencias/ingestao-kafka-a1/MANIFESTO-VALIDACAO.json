@@ -8,10 +8,13 @@
   "current_validation": {
     "python_host_passed": 128,
     "python_host_skipped_postgresql": 34,
+    "docker_python_passed": 162,
+    "docker_python_warnings": 1,
     "node_passed": 14,
     "interoperability_passed": 13,
-    "docker_available": false,
-    "real_postgresql_current_revision": false,
+    "docker_runner_available": true,
+    "real_postgresql_current_revision": true,
+    "github_actions_run": "https://github.com/ods-26-2/a1/actions/runs/42027366804",
     "shared_kafka_current_revision": false
   },
   "historical_evidence": {
@@ -23,5 +26,5 @@
     "unique_inspections": 8,
     "committed_offset": 12
   },
-  "github_actions_results": false
+  "github_actions_results": true
 }

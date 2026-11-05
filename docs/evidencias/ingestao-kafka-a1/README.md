@@ -60,9 +60,9 @@ Comando executado na raiz A1, com projeto de banco descartável isolado:
 docker compose -p ver1-pr6-test run --rm --build tests
 ```
 
-Essa execução histórica aprovou **149 testes Python e 13 testes do frontend** antes da migração 2.0. O PostgreSQL foi real, dentro de um container descartável. Na revisão atual, Docker não estava disponível: passaram 128 testes Python no host, 14 Node e 13 de interoperabilidade; 34 testes PostgreSQL foram ignorados.
+Uma execução atual em runner isolado aprovou **162 testes Python e 14 testes do frontend**, incluindo PostgreSQL 17 real. O resultado está no [GitHub Actions](https://github.com/ods-26-2/a1/actions/runs/42027366804). A suíte terminou sem falhas; houve um aviso de depreciação Starlette/httpx.
 
-A saída histórica está em [testes-docker.txt](testes-docker.txt), o resumo atualizado em [RESULTADOS.txt](RESULTADOS.txt) e as versões Python do container em [dependencias-docker.txt](dependencias-docker.txt). O [roteiro Linux](../../../validacao-local/README.md) agora usa o contrato final 2.0 e aguarda nova execução com Docker.
+A saída histórica está em [testes-docker.txt](testes-docker.txt), o resumo atual em [RESULTADOS.txt](RESULTADOS.txt) e as versões anteriores do container em [dependencias-docker.txt](dependencias-docker.txt). O [roteiro Linux](../../../validacao-local/README.md) usa o contrato final 2.0.
 
 ### Prova anterior com Kafka e PostgreSQL reais
 
