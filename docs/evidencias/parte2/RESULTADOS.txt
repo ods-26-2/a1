@@ -1,0 +1,27 @@
+PARTE 2 — VERIFICAÇÃO LOCAL
+
+Suíte completa A1, com PostgreSQL descartável:
+  python -m pytest -q
+  147 passed, 1 warning in 2.63s
+  Nenhum teste ignorado.
+
+Verificação focada após o ajuste final no healthcheck Docker:
+  python -m pytest -q tests/test_kafka_lifecycle.py
+  6 passed, 1 warning in 0.24s
+  Dois testes novos; quatro testes já presentes na suíte completa.
+
+Total de testes distintos aprovados: 149.
+Não somar 147 + 6 como testes distintos.
+
+O aviso é StarletteDeprecationWarning sobre uso do httpx pelo TestClient.
+O sandbox bloqueou a comunicação usada pelo TestClient; a verificação passou
+fora do sandbox, exclusivamente com dependências locais de teste.
+
+Kafka: doubles; nenhum broker real ou compartilhado acessado.
+PostgreSQL: container postgres:17-alpine restrito ao localhost, encerrado e
+removido após a suíte.
+Falhas de repositório: injeção controlada; não houve queda física do servidor.
+Python: 3.13.5.
+Build Docker completo: não executado.
+Desenvolvimento e testes ocorreram antes da publicação. Código agora disponível
+em branch nova e PR de rascunho; nenhum merge foi realizado.

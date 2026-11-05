@@ -11,7 +11,7 @@ from uuid import uuid4
 
 import pytest
 
-from conftest import api_validator, invalid_events, valid_events
+from conftest import OfflineSubscriber, api_validator, invalid_events, valid_events
 
 
 EXPECTED_STATUS = {
@@ -222,8 +222,7 @@ def test_data_survives_restart(settings, monkeypatch):
     from fastapi.testclient import TestClient
 
     from backend.app import create_app
-    monkeypatch.setattr("backend.app.A1IngestionClient.start", lambda _: None)
-    monkeypatch.setattr("backend.app.A1IngestionClient.stop", lambda _: None)
+    monkeypatch.setattr("backend.app.A1KafkaConsumer", OfflineSubscriber)
 
     with TestClient(create_app(settings)) as first:
         inspection_id = first.app.state.services.ingestion.ingest(

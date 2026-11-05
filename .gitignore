@@ -7,3 +7,6 @@ __pycache__/
 .env.*
 dist/
 coverage/
+
+# Track only the Kafka configuration template, never local credentials.
+!.env.kafka.example

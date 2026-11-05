@@ -156,6 +156,10 @@ class IngestionService:
             return IngestResult(IngestStatus.DUPLICATE, saved.inspection_id)
         return IngestResult(IngestStatus.ACCEPTED, saved.inspection_id)
 
+    def reject_transport_message(self, reason: str) -> IngestResult:
+        """Persist a transport rejection before the subscriber can commit its offset."""
+        return self._reject(None, self.clock(), reason)
+
     def _reject(self, event: Any, received_at: datetime, reason: str) -> IngestResult:
         message_id = event.get("message_id") if isinstance(event, Mapping) else None
         self.repository.record_failure(
