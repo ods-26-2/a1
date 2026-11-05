@@ -1,0 +1,80 @@
+name: Validação da fase 2
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "shared/**"
+      - "tests/**"
+      - "validacao-local/**"
+      - "Dockerfile"
+      - "docker-compose.yml"
+      - "package.json"
+      - "requirements*.txt"
+      - ".github/workflows/validacao-fase-2.yml"
+
+jobs:
+  fluxo-principal:
+    name: Kafka, PostgreSQL e S3-08
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Preparar diretório de evidências
+        run: |
+          mkdir -p validacao-local/evidencias
+          echo "VER1_UID=$(id -u)" >> "$GITHUB_ENV"
+          echo "VER1_GID=$(id -g)" >> "$GITHUB_ENV"
+
+      - name: Subir Kafka, PostgreSQL e A1
+        run: docker compose -p ver1-fase2 -f validacao-local/compose.yml up -d --build --wait backend
+
+      - name: Validar transporte, deduplicação e S3-08
+        run: docker compose -p ver1-fase2 -f validacao-local/compose.yml run --rm --build prova
+
+      - name: Validar persistência após reinício
+        run: |
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml restart backend
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml up -d --wait backend
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml run --rm prova --recheck
+
+      - name: Publicar durante indisponibilidade do banco
+        run: |
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml stop db
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml run --rm --no-deps prova --publish-pending
+
+      - name: Restaurar banco e validar recuperação
+        run: |
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml up -d --wait db
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml restart backend
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml up -d --wait backend
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml run --rm prova --verify-pending
+
+      - name: Revalidar após segunda reinicialização
+        run: |
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml restart backend
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml up -d --wait backend
+          docker compose -p ver1-fase2 -f validacao-local/compose.yml run --rm prova --recheck
+
+      - name: Executar suíte com PostgreSQL real
+        run: docker compose -p ver1-fase2 -f validacao-local/compose.yml run --rm --build testes-a1
+
+      - name: Publicar relatório da prova
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: evidencias-fase-2
+          path: validacao-local/evidencias/
+          if-no-files-found: warn
+
+      - name: Exibir diagnóstico em caso de falha
+        if: failure()
+        run: docker compose -p ver1-fase2 -f validacao-local/compose.yml logs --tail=200 backend db kafka
+
+      - name: Encerrar laboratório
+        if: always()
+        run: docker compose -p ver1-fase2 -f validacao-local/compose.yml down -v

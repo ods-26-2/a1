@@ -74,8 +74,13 @@ frontend. Sem domínio próprio, usa-se `<ip-com-hifens>.sslip.io`.
 
 `docker/gcp-startup.sh` é o startup-script da VM: a cada boot instala Docker,
 atualiza o código em `/opt/a1`, completa o `.env` (`POSTGRES_PASSWORD`,
-`A1_DOMAIN`, `A1_PORT`, `COMPOSE_PROFILES=https`,`KAFKA_BROKER_URL`) e sobe o compose. Para publicar
+`A1_DOMAIN`, `A1_PORT` e `COMPOSE_PROFILES=https`) e sobe o compose. O
+`KAFKA_BROKER_URL` deve ser configurado no mesmo arquivo. Para publicar
 uma nova versão depois do push, reinicie a VM ou rode o script de novo nela.
+
+Endereços do frontend, API, banco, Kafka e comandos de verificação estão em
+[`docs/hospedagem.md`](docs/hospedagem.md). O endereço público exato não é
+versionado; ele deve ser consultado em `A1_DOMAIN` no `/opt/a1/.env` da VM.
 
 O `Dockerfile` tem os alvos `frontend` (padrão), `backend` e `tests`.
 
