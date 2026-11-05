@@ -61,7 +61,7 @@ Abra:
 - [Interface A1](http://localhost:18080/frontend/).
 - [Saúde da API](http://localhost:18000/api/v1/health).
 
-O script publica quatro eventos 1.1, repete os mesmos IDs e publica quatro eventos 1.0 com IDs novos. São **12 publicações e oito inspeções únicas**. Confere que não surgiram comandos ou registros de ingestão duplicados, verifica offsets confirmados e lê as oito inspeções pela API.
+O script publica quatro eventos finais 2.0, repete os mesmos IDs e publica quatro eventos legados 1.0 com IDs novos. São **12 publicações e oito inspeções únicas**. Confere que não surgiram comandos ou registros de ingestão duplicados, verifica offsets confirmados e lê as oito inspeções pela API.
 
 O resultado fica em `validacao-local/evidencias/resultado.json`, fora do versionamento. Ele deve indicar `passed-local-real-kafka`. O offset foi 12 na prova com tópico novo; em execuções posteriores ele pode ser maior.
 
@@ -97,7 +97,7 @@ Para apagar também os dados **somente desse laboratório**, acrescente `-v`. N�
 
 A prova anterior foi feita no commit `d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4`. A atualização atual corrige o contexto de build e publica o roteiro; não altera a lógica do backend, do consumidor ou do fake. A prova Kafka anterior foi preservada com sua identificação, sem atribuí-la a um commit diferente.
 
-Não estão comprovados aqui: inferência I8 real, P2/P4/I1/P6, serviços S4/S5/P7, queda física durante gravação, latência industrial ou o broker oficial. A candidata de contrato 1.1 ainda depende do aceite de TRA-1.
+Não estão comprovados aqui: inferência I8 real, P2/P4/I1/P6, serviços S4/S5/P7, queda física durante gravação, latência industrial ou o broker compartilhado. O roteiro usa o contrato final 2.0 em ambiente local.
 
 - [Evidências e limites da ingestão Kafka A1](../docs/evidencias/ingestao-kafka-a1/README.md).
 - [Prova estruturada Kafka](../docs/evidencias/ingestao-kafka-a1/kafka-real/resultado.json).

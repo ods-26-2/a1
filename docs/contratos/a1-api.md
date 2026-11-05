@@ -1,8 +1,8 @@
 # Contrato frontend ↔ backend A1 — API v1
 
 Interface interna da aplicação A1 (camada 4). Não é mensagem do barramento 6c:
-o frontend conversa somente com o backend A1 e nunca consome
-`ods.i8.piece_analysis`, S4, S5, P7 ou modelos diretamente.
+o frontend conversa somente com o backend A1 e nunca consome eventos Kafka I8,
+S4, S5, P7 ou modelos diretamente.
 
 Schemas executáveis: `shared/schemas/a1-api/`. Fixtures da API fake:
 `shared/mocks/a1-api/inspections/`.

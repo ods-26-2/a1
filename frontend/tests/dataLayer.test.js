@@ -44,6 +44,19 @@ describe("guarda de contrato InspectionView", () => {
     }
   });
 
+  it("aceita somente os pares de origem legado 1.0 e industrial 2.0", async () => {
+    const legacy = await readFixture("conforming.json");
+    const industrial = structuredClone(legacy);
+    industrial.origin.schema = "ods.industria.defeito_classificado";
+    industrial.origin.schema_version = "2.0";
+    assert.equal(validateInspectionView(industrial), industrial);
+
+    industrial.origin.schema_version = "1.0";
+    assert.throws(() => validateInspectionView(industrial), /origin/);
+    legacy.origin.schema_version = "2.0";
+    assert.throws(() => validateInspectionView(legacy), /origin/);
+  });
+
   it("recusa vocabulário legado e defeito fora de NON_CONFORMING", async () => {
     const view = await readFixture("conforming.json");
     assert.throws(

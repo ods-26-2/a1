@@ -13,7 +13,7 @@ DEFAULT_CORS_ORIGINS = ("http://localhost:5500", "http://127.0.0.1:5500")
 @dataclass(frozen=True)
 class KafkaSettings:
     broker_url: str = "localhost:9092"
-    topic: str = "ods.i8.piece_analysis"
+    topic: str = "ods.industria.defeito_classificado"
     group_id: str = "VER-1-A1-Consumer"
     poll_timeout: float = 1.0
     retry_attempts: int = 5

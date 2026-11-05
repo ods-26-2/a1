@@ -1,4 +1,4 @@
-"""IngestionService: entry point of ods.i8.piece_analysis events into A1.
+"""IngestionService: entry point of versioned I8 events into A1.
 
 Transport-agnostic: the fake 6c producer and the B3 subscriber adapter (Ícaro)
 both call :meth:`IngestionService.ingest` with the decoded event.
@@ -9,6 +9,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+import math
 from typing import Any, Callable, Mapping
 from uuid import uuid4
 
@@ -42,6 +43,40 @@ class IngestResult:
     status: IngestStatus
     inspection_id: str | None = None
     reason: str | None = None
+
+
+def diagnostic_event_for_jsonb(event: Any) -> dict[str, Any] | None:
+    """Return a safe diagnostic copy, or None when jsonb cannot store it."""
+    if not isinstance(event, Mapping):
+        return None
+    candidate = dict(event)
+    pending: list[Any] = [candidate]
+    seen: set[int] = set()
+    while pending:
+        current = pending.pop()
+        if isinstance(current, (dict, list)):
+            identity = id(current)
+            if identity in seen:
+                return None
+            seen.add(identity)
+        if isinstance(current, str):
+            if "\x00" in current:
+                return None
+            try:
+                current.encode("utf-8", errors="strict")
+            except UnicodeEncodeError:
+                return None
+        elif isinstance(current, float):
+            if not math.isfinite(current):
+                return None
+        elif isinstance(current, dict):
+            pending.extend(current.keys())
+            pending.extend(current.values())
+        elif isinstance(current, list):
+            pending.extend(current)
+        elif current is not None and not isinstance(current, (bool, int)):
+            return None
+    return candidate
 
 
 def inspection_id_for(event: Mapping[str, Any]) -> str:
@@ -166,6 +201,6 @@ class IngestionService:
             received_at=received_at,
             message_id=str(message_id) if message_id is not None else None,
             reason=reason,
-            event=dict(event) if isinstance(event, Mapping) else None,
+            event=diagnostic_event_for_jsonb(event),
         )
         return IngestResult(IngestStatus.REJECTED, reason=reason)

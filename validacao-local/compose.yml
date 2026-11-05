@@ -49,14 +49,14 @@ services:
       kafka:
         condition: service_healthy
     entrypoint: [/opt/kafka/bin/kafka-topics.sh]
-    command: [--bootstrap-server, "kafka:9092", --create, --if-not-exists, --topic, ods.i8.piece_analysis, --partitions, "1", --replication-factor, "1"]
+    command: [--bootstrap-server, "kafka:9092", --create, --if-not-exists, --topic, ods.industria.defeito_classificado, --partitions, "1", --replication-factor, "1"]
 
   backend:
     build: *backend-build
     environment:
       DATABASE_URL: postgresql://a1:ver1-lab-only@db:5432/a1
       KAFKA_BROKER_URL: kafka:9092
-      KAFKA_TOPIC: ods.i8.piece_analysis
+      KAFKA_TOPIC: ods.industria.defeito_classificado
       KAFKA_GROUP_ID: ver1-lab-a1
     ports:
       - "127.0.0.1:18000:8000"
@@ -122,7 +122,7 @@ services:
     environment:
       DATABASE_URL: postgresql://a1:ver1-lab-only@db:5432/a1
       KAFKA_BROKER_URL: kafka:9092
-      KAFKA_TOPIC: ods.i8.piece_analysis
+      KAFKA_TOPIC: ods.industria.defeito_classificado
       KAFKA_GROUP_ID: ver1-lab-a1
       API_URL: http://backend:8000/api/v1
     volumes:

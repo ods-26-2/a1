@@ -119,8 +119,14 @@ export function validateInspectionView(view) {
 
   const origin = requireObject(view.origin, "origin");
   requireString(origin.message_id, "origin.message_id");
-  if (origin.schema !== "ods.i8.piece_analysis" || origin.producer !== "I8") {
-    fail("origin", "deve referenciar ods.i8.piece_analysis produzido por I8");
+  requireString(origin.schema, "origin.schema");
+  requireString(origin.schema_version, "origin.schema_version");
+  const supportedContract =
+    (origin.schema === "ods.i8.piece_analysis" && origin.schema_version === "1.0") ||
+    (origin.schema === "ods.industria.defeito_classificado" &&
+      origin.schema_version === "2.0");
+  if (!supportedContract || origin.producer !== "I8") {
+    fail("origin", "deve usar o contrato I8 legado 1.0 ou industrial 2.0");
   }
   requireString(origin.source_id, "origin.source_id");
   requireString(origin.session_id, "origin.session_id");

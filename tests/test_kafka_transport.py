@@ -172,7 +172,11 @@ def test_failed_commit_never_advances_to_later_message():
     assert ('poll', 1) not in trace
 
 
-@pytest.mark.parametrize('raw', [b'not-json', b'\xff', None, b'{"x": NaN}'])
+@pytest.mark.parametrize('raw', [
+    b'not-json', b'\xff', None, b'{"x": NaN}', b'{"x": 1e400}',
+    b'{"x": "\\u0000"}', b'{"x": "\\ud800"}',
+    b'[' * 2000 + b'0' + b']' * 2000,
+])
 def test_bad_wire_message_is_durably_rejected_before_commit(raw):
     worker, client, service, trace = setup_worker([Message(raw)])
     worker.comecar_a_consumir()
@@ -196,6 +200,19 @@ def test_actual_ingestion_service_records_invalid_json_object_and_wire_rejection
     assert service.ingest(['not-an-object']).status == IngestStatus.REJECTED
     assert service.reject_transport_message('topic=t partition=0 offset=2').status == IngestStatus.REJECTED
     assert len(failures) == 2 and failures[-1]['event'] is None
+
+
+@pytest.mark.parametrize('unsafe', [
+    {'confidence': float('inf')},
+    {'text': '\x00'},
+    {'text': '\ud800'},
+])
+def test_ingestion_omits_jsonb_incompatible_diagnostic_event(unsafe):
+    failures = []
+    repository = SimpleNamespace(record_failure=lambda **fields: failures.append(fields))
+    service = IngestionService(repository, None, lambda: datetime.now(timezone.utc))
+    assert service.ingest(unsafe).status == IngestStatus.REJECTED
+    assert failures[0]['event'] is None
 
 
 def test_shutdown_finishes_current_durable_message_before_close():
@@ -229,8 +246,8 @@ def test_health_requires_metadata_and_assignment_and_recovers():
     worker.parar()
 
 
-@pytest.mark.parametrize('version', ['1.0', '1.1'])
-def test_envelope_gate_accepts_legacy_and_candidate_but_rejects_malformed(version):
+@pytest.mark.parametrize('version', ['1.0', '2.0'])
+def test_envelope_gate_accepts_legacy_and_final_but_rejects_malformed(version):
     worker, _, _, _ = setup_worker()
     event = default_events(False, version)[0]
     assert worker._validar_envelope(event) == (True, None)
@@ -238,7 +255,7 @@ def test_envelope_gate_accepts_legacy_and_candidate_but_rejects_malformed(versio
     assert worker._validar_envelope(event)[0] is False
 
 
-@pytest.mark.parametrize('version', ['1.0', '1.1'])
+@pytest.mark.parametrize('version', ['1.0', '2.0'])
 def test_fake_default_and_fresh_events_pass_strict_contract(version):
     events = default_events(False, version)
     before = copy.deepcopy(events)
@@ -252,8 +269,8 @@ def test_fake_default_and_fresh_events_pass_strict_contract(version):
         validate_piece_analysis(event, strict_publisher=True)
         assert event['message_id'] != original['message_id']
         assert event['published_at'] == '2026-11-05T15:00:00.000Z'
-        assert ('occurred_at' in event) == (version == '1.1')
-        if version == '1.1':
+        assert ('occurred_at' in event) == (version == '2.0')
+        if version == '2.0':
             delta = lambda e: datetime.fromisoformat(e['occurred_at']) - datetime.fromisoformat(e['captured_at'])
             assert delta(event) == delta(original)
 

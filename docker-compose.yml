@@ -23,7 +23,7 @@ services:
     environment:
       DATABASE_URL: postgresql://a1:${POSTGRES_PASSWORD:-a1-local}@db:5432/a1
       KAFKA_BROKER_URL: ${KAFKA_BROKER_URL:-localhost:9092}
-      KAFKA_TOPIC: ${KAFKA_TOPIC:-ods.i8.piece_analysis}
+      KAFKA_TOPIC: ${KAFKA_TOPIC:-ods.industria.defeito_classificado}
       KAFKA_GROUP_ID: ${KAFKA_GROUP_ID:-VER-1-A1-Consumer}
       KAFKA_RETRY_ATTEMPTS: ${KAFKA_RETRY_ATTEMPTS:-5}
       KAFKA_RETRY_INITIAL: ${KAFKA_RETRY_INITIAL:-0.25}

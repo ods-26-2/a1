@@ -84,7 +84,7 @@ def main():
         report['offsets_after_restart'] = assert_committed()
     else:
         # Synthetic observations, with fresh IDs/session; no real inference is claimed.
-        first = refresh(default_events(False, '1.1'))
+        first = refresh(default_events(False, '2.0'))
         ids = [event['message_id'] for event in first]
         publish_events(first, broker=BROKER, topic=TOPIC, timeout=15)
         initial = assert_rows(ids)
@@ -104,7 +104,7 @@ def main():
             'status': 'passed-local-real-kafka',
             'scope': 'synthetic events; real Kafka, A1 API and PostgreSQL; no I8 model inference',
             'broker': BROKER, 'topic': TOPIC, 'group': GROUP,
-            'message_ids': ids, 'candidate_1_1': initial,
+            'message_ids': ids, 'final_2_0': initial,
             'same_ids_replayed': after_replay, 'offsets_after_replay': replay_offsets,
             'including_fresh_1_0': final, 'offsets_final': final_offsets,
             'api_reads': len(ids), 'events_published': 12,

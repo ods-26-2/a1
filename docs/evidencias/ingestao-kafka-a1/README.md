@@ -1,6 +1,6 @@
 # Sprint 3 — Ingestão Kafka A1: consumidor, fake e saúde
 
-Correção implementada e verificada localmente, agora publicada em PR de rascunho. A proposta de contrato Kafka I8/A1 foi aceita por Ícaro; o acordo externo com TRA-1 permanece pendente. Nenhum evento foi enviado ao broker compartilhado e nenhum merge foi realizado.
+Correção implementada e verificada localmente, agora publicada em PR de rascunho. O contrato final usa tópico/schema `ods.industria.defeito_classificado` e versão 2.0. Nenhum evento 2.0 foi enviado ao broker compartilhado.
 
 ## Comportamento corrigido
 
@@ -24,7 +24,7 @@ No encerramento, a aplicação sinaliza parada e aguarda o trabalhador terminar 
 
 ### Produtor fake
 
-O fake usa tópico e broker configuráveis. Os quatro exemplos padrão são da candidata 1.1; `--schema-version 1.0` permite exercitar compatibilidade. Eventos são validados pelo contrato estrito antes de construir o produtor, exceto quando `--invalid` foi solicitado explicitamente.
+O fake usa tópico e broker configuráveis. Os quatro exemplos padrão são do contrato final 2.0; `--schema-version 1.0` permite exercitar a janela de compatibilidade. Eventos são validados pelo contrato estrito antes de construir o produtor, exceto quando `--invalid` foi solicitado explicitamente.
 
 `--fresh` regenera IDs, sessão e sequência, deslocando os horários das fixtures por um mesmo intervalo. Preserva as diferenças entre captura, análise e publicação. Os horários continuam sintéticos; não representam medições de inferência. Campos ausentes e valores inválidos de fixtures negativas não são reparados silenciosamente.
 
@@ -37,14 +37,14 @@ Foi incluído `.env.kafka.example`. O fallback do código é `localhost:9092`, e
 | Variável | Default |
 |---|---|
 | `KAFKA_BROKER_URL` | `localhost:9092` |
-| `KAFKA_TOPIC` | `ods.i8.piece_analysis` |
+| `KAFKA_TOPIC` | `ods.industria.defeito_classificado` |
 | `KAFKA_GROUP_ID` | `VER-1-A1-Consumer` |
 | `KAFKA_RETRY_ATTEMPTS` | `5` tentativas totais por operação |
 | `KAFKA_RETRY_INITIAL` | `0.25` segundo |
 | `KAFKA_RETRY_MAX` | `4` segundos |
 | `KAFKA_SHUTDOWN_TIMEOUT` | `15` segundos |
 
-O Compose repassa essas variáveis. Para testes B2 compartilhados, o endereço temporário do guia deve ser informado explicitamente. Não foi exercitado nesta etapa. É possível selecionar o tópico industrial anterior por configuração, mas isso não elimina a necessidade de homologar o nome canônico com TRA-1.
+O Compose repassa essas variáveis. Para o broker compartilhado, o endereço deve ser informado explicitamente. Essa conexão não foi exercitada nesta etapa.
 
 Após falha permanente do processamento, o backend continua disponível para consulta histórica e informa degradação. Um container unhealthy não é reiniciado automaticamente apenas por `restart: unless-stopped`; o operador deve corrigir a causa e reiniciar o serviço.
 
@@ -60,13 +60,13 @@ Comando executado na raiz A1, com projeto de banco descartável isolado:
 docker compose -p ver1-pr6-test run --rm --build tests
 ```
 
-Resultado: **149 testes Python e 13 testes do frontend aprovados**. O alvo também executou o validador de contratos, conforme seu comando padrão. O PostgreSQL foi real, dentro de um container descartável. Os testes de transporte dessa suíte continuam usando doubles Kafka.
+Essa execução histórica aprovou **149 testes Python e 13 testes do frontend** antes da migração 2.0. O PostgreSQL foi real, dentro de um container descartável. Na revisão atual, Docker não estava disponível: passaram 128 testes Python no host, 14 Node e 13 de interoperabilidade; 34 testes PostgreSQL foram ignorados.
 
-A saída está em [testes-docker.txt](testes-docker.txt), o resumo em [RESULTADOS.txt](RESULTADOS.txt) e as versões Python do container em [dependencias-docker.txt](dependencias-docker.txt). A configuração do [roteiro Linux](../../../validacao-local/README.md) foi validada com `docker compose config --quiet`.
+A saída histórica está em [testes-docker.txt](testes-docker.txt), o resumo atualizado em [RESULTADOS.txt](RESULTADOS.txt) e as versões Python do container em [dependencias-docker.txt](dependencias-docker.txt). O [roteiro Linux](../../../validacao-local/README.md) agora usa o contrato final 2.0 e aguarda nova execução com Docker.
 
 ### Prova anterior com Kafka e PostgreSQL reais
 
-A prova estruturada em [kafka-real/resultado.json](kafka-real/resultado.json) foi executada no commit `d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4`, anterior a esta correção de contexto. A lógica do consumidor, fake e backend não foi alterada na atualização atual, portanto a evidência foi preservada com sua identificação original.
+A prova estruturada em [kafka-real/resultado.json](kafka-real/resultado.json) foi executada no commit `d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4`, com a candidata 1.1 e o tópico anterior. Ela foi preservada como evidência histórica, mas não comprova o contrato final 2.0. O roteiro versionado foi atualizado e deve ser executado novamente antes do aceite final de integração.
 
 Foram **12 publicações de eventos sintéticos, oito inspeções únicas e offset final confirmado em 12**. O reenvio de quatro IDs não criou inspeções, comandos S4 ou registros INGESTED adicionais. Depois de reiniciar normalmente o backend, as oito inspeções e seus registros permaneceram disponíveis; o offset continuou em 12.
 

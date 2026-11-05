@@ -2,6 +2,7 @@
 
 import json
 import logging
+import math
 import threading
 import time
 from confluent_kafka import Consumer, KafkaError
@@ -46,10 +47,8 @@ class A1KafkaConsumer:
         }
         self.consumer = consumer_factory(conf)
 
-        # Regras do contrato B2
+        # Roteamento Kafka; a validação do par schema/version fica no contrato.
         self.TOPICO_KAFKA = self.settings.topic
-        self.SCHEMA_ESPERADO = 'ods.i8.piece_analysis' # Valor interno exigido pelo ingestion.py
-        self.PRODUTOR_ESPERADO = 'I8'
 
     def _on_error(self, error):
         with self._lock:
@@ -135,14 +134,50 @@ class A1KafkaConsumer:
     def _invalid_number(value):
         raise ValueError(f"Número JSON inválido: {value}")
 
+    @staticmethod
+    def _finite_float(value):
+        parsed = float(value)
+        if not math.isfinite(parsed):
+            raise ValueError(f"Número JSON fora do intervalo suportado: {value}")
+        return parsed
+
+    @staticmethod
+    def _ensure_jsonb_safe(value):
+        """Reject decoded values that PostgreSQL jsonb cannot represent."""
+        pending = [(value, 0)]
+        while pending:
+            current, depth = pending.pop()
+            if depth > 100:
+                raise ValueError("JSON excede profundidade máxima de 100 níveis")
+            if isinstance(current, str):
+                if "\x00" in current:
+                    raise ValueError("String JSON contém caractere nulo")
+                try:
+                    current.encode("utf-8", errors="strict")
+                except UnicodeEncodeError as exc:
+                    raise ValueError("String JSON contém Unicode inválido") from exc
+            elif isinstance(current, float):
+                if not math.isfinite(current):
+                    raise ValueError("Número JSON deve ser finito")
+            elif isinstance(current, dict):
+                pending.extend((item, depth + 1) for item in current.keys())
+                pending.extend((item, depth + 1) for item in current.values())
+            elif isinstance(current, list):
+                pending.extend((item, depth + 1) for item in current)
+
     def _process_message(self, msg):
         # Desserialização Defensiva
         try:
             raw = msg.value()
             if raw is None:
                 raise ValueError("Valor Kafka nulo (tombstone)")
-            evento = json.loads(raw.decode('utf-8'), parse_constant=self._invalid_number)
-        except (ValueError, UnicodeDecodeError, AttributeError) as exc:
+            evento = json.loads(
+                raw.decode('utf-8'),
+                parse_constant=self._invalid_number,
+                parse_float=self._finite_float,
+            )
+            self._ensure_jsonb_safe(evento)
+        except (ValueError, UnicodeDecodeError, AttributeError, RecursionError) as exc:
             reason = (f"JSON/encoding inválido: {exc}; topic={msg.topic()} "
                       f"partition={msg.partition()} offset={msg.offset()}")
             process = lambda: self.ingestion_service.reject_transport_message(reason)

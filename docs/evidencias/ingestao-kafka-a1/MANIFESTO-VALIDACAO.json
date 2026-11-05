@@ -1,34 +1,27 @@
 {
   "date": "2026-11-05",
-  "parent_commit": "d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4",
-  "current_change": "Dockerfile included in test build context; documentation and evidence only; backend runtime unchanged",
-  "new_validation": {
-    "command": "docker compose -p ver1-pr6-test run --rm --build tests",
-    "dockerfile_extra_mount": false,
-    "python_passed": 149,
-    "node_passed": 13
+  "contract": {
+    "topic": "ods.industria.defeito_classificado",
+    "schema": "ods.industria.defeito_classificado",
+    "schema_version": "2.0"
   },
-  "previous_real_kafka_proof": {
-    "commit": "d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4",
+  "current_validation": {
+    "python_host_passed": 128,
+    "python_host_skipped_postgresql": 34,
+    "node_passed": 14,
+    "interoperability_passed": 13,
+    "docker_available": false,
+    "real_postgresql_current_revision": false,
+    "shared_kafka_current_revision": false
+  },
+  "historical_evidence": {
+    "docker_python_passed_before_2_0": 149,
+    "docker_node_passed_before_2_0": 13,
+    "real_kafka_commit": "d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4",
+    "real_kafka_candidate_version": "1.1",
     "events_published": 12,
     "unique_inspections": 8,
-    "committed_offset": 12,
-    "normal_backend_restart_verified": true
+    "committed_offset": 12
   },
-  "github_actions_results": false,
-  "runtime_git_blobs": {
-    "backend/kafka_client.py": "7c9985ac7162c091fcb9b1ca2190297768c26fef",
-    "backend/contracts.py": "8813a50abd99b3d84b8f1cc9c5cd5bd975288dad",
-    "backend/triage.py": "a16b993b36c7d7d98ece276f6e4e967272174a17",
-    "backend/__init__.py": "c22921e305300e1eb196a498c80dce8f97040fc1",
-    "backend/repository.py": "b168a945b8bb5fb7cb722f6c7a433463521eb220",
-    "backend/ingestion.py": "44be34378bb1a1723784415bed30fa3de6c347d1",
-    "backend/app.py": "554a4e8194ea078e0a424e1ef41e820d1b8e7dd1",
-    "backend/inspections.py": "d03ce31c3fb5f6b7dc60ee27a2cd8297531dfa62",
-    "backend/services.py": "7e1885bfc8c7a3b14d0eeb49956557faf279941d",
-    "backend/config.py": "8f5f78cba373a7b6da381cb2c7bcb6396d1f8399",
-    "backend/fake_producer.py": "fa0778442cc6ac6d92f9321fc48f625653eff718",
-    "backend/taxonomy.py": "375ca145d4128926a5df22cee12313c6b8cfc7eb",
-    "backend/db.py": "13553c8a6ae04287ce2d3f6d47096fc04f8dc997"
-  }
+  "github_actions_results": false
 }

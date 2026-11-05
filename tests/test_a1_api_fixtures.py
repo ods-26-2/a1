@@ -91,6 +91,25 @@ def test_fixture_matches_api_schema(path: Path):
     assert errors == []
 
 
+def test_inspection_view_accepts_only_explicit_origin_contract_pairs():
+    view = _load(FIXTURES / "conforming.json")
+    validator = _validator("inspection-view.schema.json")
+    final = json.loads(json.dumps(view))
+    final["origin"].update(
+        schema="ods.industria.defeito_classificado", schema_version="2.0"
+    )
+    assert list(validator.iter_errors(final)) == []
+
+    for schema, version in [
+        ("ods.i8.piece_analysis", "2.0"),
+        ("ods.industria.defeito_classificado", "1.0"),
+        ("ods.industria.defeito_classificado", "2.1"),
+    ]:
+        crossed = json.loads(json.dumps(view))
+        crossed["origin"].update(schema=schema, schema_version=version)
+        assert list(validator.iter_errors(crossed)) != []
+
+
 @pytest.mark.parametrize("path", FIXTURE_PATHS, ids=lambda path: path.stem)
 def test_fixture_derives_from_valid_6c_event(path: Path):
     view = _load(path)

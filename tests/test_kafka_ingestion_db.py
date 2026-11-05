@@ -19,7 +19,7 @@ def subscriber(service, messages):
     return worker, clients[0]
 
 
-def test_candidate_and_duplicate_commit_only_after_real_database_write(client, sql):
+def test_final_and_duplicate_commit_only_after_real_database_write(client, sql):
     event = default_events(False)[0]
     message = json.dumps(event).encode()
     worker, kafka = subscriber(client.app.state.services.ingestion,
@@ -54,6 +54,21 @@ def test_bad_wire_record_is_logged_in_real_database_before_commit(client, sql):
     assert kafka.commits == [7]
     assert sql('SELECT count(*) FROM inspections')[0][0] == 0
     assert 'offset=7' in sql('SELECT reason FROM ingestion_failures')[0][0]
+
+
+def test_jsonb_incompatible_records_are_logged_and_do_not_block_next_message(client, sql):
+    valid = json.dumps(default_events(False)[0]).encode()
+    messages = [
+        Message(b'{"x": 1e400}', 0),
+        Message(b'{"x": "\\u0000"}', 1),
+        Message(b'{"x": "\\ud800"}', 2),
+        Message(valid, 3),
+    ]
+    worker, kafka = subscriber(client.app.state.services.ingestion, messages)
+    worker.comecar_a_consumir()
+    assert kafka.commits == [0, 1, 2, 3]
+    assert sql('SELECT count(*) FROM ingestion_failures')[0][0] == 3
+    assert sql('SELECT count(*) FROM inspections')[0][0] == 1
 
 
 def test_failed_rejection_storage_blocks_offset_and_later_record(client, sql, monkeypatch):

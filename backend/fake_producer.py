@@ -28,7 +28,7 @@ from .contracts import validate_piece_analysis
 
 ROOT = Path(__file__).resolve().parents[1]
 MOCKS_6C = ROOT / "shared" / "mocks" / "6c"
-CANDIDATE_MOCKS = ROOT / "shared" / "mocks" / "kafka-1.1-candidate"
+FINAL_MOCKS = ROOT / "shared" / "mocks" / "kafka-2.0"
 RESULT_ORDER = ("CONFORMING", "NON_CONFORMING", "ANOMALY", "UNCERTAIN")
 
 
@@ -36,12 +36,12 @@ def load_events(paths: list[Path]) -> list[dict[str, Any]]:
     return [json.loads(path.read_text(encoding="utf-8")) for path in paths]
 
 
-def default_events(include_invalid: bool, schema_version="1.1") -> list[dict[str, Any]]:
-    directory = CANDIDATE_MOCKS if schema_version == "1.1" else MOCKS_6C / "valid"
+def default_events(include_invalid: bool, schema_version="2.0") -> list[dict[str, Any]]:
+    directory = FINAL_MOCKS if schema_version == "2.0" else MOCKS_6C / "valid"
     valid = load_events(sorted(directory.glob("i8-piece-*.json")))
     valid.sort(key=lambda event: RESULT_ORDER.index(event["payload"]["result"]))
     if include_invalid:
-        invalid = CANDIDATE_MOCKS / "invalid" if schema_version == "1.1" else MOCKS_6C / "invalid"
+        invalid = FINAL_MOCKS / "invalid" if schema_version == "2.0" else MOCKS_6C / "invalid"
         valid += load_events(sorted(invalid.glob("*.json")))
     return valid
 
@@ -137,7 +137,7 @@ def main(argv: list[str] | None = None, *, producer_factory=Producer) -> int:
     parser.add_argument("--fresh", action="store_true", help="gera novas inspeções sintéticas")
     parser.add_argument("--invalid", action="store_true", help="envia casos inválidos intencionalmente")
     parser.add_argument("--interval", type=float, default=0.0, help="segundos entre eventos")
-    parser.add_argument("--schema-version", choices=("1.0", "1.1"), default="1.1")
+    parser.add_argument("--schema-version", choices=("1.0", "2.0"), default="2.0")
     parser.add_argument("--delivery-timeout", type=float, default=10.0)
 
     # Atualizamos o default para apontar para o Kafka de testes B2
