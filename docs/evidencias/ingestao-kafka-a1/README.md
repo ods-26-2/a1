@@ -1,6 +1,6 @@
-# Parte 2 — consumidor, fake e saúde Kafka A1
+# Sprint 3 — Ingestão Kafka A1: consumidor, fake e saúde
 
-Correção implementada e verificada localmente, agora publicada em PR de rascunho. A proposta de contrato da parte 1 foi aceita por Ícaro; o acordo externo com TRA-1 permanece pendente. Nenhum evento foi enviado ao broker compartilhado e nenhum merge foi realizado.
+Correção implementada e verificada localmente, agora publicada em PR de rascunho. A proposta de contrato Kafka I8/A1 foi aceita por Ícaro; o acordo externo com TRA-1 permanece pendente. Nenhum evento foi enviado ao broker compartilhado e nenhum merge foi realizado.
 
 ## Comportamento corrigido
 
@@ -18,7 +18,7 @@ Isso implementa consumo com possibilidade de reentrega e persistência idempoten
 
 O health não considera uma chamada a `subscribe` suficiente para declarar o assinante UP. A saúde depende de metadados acessíveis do broker/tópico, participação no grupo, trabalhador ativo e ausência de retry pendente, falha fatal ou encerramento. Callbacks de erro, atribuição e revogação atualizam o estado. O endpoint HTTP lê esse estado sem executar chamadas Kafka.
 
-O estado global A1 fica DEGRADED quando banco ou assinante estão DOWN. A indicação de S4 indisponível permanece, pois o adaptador ainda pertence à parte 6 do plano. O healthcheck Docker também verifica `status == ONLINE`; receber HTTP 200 com corpo DEGRADED passa a resultar em falha do healthcheck.
+O estado global A1 fica DEGRADED quando banco ou assinante estão DOWN. A indicação de S4 indisponível permanece, pois o adaptador ainda pertence ao escopo de evidência S4. O healthcheck Docker também verifica `status == ONLINE`; receber HTTP 200 com corpo DEGRADED passa a resultar em falha do healthcheck.
 
 No encerramento, a aplicação sinaliza parada e aguarda o trabalhador terminar antes de fechar o pool PostgreSQL. Uma mensagem já em persistência pode concluir e confirmar seu offset. Se o trabalhador não terminar dentro do prazo, o shutdown relata erro e mantém o pool aberto, evitando fechá-lo durante uma gravação ativa. O consumidor não perde uma parada solicitada antes do agendamento da thread.
 
@@ -32,7 +32,7 @@ O produtor usa callbacks de entrega, timeout de fila e `flush` limitado. Só inf
 
 ## Configuração
 
-Foi incluído `.env.kafka.example`. O fallback do código é `localhost:9092`, evitando uma conexão implícita à nuvem. Dentro de um container, esse endereço aponta para o próprio container: configurar explicitamente um broker alcançável pela rede da composição. A composição integrada com I8 e Kafka permanece na parte 8.
+Foi incluído `.env.kafka.example`. O fallback do código é `localhost:9092`, evitando uma conexão implícita à nuvem. Dentro de um container, esse endereço aponta para o próprio container: configurar explicitamente um broker alcançável pela rede da composição. A composição integrada com I8 e Kafka permanece no escopo de composição S3-12.
 
 | Variável | Default |
 |---|---|
@@ -85,19 +85,24 @@ Esse teste usa broker Kafka 3.9.1 e PostgreSQL 17 reais em Docker, além da API 
 
 ## Aplicação e revisão
 
-Este PR compara `fix/consumidor-kafka-confiavel` com `feat/contrato-kafka-1-1` no A1. Assim, a aba **Files changed** mostra somente a correção da parte 2; o contrato da parte 1 está na branch base e tem seu próprio PR.
+Este PR compara `fix/consumidor-kafka-confiavel` com `feat/contrato-kafka-1-1` no A1. Assim, a aba **Files changed** mostra somente a correção da ingestão Kafka A1; o contrato Kafka I8/A1 está na branch base e tem seu próprio PR.
 
 Para conferir sem usar o Codex:
 
 1. Abra a descrição do PR e leia os resultados de testes.
 2. Na aba **Files changed**, consulte `backend/kafka_client.py` e os três arquivos novos de testes Kafka.
-3. Abra `docs/evidencias/parte2/RESULTADOS.txt` para o resumo, `testes-docker.txt` para a saída e `dependencias-docker.txt` para as versões do reteste.
+3. Abra `docs/evidencias/ingestao-kafka-a1/RESULTADOS.txt` para o resumo, `testes-docker.txt` para a saída e `dependencias-docker.txt` para as versões do reteste.
 4. A aba **Checks** mostra somente execuções automáticas do GitHub. Os resultados locais descritos aqui não devem ser confundidos com um workflow aprovado.
 
-I8 não recebeu alterações novas nesta parte. A reconciliação main/develop da similaridade continua na parte 4. As branches main e develop não foram alteradas. Este PR permanece em rascunho para revisão; não houve merge.
+Este incremento de ingestão não altera a implementação I8. A reconciliação main/develop da similaridade continua no escopo de unificação da extração e similaridade (S3-04). As branches main e develop não foram alteradas. Este PR permanece em rascunho para revisão; não houve merge.
 
 ## Próximo aceite
 
-A parte 2 está pronta para revisão local. A parte 3 deverá integrar o publisher Kafka do I8 e demonstrar o fluxo de inferência real, além de ampliar a prova de recuperação em falhas no ambiente escolhido. A disponibilidade presumida das dependências não foi tratada como evidência de integração concluída.
+A ingestão Kafka A1 está publicada para revisão. O escopo de publicação e integração I8 deverá conectar o publisher Kafka e demonstrar o fluxo de inferência real, além de ampliar a prova de recuperação em falhas no ambiente escolhido. A disponibilidade presumida das dependências não foi tratada como evidência de integração concluída.
 
 Referências de API utilizadas: [cliente Python Confluent](https://docs.confluent.io/kafka-clients/python/current/overview.html) e [API Consumer/Producer](https://docs.confluent.io/platform/8.0/clients/confluent-kafka-python/html/index.html).
+
+
+## Referência de planejamento
+
+Este escopo integra a Sprint 3 do plano coletivo de fechamento. O [índice da Sprint 3](../../sprints/sprint-3.md) relaciona os assuntos e as atividades do plano.

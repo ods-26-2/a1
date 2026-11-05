@@ -1,4 +1,4 @@
-# Parte 1 — contrato Kafka I8 → A1
+# Sprint 3 — Contrato Kafka I8/A1
 
 **Estado:** proposta local aceita por Ícaro; candidata em revisão por PR. O aceite externo de TRA-1 permanece pendente. A publicação do código não ativa o broker nem realiza merge.
 
@@ -47,11 +47,11 @@ O contrato valida formato e datas reais. A ordem captura → análise → public
 
 ## Compatibilidade e ativação
 
-| Evento | Publicador I8 / publicador estrito A1 candidatos | Consumidor A1 candidato | Prefiltro Kafka da baseline, antes da parte 2 |
+| Evento | Publicador I8 / publicador estrito A1 candidatos | Consumidor A1 candidato | Prefiltro Kafka da baseline, antes da correção de ingestão |
 |---|---|---|---|
-| `1.0` original sem `occurred_at` | Aceito com contrato original | Aceito para histórico/compatibilidade | Recusado; correção na parte 2 |
+| `1.0` original sem `occurred_at` | Aceito com contrato original | Aceito para histórico/compatibilidade | Recusado; corrigido no PR de ingestão Kafka A1 |
 | `1.1` completa | Aceito com schema novo, idêntico nos dois repositórios | Aceito | Passa na checagem superficial existente |
-| `1.1` sem `occurred_at` ou com horário inválido | Recusado | Recusado | Não é validador suficiente; parte 2 deve delegar ao contrato |
+| `1.1` sem `occurred_at` ou com horário inválido | Recusado | Recusado | Não é validador suficiente; o PR de ingestão delega ao contrato |
 | `1.2` aditiva com campos-base `1.1` | Recusado para publicação estrita | Aceito estruturalmente | Não comprova compatibilidade do transporte |
 | Major diferente de `1` | Recusado | Recusado | Não usar o prefiltro atual como aceite de versão |
 
@@ -61,7 +61,7 @@ O consumidor A1 mantém extensão aditiva de payload/envelope para `1.x`, mas ex
 
 Foram acrescentadas verificações explícitas de datas reais e números finitos no runtime A1: a validação de `date-time` pelo pacote jsonschema pode depender de extras opcionais. Não deixar datas impossíveis passarem apenas por corresponderem a uma expressão regular.
 
-**Ativação proposta:** validar nome/tempos/versão com TRA-1; implantar consumidor atualizado preservando `1.0`; depois ativar publicação `1.1` e migrar fake. A configuração efetiva do tópico, offsets, retry, health, shutdown e confirmação de entrega pertencem à parte 2 e à publicação da parte 3. Nenhuma dessas mudanças de transporte foi aplicada aqui.
+**Ativação proposta:** validar nome/tempos/versão com TRA-1; implantar consumidor atualizado preservando `1.0`; depois ativar publicação `1.1` e migrar fake. A configuração efetiva do tópico, offsets, retry, health, shutdown e confirmação de entrega pertencem aos escopos de ingestão Kafka A1 e publicação de inferências I8. Nenhuma dessas mudanças de transporte foi aplicada aqui.
 
 ## Fonte compartilhada e arquivos preparados
 
@@ -92,7 +92,7 @@ Resultados detalhados em `RESULTADOS.txt`. Verificações realizadas nas cópias
 2. Contratos I8 existentes + candidata: 87 testes aprovados.
 3. Interoperabilidade candidata: 13 testes aprovados, com subcasos para quatro resultados, campos ausentes, versão, horários, valores inválidos, classe/taxonomia e compatibilidade.
 
-O verificador publicado usa os validadores reais A1/I8 e os catálogos reais de taxonomia. Ele não carrega Torch, não constrói cliente Kafka e não acessa banco ou broker. Passar na validação do JSON não prova roteamento, persistência ou confirmação de offsets; essas verificações pertencem às partes 2 e 3.
+O verificador publicado usa os validadores reais A1/I8 e os catálogos reais de taxonomia. Ele não carrega Torch, não constrói cliente Kafka e não acessa banco ou broker. Passar na validação do JSON não prova roteamento, persistência ou confirmação de offsets; essas verificações pertencem aos escopos de ingestão Kafka A1 e publicação I8.
 
 Reprodução após aplicar os patches nas baselines:
 
@@ -109,9 +109,14 @@ python -m pytest -q tests/test_contracts_6c.py tests/test_kafka_contract_1_1_can
 
 ## Aceite externo pendente
 
-Ícaro aceitou a proposta local de **tópico/schema `ods.i8.piece_analysis`, candidata `1.1` e `occurred_at` como conclusão da análise**. Esse aceite permite seguir a implementação interna com a hipótese explícita; não substitui a homologação externa. A parte 1 está tecnicamente preparada e testada localmente, mas o contrato compartilhado só pode ser considerado fechado após o aceite dos participantes.
+Ícaro aceitou a proposta local de **tópico/schema `ods.i8.piece_analysis`, candidata `1.1` e `occurred_at` como conclusão da análise**. Esse aceite permite seguir a implementação interna com a hipótese explícita; não substitui a homologação externa. A candidata de contrato está tecnicamente preparada e testada localmente, mas o contrato compartilhado só pode ser considerado fechado após o aceite dos participantes.
 
 
 ## Revisão no GitHub
 
-Este documento registra a parte 1. Os resultados locais estão em `docs/evidencias/parte1/README.md`. No A1, o script `scripts/validar_interoperabilidade_kafka_1_1.py` verifica os contratos dos dois repositórios sem carregar Torch ou conectar ao Kafka. O transporte Kafka e sua configuração são tratados separadamente na parte 2.
+Este documento registra o contrato Kafka I8/A1 da Sprint 3. Os resultados locais estão em `docs/evidencias/contrato-kafka-1.1/README.md`. No A1, o script `scripts/validar_interoperabilidade_kafka_1_1.py` verifica os contratos dos dois repositórios sem carregar Torch ou conectar ao Kafka. O transporte Kafka e sua configuração são tratados no PR de ingestão Kafka A1.
+
+
+## Referência de planejamento
+
+Este escopo integra a Sprint 3 do plano coletivo de fechamento. O [índice da Sprint 3](../sprints/sprint-3.md) relaciona os assuntos e as atividades do plano.

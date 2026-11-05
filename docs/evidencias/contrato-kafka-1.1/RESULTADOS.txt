@@ -1,4 +1,4 @@
-PARTE 1 — CONTRATOS KAFKA 1.1 — RESULTADOS LOCAIS
+SPRINT 3 — CONTRATOS KAFKA 1.1 — RESULTADOS LOCAIS
 Data de referência: 05/11/2026
 Sem broker, banco ou Torch. Não são resultados de GitHub Actions.
 

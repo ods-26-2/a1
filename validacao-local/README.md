@@ -1,4 +1,4 @@
-# Testar as partes 1 e 2 no Linux
+# Sprint 3 — Testar contratos e ingestão Kafka no Linux
 
 Este laboratório executa Kafka, PostgreSQL e A1 reais em Docker. Os eventos são sintéticos; o modelo de inferência I8 não é executado. O broker compartilhado da turma não é acessado.
 
@@ -26,7 +26,7 @@ docker compose -p ver1-testes run --rm --build tests
 
 Esse é o alvo original do repositório. Inicia somente as dependências necessárias aos testes, usa PostgreSQL real e substitui o cliente Kafka por doubles nos testes de transporte. A correção do `.dockerignore` permite copiar o Dockerfile para o ambiente de teste, sem volume adicional.
 
-Resultado verificado: **149 testes Python e 13 testes do frontend aprovados**. Consulte [a saída registrada](../docs/evidencias/parte2/testes-docker.txt).
+Resultado verificado: **149 testes Python e 13 testes do frontend aprovados**. Consulte [a saída registrada](../docs/evidencias/ingestao-kafka-a1/testes-docker.txt).
 
 Depois, encerre o banco descartável desse comando:
 
@@ -99,7 +99,12 @@ A prova anterior foi feita no commit `d1ad836138de91c48c6bd97f8be6ee9eb1adb8e4`.
 
 Não estão comprovados aqui: inferência I8 real, P2/P4/I1/P6, serviços S4/S5/P7, queda física durante gravação, latência industrial ou o broker oficial. A candidata de contrato 1.1 ainda depende do aceite de TRA-1.
 
-- [Evidências e limites da parte 2](../docs/evidencias/parte2/README.md).
-- [Prova estruturada Kafka](../docs/evidencias/parte2/kafka-real/resultado.json).
+- [Evidências e limites da ingestão Kafka A1](../docs/evidencias/ingestao-kafka-a1/README.md).
+- [Prova estruturada Kafka](../docs/evidencias/ingestao-kafka-a1/kafka-real/resultado.json).
 - [Kafka em Docker](https://kafka.apache.org/39/getting-started/docker/).
 - [Docker Compose](https://docs.docker.com/reference/cli/docker/compose/).
+
+
+## Referência de planejamento
+
+Este escopo integra a Sprint 3 do plano coletivo de fechamento. O [índice da Sprint 3](../docs/sprints/sprint-3.md) relaciona os assuntos e as atividades do plano.
