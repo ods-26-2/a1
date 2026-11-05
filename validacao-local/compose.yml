@@ -103,7 +103,7 @@ services:
       - ..:/repos/a1:ro
       - ../../i8:/repos/i8:ro
     working_dir: /repos/i8
-    command: [python, -m, pytest, -q, -p, "no:cacheprovider", tests/test_contracts_6c.py, tests/test_kafka_contract_1_1_candidate.py]
+    command: [python, -m, pytest, -q, -p, "no:cacheprovider", tests/test_contracts_6c.py, tests/test_kafka_contract_1_1_candidate.py, tests/test_kafka_contract_2_0.py]
 
   interoperabilidade:
     profiles: [ferramentas]
@@ -113,7 +113,7 @@ services:
     volumes:
       - ..:/repos/a1:ro
       - ../../i8:/repos/i8:ro
-    command: [python, /repos/a1/scripts/validar_interoperabilidade_kafka_1_1.py, --a1, /repos/a1, --i8, /repos/i8]
+    command: [python, /repos/a1/scripts/validar_interoperabilidade_kafka_2_0.py, --a1, /repos/a1, --i8, /repos/i8]
 
   prova:
     profiles: [ferramentas]
