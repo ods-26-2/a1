@@ -6,6 +6,7 @@ Run with: uvicorn backend.app:create_app --factory --host 0.0.0.0 --port 8000
 from __future__ import annotations
 
 import os
+import asyncio
 import threading
 from contextlib import asynccontextmanager
 from datetime import datetime
@@ -18,7 +19,7 @@ from fastapi.responses import JSONResponse
 from psycopg_pool import PoolTimeout
 from pydantic import BaseModel, ConfigDict, StringConstraints
 
-from .config import Settings
+from .config import KafkaSettings, Settings
 from .db import apply_schema, open_pool, to_iso, utc_now
 from .services import Services, build_services
 from .kafka_client import A1KafkaConsumer
@@ -40,32 +41,49 @@ class ReviewRequest(BaseModel):
 
 
 def create_app(
-    settings: Settings | None = None, *, clock: Callable[[], datetime] = utc_now
+    settings: Settings | None = None, *, clock: Callable[[], datetime] = utc_now,
+    consumer_factory=None,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
+    kafka_settings = KafkaSettings.from_env()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         pool = open_pool(settings)
         kafka_consumer = None
         kafka_thread = None
+        kafka_started = False
         try:
             apply_schema(pool)
             
             app.state.services = build_services(pool, clock)
             
             # Instancia o consumidor passando o serviço do banco de dados já existente
-            kafka_consumer = A1KafkaConsumer(ingestion_service=app.state.services.ingestion)
+            kafka_consumer = (consumer_factory or A1KafkaConsumer)(
+                ingestion_service=app.state.services.ingestion,
+                settings=kafka_settings,
+            )
+            app.state.kafka_consumer = kafka_consumer
             
             # Executa o consumidor Kafka em uma thread separada para não bloquear o Uvicorn/FastAPI
             kafka_thread = threading.Thread(target=kafka_consumer.comecar_a_consumir, daemon=True)
             kafka_thread.start()
+            kafka_started = True
             
             yield
         finally:
             # Encerramento limpo e fecho da BD
             if kafka_consumer:
                 kafka_consumer.parar() # Pode chamar o shutdown do Kafka aqui
+            if kafka_started:
+                await asyncio.to_thread(
+                    kafka_thread.join, kafka_settings.shutdown_timeout
+                )
+                if kafka_thread.is_alive():
+                    raise RuntimeError(
+                        "Consumidor Kafka não encerrou no prazo; pool mantido aberto "
+                        "para não interromper persistência em andamento."
+                    )
             pool.close()
 
     app = FastAPI(title="A1 — API de inspeção", version="1.0", lifespan=lifespan)
@@ -95,18 +113,15 @@ def create_app(
                 "status": "DOWN",
                 "detail": f"PostgreSQL inacessível: {type(exc).__name__}.",
             }
+        subscriber = request.app.state.kafka_consumer.health_snapshot()
         return {
-            "status": "ONLINE" if database["status"] == "UP" else "DEGRADED",
+            "status": "ONLINE" if database["status"] == "UP" and subscriber["status"] == "UP" else "DEGRADED",
             "mode": "REAL",
             "checked_at": to_iso(clock()),
             "components": [
                 {"name": "api-a1", "status": "UP", "detail": "Backend A1."},
                 database,
-                {
-                    "name": "i8-subscriber",
-                    "status": "UP",
-                    "detail": "Cliente Kafka A1 ligado e à escuta no tópico ods.industria.defeito_classificado.",
-                },
+                subscriber,
                 {
                     "name": "s4",
                     "status": "DOWN",

@@ -1,0 +1,26 @@
+SPRINT 3 — INGESTÃO KAFKA A1 — 05/11/2026
+
+VALIDAÇÃO ATUAL COM DOCKER E POSTGRESQL 17
+GitHub Actions: https://github.com/ods-26-2/a1/actions/runs/42027366804
+Comando: docker compose -p ver1-pr6-ci run --rm --build tests
+Python: 162 passed, 1 warning, zero falhas.
+Frontend Node: 14 passed, zero falhas.
+PostgreSQL real: executado em container isolado e removido após a suíte.
+Interoperabilidade A1/I8: 13 passed em verificação separada.
+
+Casos novos cobertos sem banco:
+- número extremo 1e400;
+- caractere nulo JSON;
+- surrogate Unicode inválido;
+- profundidade acima de 100 níveis;
+- diagnóstico Python incompatível com jsonb;
+- continuidade do commit após rejeição durável com doubles Kafka.
+
+EVIDÊNCIAS HISTÓRICAS PRESERVADAS
+- testes-docker.txt: 149 testes Python e 13 Node, antes do contrato 2.0;
+- kafka-real/resultado.json: 12 publicações da candidata 1.1, oito inspeções
+  únicas e offset 12, antes do contrato 2.0.
+
+As evidências históricas não comprovam o tópico/schema final 2.0. A execução
+atual comprova contratos, backend, PostgreSQL e frontend. O broker Kafka real e
+a inferência I8 continuam fora desta suíte; o transporte Kafka usa doubles.

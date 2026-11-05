@@ -38,8 +38,8 @@
       ],
       "properties": {
         "message_id": { "type": "string", "format": "uuid" },
-        "schema": { "const": "ods.i8.piece_analysis" },
-        "schema_version": { "type": "string", "pattern": "^1\\.[0-9]+$" },
+        "schema": { "type": "string" },
+        "schema_version": { "type": "string" },
         "producer": { "const": "I8" },
         "source_id": { "type": "string", "minLength": 1 },
         "session_id": { "type": "string", "format": "uuid" },
@@ -57,7 +57,21 @@
           "minItems": 4,
           "maxItems": 4
         }
-      }
+      },
+      "oneOf": [
+        {
+          "properties": {
+            "schema": { "const": "ods.i8.piece_analysis" },
+            "schema_version": { "const": "1.0" }
+          }
+        },
+        {
+          "properties": {
+            "schema": { "const": "ods.industria.defeito_classificado" },
+            "schema_version": { "const": "2.0" }
+          }
+        }
+      ]
     },
     "times": {
       "type": "object",

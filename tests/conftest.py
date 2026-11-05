@@ -74,11 +74,24 @@ def client(settings):
 
     from backend.app import create_app
 
-    from unittest.mock import patch
     # These are business/database integration tests; transport has its own suite.
-    with patch("backend.app.A1IngestionClient.start"), patch("backend.app.A1IngestionClient.stop"):
-        with TestClient(create_app(settings)) as test_client:
-            yield test_client
+    with TestClient(create_app(settings, consumer_factory=OfflineSubscriber)) as test_client:
+        yield test_client
+
+
+class OfflineSubscriber:
+    """No Kafka client is constructed by database/API integration tests."""
+    def __init__(self, **kwargs):
+        pass
+
+    def comecar_a_consumir(self):
+        pass
+
+    def parar(self):
+        pass
+
+    def health_snapshot(self):
+        return {"name": "i8-subscriber", "status": "UP", "detail": "Double offline de teste."}
 
 
 @pytest.fixture

@@ -1,0 +1,138 @@
+x-backend-build: &backend-build
+  context: ..
+  target: backend
+
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: a1
+      POSTGRES_USER: a1
+      POSTGRES_PASSWORD: ver1-lab-only
+    volumes:
+      - lab-db:/var/lib/postgresql/data
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U a1 -d a1"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+
+  kafka:
+    image: apache/kafka:3.9.1
+    hostname: kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+      CLUSTER_ID: Qy0ysubDRN2sUKS2fPMXLw
+    healthcheck:
+      test: [CMD-SHELL, "/opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null 2>&1"]
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 15s
+
+  kafka-init:
+    image: apache/kafka:3.9.1
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint: [/opt/kafka/bin/kafka-topics.sh]
+    command: [--bootstrap-server, "kafka:9092", --create, --if-not-exists, --topic, ods.industria.defeito_classificado, --partitions, "1", --replication-factor, "1"]
+
+  backend:
+    build: *backend-build
+    environment:
+      DATABASE_URL: postgresql://a1:ver1-lab-only@db:5432/a1
+      KAFKA_BROKER_URL: kafka:9092
+      KAFKA_TOPIC: ods.industria.defeito_classificado
+      KAFKA_GROUP_ID: ver1-lab-a1
+    ports:
+      - "127.0.0.1:18000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test: [CMD, python, -c, "import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health', timeout=2))['status']=='ONLINE'"]
+      interval: 5s
+      timeout: 3s
+      retries: 30
+
+  frontend:
+    build:
+      context: ..
+      target: frontend
+    environment:
+      A1_API_BASE: /api/v1
+    ports:
+      - "127.0.0.1:18080:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+
+  testes-a1:
+    profiles: [ferramentas]
+    build:
+      context: ..
+      target: tests
+    environment:
+      A1_TEST_DATABASE_URL: postgresql://a1:ver1-lab-only@db:5432/a1
+    depends_on:
+      db:
+        condition: service_healthy
+
+  contratos-i8:
+    profiles: [ferramentas]
+    build:
+      context: .
+      dockerfile: Dockerfile.contratos
+    volumes:
+      - ..:/repos/a1:ro
+      - ../../i8:/repos/i8:ro
+    working_dir: /repos/i8
+    command: [python, -m, pytest, -q, -p, "no:cacheprovider", tests/test_contracts_6c.py, tests/test_kafka_contract_1_1_candidate.py, tests/test_kafka_contract_2_0.py]
+
+  interoperabilidade:
+    profiles: [ferramentas]
+    build:
+      context: .
+      dockerfile: Dockerfile.contratos
+    volumes:
+      - ..:/repos/a1:ro
+      - ../../i8:/repos/i8:ro
+    command: [python, /repos/a1/scripts/validar_interoperabilidade_kafka_2_0.py, --a1, /repos/a1, --i8, /repos/i8]
+
+  prova:
+    profiles: [ferramentas]
+    build: *backend-build
+    user: "${VER1_UID:-1000}:${VER1_GID:-1000}"
+    environment:
+      DATABASE_URL: postgresql://a1:ver1-lab-only@db:5432/a1
+      KAFKA_BROKER_URL: kafka:9092
+      KAFKA_TOPIC: ods.industria.defeito_classificado
+      KAFKA_GROUP_ID: ver1-lab-a1
+      API_URL: http://backend:8000/api/v1
+    volumes:
+      - ./provar_fluxo.py:/lab/provar_fluxo.py:ro
+      - ./evidencias:/evidencias
+    entrypoint: [python, /lab/provar_fluxo.py]
+    command: []
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  lab-db:
