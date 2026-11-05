@@ -4,7 +4,7 @@
 
 O A1 está no projeto Google Cloud `project-edbbdc9c-ccf7-4c1e-bcd`. O projeto `project-7b075f85-c4b9-4221-bfa` não contém a VM e não é o ambiente do A1.
 
-A aplicação roda na VM `a1-vm`, tipo `e2-small`, zona `southamerica-east1-b`, em São Paulo. O deploy usa Docker Compose, Caddy, nginx, backend Python e PostgreSQL 17.
+A aplicação roda na VM `a1-vm`, tipo `n2-standard-2`, zona `southamerica-east1-b`, em São Paulo. O deploy usa Docker Compose, Caddy, nginx, backend Python e PostgreSQL 17.
 
 O IP externo fixo chama-se `a1-ip` e vale `34.95.237.94`. O domínio gerado pelo script de inicialização é `34-95-237-94.sslip.io`. O valor também fica em `A1_DOMAIN`, no arquivo `/opt/a1/.env` da VM.
 
@@ -66,6 +66,8 @@ O A1 consome o tópico `ods.industria.defeito_classificado`, contrato 2.0, usand
 
 O broker B2 indicado para testes compartilhados é `34.66.235.91:9093`. Esse endereço é do Kafka, não do frontend, API, banco ou VM A1. A validação das etapas 07–09 usa Kafka local isolado em Docker e não altera o broker compartilhado.
 
+No boot, `docker/gcp-startup.sh` configura esse broker B2 quando `KAFKA_BROKER_URL` está ausente, vazio ou contém `localhost:9092`/`127.0.0.1:9092`. Um endereço remoto personalizado é preservado. O B2 é temporário para testes; quando o broker final estiver disponível, configure seu endereço no `.env`.
+
 ## Desenvolvimento local
 
 | Recurso | Endereço |
@@ -78,6 +80,8 @@ O broker B2 indicado para testes compartilhados é `34.66.235.91:9093`. Esse end
 ## Deploy e atualização
 
 O script [`docker/gcp-startup.sh`](../docker/gcp-startup.sh) clona ou atualiza `/opt/a1`, preserva o `.env` e executa `docker compose up -d --build --remove-orphans`. Reiniciar a VM executa esse script novamente.
+
+O arquivo no Git e o `startup-script` instalado na metadata da VM são cópias distintas. Atualizar a `main` não substitui automaticamente a metadata: para aplicar o novo comportamento no boot, atualize também o startup script configurado na VM. O procedimento de atualização por `docker compose` abaixo não executa o startup script nem preenche a variável Kafka; nesse caso, configure `KAFKA_BROKER_URL=34.66.235.91:9093` no `/opt/a1/.env` antes de subir os serviços, preservando as demais variáveis.
 
 ### Atualização dentro da VM
 
@@ -118,7 +122,7 @@ sudo docker compose ps
 curl -fsS "https://$(sudo sed -n 's/^A1_DOMAIN=//p' .env)/api/v1/health"
 ```
 
-O retorno esperado da saúde é `ONLINE`. O componente `i8-subscriber` só fica `UP` quando `KAFKA_BROKER_URL`, tópico e rede do broker estão corretos.
+Verifique os componentes: `api-a1` e `database` devem estar `UP`; após configurar Kafka, `i8-subscriber` também deve ficar `UP`, com broker, tópico e rede acessíveis. `s4` permanece `DOWN` até a implementação do adaptador em S3-09. No backend atual, o estado global considera somente banco e assinante Kafka: pode retornar `ONLINE` mesmo com S4 indisponível. Portanto, o estado global sozinho não comprova que todas as integrações estão concluídas; enquanto Kafka estiver `DOWN`, ele será `DEGRADED`.
 
 ```bash
 sudo docker compose logs --tail=200 backend frontend db caddy
@@ -126,4 +130,4 @@ sudo docker compose exec db pg_isready -U a1 -d a1
 sudo docker compose exec db psql -U a1 -d a1 -c 'SELECT count(*) FROM inspections;'
 ```
 
-Em 5 de novembro de 2026, a URL pública respondeu HTTP 200, e API e PostgreSQL estavam `UP`. A VM ainda executava a versão anterior, na qual `i8-subscriber` aparecia como `SIMULATED`. Atualize a `main`, configure `KAFKA_BROKER_URL` e repita a verificação para concluir o deploy Kafka.
+Na verificação pública mais recente, em 5 de novembro de 2026, a VM `n2-standard-2` estava em execução e o endpoint de saúde retornou `ONLINE`. Os componentes `api-a1`, `database` e `i8-subscriber` estavam `UP`; o assinante confirmou acesso ao broker B2 e ao tópico `ods.industria.defeito_classificado`. O frontend público também abriu em modo de API real. S4 permaneceu `DOWN`, pois seu adaptador ainda não está implementado em S3-09. O estado `ONLINE` não significa que S4 esteja concluído.

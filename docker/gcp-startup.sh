@@ -39,4 +39,13 @@ fi
 set_env A1_PORT 127.0.0.1:5500
 set_env COMPOSE_PROFILES https
 
+# Na VM, o fallback local do Compose aponta para o próprio container.
+# Preencha o broker B2 de testes sem sobrescrever um broker remoto configurado.
+broker=$(sed -n 's/^KAFKA_BROKER_URL=//p' .env | tail -n 1)
+case "$broker" in
+  ""|localhost:9092|127.0.0.1:9092)
+    set_env KAFKA_BROKER_URL 34.66.235.91:9093
+    ;;
+esac
+
 docker compose up -d --build --remove-orphans
