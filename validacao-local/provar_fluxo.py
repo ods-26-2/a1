@@ -272,7 +272,9 @@ def publish_during_database_failure():
             return health
         return None
 
-    health = wait_for(failed_persistence_health, timeout=30)
+    # Pool acquisition can take 30 seconds to fail; leave time for health polling
+    # to observe the actual persistence error before testing the pending offset.
+    health = wait_for(failed_persistence_health, timeout=60)
     after = offsets()
     if after["committed"] >= after["high"]:
         raise AssertionError("Offset confirmado durante a falha; interrompa o PostgreSQL antes desta prova")

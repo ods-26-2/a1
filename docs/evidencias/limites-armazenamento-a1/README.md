@@ -41,3 +41,15 @@ O projeto Docker local foi encerrado com `down -v`. Não houve acesso ao broker
 compartilhado. A prova específica dos números fora do limite usa PostgreSQL
 real e o consumidor real com cliente Kafka substituído; não é uma nova prova
 de inferência I8 ou do fluxo industrial completo.
+
+## Ajuste da prova automática de indisponibilidade
+
+A [primeira execução no GitHub](https://github.com/ods-26-2/a1/actions/runs/42116569361)
+passou no fluxo normal, deduplicação, revisão e reinício, mas expirou na espera
+pela falha de persistência. O pool levou 30 segundos para falhar, igual à janela
+de observação do teste. O erro apareceu no log imediatamente antes de a prova
+encerrar, sem margem para a próxima consulta de saúde.
+
+A janela dessa observação foi ampliada para 60 segundos. As exigências de saúde
+degradada, erro real de persistência e offset pendente foram mantidas. O ajuste
+afeta somente o roteiro de teste; não altera prazos ou comportamento do backend.
