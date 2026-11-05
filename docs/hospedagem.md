@@ -130,4 +130,4 @@ sudo docker compose exec db pg_isready -U a1 -d a1
 sudo docker compose exec db psql -U a1 -d a1 -c 'SELECT count(*) FROM inspections;'
 ```
 
-Na verificação pública mais recente, em 5 de novembro de 2026, API e PostgreSQL estavam `UP`, mas o estado global estava `DEGRADED`: `i8-subscriber` estava `DOWN`, tentando acessar `localhost:9092` dentro do container. S4 também estava `DOWN`, pois seu adaptador ainda não está implementado. A VM foi confirmada como `n2-standard-2`. Configure o broker B2, recrie o backend e repita a verificação; esta documentação não afirma que a conexão ao broker compartilhado já foi validada. O S4 pendente não é corrigido pela configuração Kafka.
+Na verificação pública mais recente, em 5 de novembro de 2026, a VM `n2-standard-2` estava em execução e o endpoint de saúde retornou `ONLINE`. Os componentes `api-a1`, `database` e `i8-subscriber` estavam `UP`; o assinante confirmou acesso ao broker B2 e ao tópico `ods.industria.defeito_classificado`. O frontend público também abriu em modo de API real. S4 permaneceu `DOWN`, pois seu adaptador ainda não está implementado em S3-09. O estado `ONLINE` não significa que S4 esteja concluído.
