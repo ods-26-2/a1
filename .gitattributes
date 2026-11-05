@@ -2,5 +2,9 @@
 # fim de linha (core.autocrlf), senão o hash deixa de bater no Windows e no Docker.
 shared/artifacts/** -text
 
+# Contratos compartilhados são comparados byte a byte entre A1 e I8.
+shared/schemas/6c/*.json text eol=lf
+shared/mocks/kafka-2.0/** text eol=lf
+
 # Scripts executados no Linux (VM) precisam de LF.
 *.sh text eol=lf
