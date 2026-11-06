@@ -1,0 +1,9 @@
+status=REGRESSAO_LOCAL_APROVADA
+workflow_run=https://github.com/ods-26-2/a1/actions/runs/42218589659
+commit=9724856a6ba0ff2fb0d90db14362137933daf9ee
+python_tests=387 passed; 1 skipped; 0 failures; 0 errors
+frontend_tests=27 passed; 0 failures
+contracts=PASS
+database=PASS
+kafka=PASS
+restart=PASS

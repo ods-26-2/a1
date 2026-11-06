@@ -85,3 +85,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 ## Composição S3-12 — atividade 28
 
 [Composição local, prova e limites](../evidencias/atividade-28/README.md), com [manifesto de aceite](../evidencias/atividade-28/manifesto.json). Resultado: **APROVADA_COMPOSICAO_LOCAL**. A1, publisher I8 fixado, Kafka e PostgreSQL são configurados por ambiente; envio, reenvio, deduplicação, API/frontend e reinício passaram. A prova usa eventos sintéticos e não homologa inferência ou ambiente industrial.
+
+## Regressão completa — atividade 29
+
+[Runner, escopo e evidências](../evidencias/atividade-29/README.md). Resultado: **REGRESSAO_LOCAL_APROVADA**, com 387 testes Python e 27 frontend aprovados, além de contratos, PostgreSQL, Kafka, persistência e reinício. Um teste integrado I8 foi ignorado por exigir checkout local; o publisher I8 fixado foi exercitado na composição. A prova usa eventos sintéticos; inferência real e integrações externas permanecem fora do resultado.

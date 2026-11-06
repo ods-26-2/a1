@@ -1,0 +1,43 @@
+name: Sprint 3 - fechamento reproduzível
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'fechamento-sprint3/**'
+      - 'composicao-ver1/**'
+      - 'backend/**'
+      - 'frontend/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'validacao-local/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'package.json'
+      - 'requirements*.txt'
+      - '.github/workflows/fechamento-sprint3.yml'
+permissions:
+  contents: read
+jobs:
+  regressao:
+    name: Atividade 29 - regressão completa
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Executar contratos, banco, Kafka, frontend e reinício
+        run: bash fechamento-sprint3/regressao.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: atividade-29-regressao-${{ github.sha }}
+          path: |
+            fechamento-sprint3/evidencias/atividade-29/
+            composicao-ver1/evidencias/
+          retention-days: 30
+      - name: Garantir encerramento dos laboratórios
+        if: always()
+        run: |
+          docker compose -p ver1-sprint3-regressao -f validacao-local/compose-s5-p7.yml down -v --remove-orphans
+          bash composicao-ver1/executar.sh parar
