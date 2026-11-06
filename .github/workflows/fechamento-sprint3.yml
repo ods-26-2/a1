@@ -15,6 +15,7 @@ on:
       - 'package.json'
       - 'requirements*.txt'
       - 'scripts/capture_sprint3_closure.mjs'
+      - 'scripts/capture_readiness.mjs'
       - 'scripts/build_closure_manifest.py'
       - 'scripts/verify_closure_evidence.py'
       - 'docs/evidencias/atividade-31/**'

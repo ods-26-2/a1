@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { extname, join, resolve, sep } from "node:path";
+import { inspectionReady } from "./capture_readiness.mjs";
 
 const CHROME = process.argv[2] ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const FFMPEG = process.argv[3] ?? "ffmpeg";
@@ -27,94 +28,9 @@ const server = createServer((request, response) => {
   try { response.setHeader("Content-Type", mime[extname(path)] ?? "application/octet-stream"); response.end(readFileSync(path)); }
   catch { response.writeHead(404); response.end(); }
 });
-await new Promise((done) => server.listen(0, "127.0.0.1", done));
-
-const profile = mkdtempSync(join(tmpdir(), "a1-sprint3-chrome-"));
-const chrome = spawn(CHROME, [
-  "--headless=new", "--disable-gpu", "--no-first-run", "--hide-scrollbars",
-  "--remote-debugging-port=0", `--user-data-dir=${profile}`, "about:blank",
-], { windowsHide: true, stdio: "ignore" });
-let socket;
-
-async function ffmpeg(args) {
-  await new Promise((done, reject) => {
-    const process = spawn(FFMPEG, args, { windowsHide: true, stdio: "inherit" });
-    process.once("error", reject);
-    process.once("exit", (code) => code === 0 ? done() : reject(new Error(`ffmpeg terminou com ${code}`)));
-  });
-}
-
-try {
-  let port;
-  for (let attempt = 0; attempt < 80; attempt += 1) {
-    try { port = Number(readFileSync(join(profile, "DevToolsActivePort"), "utf8").split("\n")[0]); break; }
-    catch { await sleep(100); }
-  }
-  if (!port) throw new Error("Chrome não iniciou.");
-  const targets = await (await fetch(`http://127.0.0.1:${port}/json`)).json();
-  socket = new WebSocket(targets.find((item) => item.type === "page").webSocketDebuggerUrl);
-  await new Promise((done) => socket.addEventListener("open", done));
-
-  const pending = new Map();
-  const errors = [];
-  let id = 0;
-  socket.addEventListener("message", ({ data }) => {
-    const message = JSON.parse(data);
-    if (message.method === "Runtime.exceptionThrown") errors.push(message.params.exceptionDetails.text);
-    if (message.method === "Log.entryAdded" && message.params.entry.level === "error") errors.push(message.params.entry.text);
-    if (pending.has(message.id)) {
-      const { done, reject } = pending.get(message.id); pending.delete(message.id);
-      message.error ? reject(new Error(JSON.stringify(message.error))) : done(message.result);
-    }
-  });
-  function send(method, params = {}) {
-    return new Promise((done, reject) => {
-      const current = ++id;
-      pending.set(current, { done, reject });
-      socket.send(JSON.stringify({ id: current, method, params }));
-    });
-  }
-  async function evaluate(expression) {
-    const response = await send("Runtime.evaluate", { expression, returnByValue: true, awaitPromise: true });
-    if (response.exceptionDetails) throw new Error(JSON.stringify(response.exceptionDetails));
-    return response.result.value;
-  }
-  async function waitFor(expression) {
-    for (let attempt = 0; attempt < 120; attempt += 1) {
-      if (await evaluate(expression)) return;
-      await sleep(100);
-    }
-    throw new Error(`Timeout: ${expression}`);
-  }
-  async function screenshot(path) {
-    const { data } = await send("Page.captureScreenshot", { format: "png", captureBeyondViewport: false });
-    const buffer = Buffer.from(data, "base64");
-    writeFileSync(path, buffer);
-    return buffer;
-  }
-  let frame = 0;
-  function addFrames(buffer, count = 12) {
-    for (let index = 0; index < count; index += 1) {
-      writeFileSync(join(frames, `frame-${String(frame++).padStart(5, "0")}.png`), buffer);
-    }
-  }
-  async function record(path, count = 15) { addFrames(await screenshot(path), count); }
-  async function scrollTo(selector) {
-    const start = await evaluate("window.scrollY");
-    const target = await evaluate(`document.querySelector(${JSON.stringify(selector)}).getBoundingClientRect().top + window.scrollY - 20`);
-    for (let step = 1; step <= 10; step += 1) {
-      await evaluate(`window.scrollTo(0, ${start} + (${target} - ${start}) * ${step / 10})`);
-      await sleep(50);
-      addFrames(await screenshot(join(frames, "transition.png")), 1);
-    }
-  }
-
-  await send("Runtime.enable"); await send("Log.enable"); await send("Page.enable");
-  await send("Emulation.setEmulatedMedia", { features: [{ name: "prefers-reduced-motion", value: "reduce" }] });
-  await send("Emulation.setDeviceMetricsOverride", { width: 1366, height: 768, deviceScaleFactor: 1, mobile: false });
-  const base = `http://127.0.0.1:${server.address().port}/frontend/?api=fake&scenario=NON_CONFORMING&fault=NONE`;
+await new Promise((done) => server.listen(0, "127.0.0.1", done…1017 tokens truncated…nario=NON_CONFORMING&fault=NONE`;
   await send("Page.navigate", { url: base });
-  await waitFor(`!document.querySelector('#history-summary').textContent.includes('Carregando') && document.querySelector('#inspection-id').textContent !== '—'`);
+  await waitFor(`(${inspectionReady.toString()})(document)`);
   addFrames(await screenshot(join(frames, "initial.png")), 12);
 
   await scrollTo("#history-title");
