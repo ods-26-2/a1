@@ -14,6 +14,10 @@ on:
       - '.dockerignore'
       - 'package.json'
       - 'requirements*.txt'
+      - 'scripts/capture_sprint3_closure.mjs'
+      - 'scripts/build_closure_manifest.py'
+      - 'scripts/verify_closure_evidence.py'
+      - 'docs/evidencias/atividade-31/**'
       - '.github/workflows/fechamento-sprint3.yml'
 permissions:
   contents: read
@@ -63,3 +67,21 @@ jobs:
       - name: Garantir encerramento do laboratório
         if: always()
         run: bash composicao-ver1/executar.sh parar
+  evidencias:
+    name: Atividade 31 - vídeo e evidências
+    needs: metricas
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Garantir ffmpeg
+        run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+      - name: Repetir captura visual
+        run: node scripts/capture_sprint3_closure.mjs "$(command -v google-chrome)" "$(command -v ffmpeg)" "$RUNNER_TEMP/atividade-31"
+      - name: Verificar evidências versionadas
+        run: python scripts/verify_closure_evidence.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: atividade-31-evidencias-${{ github.sha }}
+          path: ${{ runner.temp }}/atividade-31/
+          retention-days: 30
