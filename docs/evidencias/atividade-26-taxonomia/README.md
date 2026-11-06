@@ -2,7 +2,7 @@
 
 Data: 06/11/2026. Critério do plano, página 4: “A1 e I8 usam mesma versão, descritor e hash”. Resultado local: **VERIFICADA_REFERENCIA_COMPARTILHADA**. Os dois loaders consumiram o mesmo pacote A1 e concordaram sobre versão, descritor inteiro, classes e SHA-256. O teste não afirma que um processo implantado já esteja configurado com esses arquivos, nem prova os bytes usados no treino histórico I8.
 
-O [manifesto fixado](manifesto.json) registra origem, commits, hashes dos arquivos, descritor integral e limites da evidência. O [verificador executável](../../../scripts/verify_final_taxonomy.py) retorna zero somente quando toda a cadeia passa. Não há normalização de fim de linha, fallback para outra versão, checkout I8, acesso à rede/B5 ou importação de Torch.
+O [manifesto fixado](../../../shared/manifests/atividade-26-taxonomia.json) registra origem, commits, hashes dos arquivos, descritor integral e limites da evidência. Ele fica em `shared/` para integrar a imagem de testes, enquanto `docs/` permanece excluído do contexto Docker. O [verificador executável](../../../scripts/verify_final_taxonomy.py) retorna zero somente quando toda a cadeia passa. Não há normalização de fim de linha, fallback para outra versão, checkout I8, acesso à rede/B5 ou importação de Torch.
 
 ## Cadeia de proveniência comprovada
 

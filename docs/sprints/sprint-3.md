@@ -76,7 +76,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 
 ## Taxonomia final A1/I8 — atividade 26
 
-[Verificação executável e proveniência](../evidencias/atividade-26-taxonomia/README.md) e [manifesto com commits/descritor/hashes](../evidencias/atividade-26-taxonomia/manifesto.json). Resultado local: **VERIFICADA_REFERENCIA_COMPARTILHADA**, com loaders A1/I8 consumindo os mesmos bytes e recusando divergências. I8 referencia o pacote A1; implantação e hash da taxonomia no treino histórico não estão comprovados por essa igualdade local.
+[Verificação executável e proveniência](../evidencias/atividade-26-taxonomia/README.md) e [manifesto com commits/descritor/hashes](../../shared/manifests/atividade-26-taxonomia.json). Resultado local: **VERIFICADA_REFERENCIA_COMPARTILHADA**, com loaders A1/I8 consumindo os mesmos bytes e recusando divergências. I8 referencia o pacote A1; implantação e hash da taxonomia no treino histórico não estão comprovados por essa igualdade local.
 
 ## Componentes B6 — atividade 27
 

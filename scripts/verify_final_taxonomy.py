@@ -19,7 +19,7 @@ if str(ROOT) not in sys.path:
 
 from backend.taxonomy import TaxonomyCatalog, _validate
 
-DEFAULT_MANIFEST = ROOT / "docs/evidencias/atividade-26-taxonomia/manifesto.json"
+DEFAULT_MANIFEST = ROOT / "shared/manifests/atividade-26-taxonomia.json"
 
 
 class VerificationError(ValueError):
