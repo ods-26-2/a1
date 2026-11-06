@@ -57,9 +57,12 @@ class InspectionService:
         row = self.repository.find(inspection_id)
         if row is None:
             return None
+        return self.history_view(row, self.repository.reviews(inspection_id), self.repository.audit_events(inspection_id))
+
+    def history_view(self, row, reviews, events):
         view = self.view(row)
         return {
-            "inspection_id": inspection_id,
+            "inspection_id": row["inspection_id"],
             "triage": view["triage"],
             "final_decision": view["final_decision"],
             "reviews": [
@@ -73,7 +76,7 @@ class InspectionService:
                     "defect_class": review["defect_class"] if review["classification_set"] else row["defect_class"],
                     "taxonomy_version": row["taxonomy_version"],
                 }
-                for review in self.repository.reviews(inspection_id)
+                for review in reviews
             ],
             "events": [
                 {
@@ -82,7 +85,7 @@ class InspectionService:
                     "occurred_at": to_iso(event["occurred_at"]),
                     "details": event["details"],
                 }
-                for event in self.repository.audit_events(inspection_id)
+                for event in events
             ],
         }
 

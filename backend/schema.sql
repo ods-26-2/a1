@@ -139,6 +139,21 @@ CREATE OR REPLACE TRIGGER audit_events_immutable
     BEFORE UPDATE OR DELETE OR TRUNCATE ON audit_events
     FOR EACH STATEMENT EXECUTE FUNCTION a1_reject_change();
 
+-- Activity 22: operator-reported probable causes, never inferred from labels.
+CREATE TABLE IF NOT EXISTS inspection_causes (
+    seq bigserial PRIMARY KEY,
+    cause_id uuid NOT NULL UNIQUE,
+    inspection_id text NOT NULL REFERENCES inspections (inspection_id),
+    operator text NOT NULL CHECK (length(operator) BETWEEN 1 AND 64),
+    cause text NOT NULL CHECK (length(cause) BETWEEN 1 AND 200),
+    basis text NOT NULL CHECK (length(basis) BETWEEN 1 AND 1000),
+    recorded_at timestamptz NOT NULL
+);
+CREATE INDEX IF NOT EXISTS inspection_causes_inspection_idx ON inspection_causes (inspection_id, seq DESC);
+CREATE OR REPLACE TRIGGER inspection_causes_immutable
+    BEFORE UPDATE OR DELETE OR TRUNCATE ON inspection_causes
+    FOR EACH STATEMENT EXECUTE FUNCTION a1_reject_change();
+
 -- S3-09: durable S4 transport data; existing commands/payloads remain unchanged.
 ALTER TABLE commands ADD COLUMN IF NOT EXISTS transport_envelope jsonb;
 ALTER TABLE commands ADD COLUMN IF NOT EXISTS response_clip_id uuid;

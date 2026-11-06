@@ -13,6 +13,10 @@ Schemas executáveis: `shared/schemas/a1-api/`. Fixtures da API fake:
 |---|---|---|
 | GET | `/api/v1/health` | `Health` (200). Falha de rede ou timeout = OFFLINE no front |
 | GET | `/api/v1/inspections` | `InspectionList` (200): busca histórica paginada e filtrada |
+| GET | `/api/v1/reports/recurrence` | Recorrência por origem/taxonomia/defeito original |
+| GET | `/api/v1/reports/causes` | Hipóteses operacionais declaradas, ou ausência explícita |
+| GET | `/api/v1/inspections/{inspection_id}/report` | Relatório individual com análise, decisões, evidência, auditoria e causas |
+| POST | `/api/v1/inspections/{inspection_id}/causes` | Hipótese declarada por operador, auditada (201) ou 404 |
 | GET | `/api/v1/inspections/current` | `InspectionView` (200) ou `204` sem inspeção |
 | GET | `/api/v1/inspections/review-queue?limit=20&offset=0` | `ReviewQueue` com items, total, limit e offset |
 | GET | `/api/v1/inspections/{inspection_id}` | `InspectionView` (200) ou `404` |
@@ -111,6 +115,39 @@ Na tela, campos de período são explicitamente UTC, limite fixo de 20,
 anterior/próximas e botão de limpar filtros. Clique em um registro abre os
 detalhes/revisões existentes. Modo fake aplica as mesmas regras às quatro
 fixtures, sem persistência; modo real consulta somente a API A1.
+
+## Relatórios e causas — atividade 22
+
+`report.schema.json` descreve os relatórios. Agregados exigem `captured_from` e
+`captured_to` (máximo 31 dias), aceitam `result/source_id/defect_class` da busca
+histórica e recusam paginação. Limite de 5000 inspeções, sem truncamento.
+Recorrência agrupa análise NON_CONFORMING por origem, versão de taxonomia e
+classe original: `count >= 2` é recorrente e `rate=count/total_inspections`
+usa o denominador filtrado, não peças únicas nem uma taxa global presumida.
+
+`POST .../causes` recebe `{operator, cause, basis}` (64/200/1000 caracteres,
+não vazios após trim). Retorna `cause.schema.json`: ID, inspeção, operador,
+hipótese, fundamentação, horário e `status: OPERATOR_REPORTED`. Autor é
+declarado, como nas revisões existentes. É hipótese, não causalidade comprovada;
+classe de defeito e motivo de revisão nunca são convertidos em causa.
+Novos registros substituem a hipótese vigente no agregado por ordem de `seq`,
+preservando todas as anteriores e `CAUSE_RECORDED` em transação atômica.
+Agrupamento por texto exato, sensível a maiúsculas; ausência é `NOT_RECORDED`.
+
+Relatório individual lê InspectionView, revisões, auditoria e causas em um
+snapshot repetível, com até 5000 entradas de cada trilha. Não baixa mídia.
+Relatórios incluem `report_version: 1.0`, `kind` e `generated_at`. Os agregados
+incluem filtros efetivos e `total_inspections`; novas consultas podem refletir
+revisões/hipóteses/expiração novas. Leituras não escrevem eventos de auditoria.
+
+Todas as rotas GET de relatório aceitam `file_format=json|csv`, padrão JSON.
+Exportação tem máximo 10 MiB, nome fixo em Content-Disposition, UTF-8, no-store
+e nosniff. CSV usa BOM/CRLF/aspas em todas as células, neutraliza fórmulas e
+preserva dados aninhados em colunas `section,record_json`. A interface baixa
+Blob do objeto já carregado; a API também pode exportar diretamente. Campos
+desconhecidos e limites inválidos retornam 422, recurso ausente 404, timeout SQL
+de 5 segundos por comando ou banco indisponível 503. Excesso de registros ou
+tamanho retorna 422, sem resultado parcial. Consulte as [evidências e roteiro](../evidencias/atividade-22-relatorios/README.md).
 
 ## InspectionHistory
 

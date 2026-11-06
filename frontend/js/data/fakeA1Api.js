@@ -3,6 +3,7 @@
 // eventos 6c válidos. Nada é persistido e a mídia representa um S4 simulado.
 import { A1ApiError, API_ERROR_KINDS } from "./apiError.js";
 import { inspectionSearchOptions } from "./inspectionSearch.js";
+import { aggregateFakeReport } from "./reports.js";
 
 const REPO_ROOT = new URL("../../../", import.meta.url);
 const FIXTURE_DIR = "shared/mocks/a1-api/inspections/";
@@ -54,6 +55,7 @@ export function createFakeA1Api({
   const root = new URL(rootUrl);
   const reviews = new Map();
   const history = new Map();
+  const causes = new Map();
   let reviewCounter = 0;
   let currentScenario = findById(FAKE_SCENARIOS, scenario, "Cenário");
   let currentFault = findById(FAKE_FAULTS, fault, "Falha");
@@ -179,6 +181,24 @@ export function createFakeA1Api({
       return { items: pending.slice(offset, offset + limit), total: pending.length, limit, offset };
     },
 
+    async getAggregateReport(kind, filters) {
+      const page = await this.searchInspections({ ...filters, limit: 100 });
+      return aggregateFakeReport(kind, page.items, causes, filters, now().toISOString());
+    },
+
+    async getInspectionReport(inspectionId) {
+      const view = await this.getInspection(inspectionId);
+      return { report_version: "1.0", kind: "inspection", generated_at: now().toISOString(),
+        inspection: view, history: await this.getHistory(inspectionId), causes: causes.get(inspectionId) ?? [] };
+    },
+
+    async recordCause(inspectionId, body) {
+      await this.getInspection(inspectionId);
+      const entry = { ...body, cause_id: globalThis.crypto.randomUUID(), inspection_id: inspectionId, recorded_at: now().toISOString(), status: "OPERATOR_REPORTED" };
+      causes.set(inspectionId, [...(causes.get(inspectionId) ?? []), entry]);
+      return entry;
+    },
+
     async getReviewOptions(inspectionId) {
       const view = await this.getInspection(inspectionId);
       const response = await fetchImpl(new URL(`shared/artifacts/defect-taxonomy/${view.versions.taxonomy}/content.json`, root));
@@ -189,7 +209,10 @@ export function createFakeA1Api({
     async getHistory(inspectionId) {
       const view = await this.getInspection(inspectionId);
       return { inspection_id: inspectionId, triage: view.triage, final_decision: view.final_decision,
-        reviews: structuredClone(history.get(inspectionId) ?? []), events: [] };
+        reviews: structuredClone(history.get(inspectionId) ?? []), events: (causes.get(inspectionId) ?? []).map((entry) => ({
+          event_type: "CAUSE_RECORDED", actor: entry.operator, occurred_at: entry.recorded_at,
+          details: { cause_id: entry.cause_id, cause: entry.cause, basis: entry.basis, status: entry.status },
+        })) };
     },
 
     async submitReview(inspectionId, { action, operator, reason, status, defect_class = null }) {

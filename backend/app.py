@@ -25,6 +25,7 @@ from .services import Services, build_services
 from .kafka_client import A1KafkaConsumer
 from .s4_kafka import S4KafkaWorker
 from .inspection_search import InspectionSearch
+from .reports import CauseRequest, ReportQuery, InspectionReportQuery, ReportLimitExceeded, render_report
 
 
 API_PREFIX = "/api/v1"
@@ -120,6 +121,14 @@ def create_app(
     async def database_unavailable(request: Request, exc: Exception) -> JSONResponse:
         return JSONResponse({"detail": "Banco de dados do A1 indisponível."}, status_code=503)
 
+    @app.exception_handler(ReportLimitExceeded)
+    async def report_limit(request: Request, exc: Exception) -> JSONResponse:
+        return JSONResponse({"detail": str(exc)}, status_code=422)
+
+    @app.exception_handler(psycopg.errors.QueryCanceled)
+    async def report_timeout(request: Request, exc: Exception) -> JSONResponse:
+        return JSONResponse({"detail": "Consulta excedeu o prazo; reduza o período/filtros."}, status_code=503)
+
     @app.get(f"{API_PREFIX}/health")
     def health(request: Request) -> dict:
         try:
@@ -147,6 +156,24 @@ def create_app(
                 s4,
             ],
         }   
+
+    @app.get(f"{API_PREFIX}/reports/{{kind}}")
+    def aggregate_report(kind: Literal["recurrence", "causes"], request: Request,
+                         filters: Annotated[ReportQuery, Query()]):
+        return render_report(services(request).reports.aggregate(kind, filters), filters.file_format)
+
+    @app.get(f"{API_PREFIX}/inspections/{{inspection_id}}/report")
+    def inspection_report(inspection_id: str, request: Request,
+                          options: Annotated[InspectionReportQuery, Query()]):
+        report = services(request).reports.inspection(inspection_id)
+        if report is None: raise HTTPException(404, "Inspeção não encontrada.")
+        return render_report(report, options.file_format)
+
+    @app.post(f"{API_PREFIX}/inspections/{{inspection_id}}/causes", status_code=201)
+    def record_cause(inspection_id: str, body: CauseRequest, request: Request):
+        cause = services(request).reports.record_cause(inspection_id, body)
+        if cause is None: raise HTTPException(404, "Inspeção não encontrada.")
+        return cause
 
     @app.get(f"{API_PREFIX}/inspections")
     def search_inspections(request: Request, filters: Annotated[InspectionSearch, Query()]) -> dict:

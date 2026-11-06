@@ -69,6 +69,9 @@ export function createHttpA1Api({
     getHealth: () => request("health"),
     getCurrentInspection: () => request("inspections/current"),
     searchInspections: (filters) => request(`inspections?${new URLSearchParams(filters)}`),
+    getAggregateReport: (kind, filters) => request(`reports/${kind}?${new URLSearchParams(filters)}`),
+    getInspectionReport: (id) => request(`inspections/${encodeURIComponent(id)}/report`),
+    recordCause: (id, body) => request(`inspections/${encodeURIComponent(id)}/causes`, { method: "POST", body }),
     getInspection: (inspectionId) =>
       request(`inspections/${encodeURIComponent(inspectionId)}`),
     getReviewQueue: ({ limit = 20, offset = 0 } = {}) =>

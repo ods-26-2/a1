@@ -62,6 +62,10 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 
 [Contrato da busca histórica](../contratos/a1-api.md#inspectionlist--histórico-pesquisável-s3-10--atividade-21) e [evidências/roteiro](../evidencias/atividade-21-historico/README.md). API PostgreSQL e tela com período de captura, resultado I8, origem e defeito originais combináveis, ordenação estável e paginação. Auditoria por ID e revisões existentes preservadas; relatórios e recorrência ficam na atividade 22.
 
+## Recorrência, causas e relatórios locais — atividade 22
+
+[Semântica, limites, exportações e evidências](../evidencias/atividade-22-relatorios/README.md). Agregações determinísticas dos filtros21; causa operacional somente declarada por operador com fundamentação e auditoria, separada do defeito e da revisão; relatório integral de inspeção e downloads locais JSON/CSV. Sem causalidade automática ou dependência externa nova.
+
 ## Preparação S5 e revalidação P7 — atividades 23 e 24
 
 [Critérios, funções, comandos Docker e limites](atividades-23-24-fechamento.md). A integração S5 EVENT é preparada por contrato com simulador; P7 com fake já estava na main e é revalidado. A prova física da atividade 25 continua separada.

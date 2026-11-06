@@ -79,6 +79,31 @@
         <div class="queue-navigation"><button id="history-previous" type="button" disabled>Anterior</button><button id="history-next" type="button" disabled>Próximas</button></div>
       </section>
 
+      <section class="review-queue" aria-labelledby="reports-title">
+        <h2 id="reports-title">Relatórios locais</h2>
+        <p>Recorrência e causas usam os filtros de histórico acima, com início e fim obrigatórios (até 31 dias e 5000 inspeções). Causa provável é hipótese do operador, não classificação do I8.</p>
+        <div class="queue-navigation">
+          <label>Relatório <select id="report-kind"><option value="recurrence">Recorrência de defeitos</option><option value="causes">Causas declaradas</option><option value="inspection">Inspeção exibida</option></select></label>
+          <button id="report-generate" type="button">Gerar relatório</button>
+          <button id="report-json" type="button" disabled>Baixar JSON</button>
+          <button id="report-csv" type="button" disabled>Baixar CSV</button>
+        </div>
+        <p id="report-summary" role="status" aria-live="polite">Selecione o relatório e gere os resultados.</p>
+        <div id="report-results" class="report-results"></div>
+        <details><summary>Registrar causa operacional provável</summary>
+          <p>A hipótese precisa de fundamentação. Um novo registro substitui a hipótese vigente nos agregados e preserva os anteriores na auditoria. Motivo de revisão e classe de defeito permanecem separados.</p>
+          <button id="cause-use-current" type="button">Vincular à inspeção exibida</button>
+          <form id="cause-form" class="history-filters">
+            <label>Inspeção vinculada<input id="cause-inspection-id" readonly required /></label>
+            <label>Operador<input name="operator" maxlength="64" required /></label>
+            <label>Causa provável declarada<input name="cause" maxlength="200" required /></label>
+            <label>Fundamentação observada<textarea name="basis" maxlength="1000" required></textarea></label>
+            <button id="cause-submit" type="submit">Registrar hipótese</button>
+          </form>
+          <p id="cause-feedback" role="status" aria-live="polite">Vincule uma inspeção antes de preencher.</p>
+        </details>
+      </section>
+
       <section class="review-queue" aria-labelledby="queue-title">
         <div class="panel-heading"><h2 id="queue-title">Fila de revisão</h2>
           <button id="queue-refresh" class="button button--ghost" type="button">Atualizar fila</button></div>
