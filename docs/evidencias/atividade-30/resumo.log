@@ -1,0 +1,9 @@
+status=MEDICAO_LOCAL_REGISTRADA
+workflow_run=https://github.com/ods-26-2/a1/actions/runs/42219871217
+commit=04572cd8c6118922b4378fec0aa29478b02a0206
+ingestion_samples=4 p50_ms=4494.177 p95_ms=4521.766 max_ms=4521.766
+api_samples=30 p50_ms=2.836 p95_ms=3.699 max_ms=5.213
+container_memory_total_mib=426.074
+inference_latency=NOT_MEASURED
+persistence_latency=NOT_MEASURED
+semantic_correction=labels_only; original_values_preserved_in_historico

@@ -89,3 +89,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 ## Regressão completa — atividade 29
 
 [Runner, escopo e evidências](../evidencias/atividade-29/README.md). Resultado: **REGRESSAO_LOCAL_APROVADA**, com 387 testes Python e 27 frontend aprovados, além de contratos, PostgreSQL, Kafka, persistência e reinício. Um teste integrado I8 foi ignorado por exigir checkout local; o publisher I8 fixado foi exercitado na composição. A prova usa eventos sintéticos; inferência real e integrações externas permanecem fora do resultado.
+
+## Latência e recursos — atividade 30
+
+[Método, ambiente e limites](../evidencias/atividade-30/README.md). Resultado: **MEDICAO_LOCAL_REGISTRADA**. No runner observado, publisher até início da ingestão A1 teve p50 4494,177 ms e p95 4521,766 ms; 30 leituras da API tiveram p50 2,836 ms e p95 3,699 ms; quatro containers somaram 426,074 MiB no snapshot. A latência inclui criação do container do publisher. Eventos sintéticos não incluem inferência real nem representam carga industrial.

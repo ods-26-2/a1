@@ -53,7 +53,9 @@ trap cleanup EXIT
 "${compose[@]}" build backend frontend i8-publisher
 "${compose[@]}" up -d --wait frontend
 "${compose[@]}" run --rm prova preparar
+python3 -c 'import time; print(time.time_ns())' > evidencias/envio-inicio-ns.txt
 "${compose[@]}" run --rm i8-publisher > evidencias/recibos-envio.jsonl 2> evidencias/publisher-envio.log
+python3 -c 'import time; print(time.time_ns())' > evidencias/envio-fim-ns.txt
 "${compose[@]}" run --rm prova envio
 "${compose[@]}" run --rm i8-publisher > evidencias/recibos-reenvio.jsonl 2> evidencias/publisher-reenvio.log
 "${compose[@]}" run --rm prova reenvio
