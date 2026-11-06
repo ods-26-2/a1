@@ -69,3 +69,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 ## Preparação S5 e revalidação P7 — atividades 23 e 24
 
 [Critérios, funções, comandos Docker e limites](atividades-23-24-fechamento.md). A integração S5 EVENT é preparada por contrato com simulador; P7 com fake já estava na main e é revalidado. A prova física da atividade 25 continua separada.
+
+## Prova física P7 — atividade 25
+
+Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registro e roteiro acompanhado](../evidencias/atividade-25-p7-fisico/README.md) e o [manifesto rastreável](../evidencias/atividade-25-p7-fisico/manifesto.json) fixam A1/P7, dependência de bancada, coordenadas, homing, limites, transporte, idempotência, riscos e parada segura. Nenhum driver foi executado e não houve movimento físico nesta atividade.
