@@ -1,0 +1,15 @@
+{
+  "recorded_at": "2026-11-06T14:04:23.843007+00:00",
+  "endpoint": "200.17.66.56:9093",
+  "internal_endpoint_informed": "172.18.4.56:9092",
+  "internal_endpoint_tested": false,
+  "operation": "TCP and cluster metadata only",
+  "messages_produced": 0,
+  "messages_consumed": 0,
+  "topics_created": 0,
+  "offsets_committed": 0,
+  "tcp": "UNAVAILABLE",
+  "tcp_error": "timed out",
+  "metadata": "NOT_ATTEMPTED",
+  "security_protocol_planned": "PLAINTEXT, conforme clientes sem TLS/SASL do guia fornecido"
+}

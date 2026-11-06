@@ -1,0 +1,14 @@
+{
+  "status": "PASS",
+  "inspection_id": "INSP-247f6c01-6c6f-418d-bae4-ab24b35ab21c",
+  "json_csv_same_loaded_report": true,
+  "original_defect": "AMASSADO",
+  "corrected_defect": "FURADO",
+  "final_status_at_export": "REJECTED",
+  "cause_records": 1,
+  "review_records": 1,
+  "sha256": {
+    "relatorio-browser.json": "f374e06e80c0cf6a9a785981e6bbc9624b794da4b354927f27165b525708ec5d",
+    "relatorio-browser.csv": "e0a9a56211b963502544e57c5dc0da28572ee58e8b63204e55beac89c3d3bec6"
+  }
+}
