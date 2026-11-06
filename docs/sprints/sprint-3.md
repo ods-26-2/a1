@@ -43,3 +43,7 @@ Transporte fake, deduplicação, reinício, falha do PostgreSQL e regressão da 
 - Composição S3-12, regressão, desempenho, evidências e consolidação: atividades 28–32.
 
 Fonte de numeração: plano_fechamento_sprint3_dependencias.pdf fornecido pela equipe. Datas e aceites devem ser confirmados pelo grupo. Publicar uma branch ou um PR de rascunho não encerra uma atividade nem comprova uma dependência externa.
+
+## Adaptador P7 com simulador — atividade 24
+
+Pedido durável, reenvio com mesmo ID, correlação de reply/state, aceite separado da conclusão, limites e prazo explícito. Consulte o [resumo e roteiro Docker](atividade-24-resumo.md). A integração física continua na atividade 25; o driver publicado ainda exige alinhamento com SIS-2.

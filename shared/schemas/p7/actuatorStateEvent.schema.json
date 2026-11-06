@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ActuatorStateEvent",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "ods.p7.state"
+    },
+    "message_type": {
+      "type": "string",
+      "const": "event"
+    },
+    "producer": {
+      "type": "string"
+    },
+    "source_id": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "pan_deg": {
+          "type": "number"
+        },
+        "tilt_deg": {
+          "type": "number"
+        },
+        "state": {
+          "type": "string",
+          "enum": ["IDLE", "MOVING", "HOMING", "ERROR"]
+        },
+        "is_homed": {
+          "type": "boolean"
+        },
+        "last_command_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "error": {
+          "type": "object",
+          "properties": {
+            "code": {
+              "type": "string",
+              "enum": [
+                "OUT_OF_RANGE",
+                "NOT_HOMED",
+                "LIMIT_SWITCH_REACHED",
+                "DEVICE_ERROR"
+              ]
+            },
+            "message": {
+              "type": "string"
+            }
+          },
+          "required": ["code", "message"]
+        }
+      },
+      "required": ["pan_deg", "tilt_deg", "state", "is_homed"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "state": {
+                "const": "ERROR"
+              }
+            },
+            "required": ["state"]
+          },
+          "then": {
+            "required": ["error"]
+          }
+        }
+      ]
+    }
+  },
+  "required": [
+    "schema",
+    "message_type",
+    "producer",
+    "source_id",
+    "payload"
+  ]
+}
