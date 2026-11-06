@@ -28,7 +28,7 @@ from .triage import TriageError, TriageService
 
 EVIDENCE_PENDING_DETAIL = (
     "Pedido de snapshot a S4 registrado como comando pendente; "
-    "adaptador S4 ainda não implementado (S3-09)."
+    "aguardando envio e descritor S4 correlacionado (S3-09)."
 )
 
 

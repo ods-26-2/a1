@@ -1,0 +1,130 @@
+# Isolated proof: real Kafka/PostgreSQL/A1, explicitly simulated S4/media.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: a1
+      POSTGRES_USER: a1
+      POSTGRES_PASSWORD: ver1-lab-only
+    volumes:
+    - lab-db:/var/lib/postgresql/data
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - pg_isready -U a1 -d a1
+      interval: 5s
+      timeout: 3s
+      retries: 20
+  kafka:
+    image: apache/kafka:3.9.1
+    hostname: kafka
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_LOG_DIRS: /tmp/kraft-combined-logs
+      KAFKA_HEAP_OPTS: -Xms256m -Xmx512m
+      CLUSTER_ID: Qy0ysubDRN2sUKS2fPMXLw
+    healthcheck:
+      test:
+      - CMD-SHELL
+      - /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092 --list >/dev/null
+        2>&1
+      interval: 10s
+      timeout: 10s
+      retries: 30
+      start_period: 15s
+  kafka-init:
+    image: apache/kafka:3.9.1
+    depends_on:
+      kafka:
+        condition: service_healthy
+    entrypoint:
+    - /bin/sh
+    - -ec
+    command:
+    - for topic in ods.industria.defeito_classificado ods.s4.capture.command ods.s4.capture.reply
+      ods.s4.clip; do /opt/kafka/bin/kafka-topics.sh --bootstrap-server kafka:9092
+      --create --if-not-exists --topic "$$topic" --partitions 1 --replication-factor
+      1; done
+  backend:
+    build:
+      context: ..
+      target: backend
+    environment:
+      DATABASE_URL: postgresql://a1:ver1-lab-only@db:5432/a1
+      KAFKA_BROKER_URL: kafka:9092
+      KAFKA_TOPIC: ods.industria.defeito_classificado
+      KAFKA_GROUP_ID: ver1-lab-a1
+      S4_ENABLED: '1'
+    depends_on:
+      db:
+        condition: service_healthy
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import json,urllib.request; assert json.load(urllib.request.urlopen('http://127.0.0.1:8000/api/v1/health',
+        timeout=2))['status']=='ONLINE'
+      interval: 5s
+      timeout: 3s
+      retries: 30
+  s4-fake:
+    build:
+      context: ..
+      target: backend
+    environment:
+      KAFKA_BROKER_URL: kafka:9092
+      S4_FAKE_SESSION_ID: 00000000-0000-4000-8000-000000000019
+    ports:
+    - 127.0.0.1:18084:8080
+    volumes:
+    - ./s4_fake_kafka.py:/lab/fake.py:ro
+    entrypoint:
+    - python
+    - /lab/fake.py
+    depends_on:
+      kafka-init:
+        condition: service_completed_successfully
+    healthcheck:
+      test:
+      - CMD
+      - python
+      - -c
+      - import urllib.request;urllib.request.urlopen('http://127.0.0.1:8080/health',timeout=2)
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  proof:
+    build:
+      context: ..
+      target: backend
+    user: ${VER1_UID:-1000}:${VER1_GID:-1000}
+    environment:
+      DATABASE_URL: postgresql://a1:ver1-lab-only@db:5432/a1
+      KAFKA_BROKER_URL: kafka:9092
+    volumes:
+    - ./provar_s4.py:/lab/proof.py:ro
+    - ./evidencias-s4:/evidencias
+    entrypoint:
+    - python
+    - /lab/proof.py
+    depends_on:
+      backend:
+        condition: service_healthy
+      s4-fake:
+        condition: service_healthy
+volumes:
+  lab-db: null

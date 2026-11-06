@@ -1,0 +1,43 @@
+name: Sprint 3 - adaptador S4
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'validacao-local/**'
+      - 'Dockerfile'
+      - 'requirements*.txt'
+      - '.github/workflows/testes-s4.yml'
+  workflow_dispatch:
+jobs:
+  s4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar evidências
+        run: mkdir -p validacao-local/evidencias-s4
+      - name: Regressão A1 com PostgreSQL real em Docker
+        shell: bash
+        run: |
+          set -o pipefail
+          docker compose -p ver1-s4 -f validacao-local/compose-s4.yml run --rm --build testes \
+            sh -c 'python scripts/validate_contracts.py && python -m pytest -q --junitxml=/evidencias/regressao.xml && npm test' \
+            2>&1 | tee validacao-local/evidencias-s4/regressao.log
+      - name: Kafka, S4 simulado, API, mídia sintética e reinício
+        shell: bash
+        run: |
+          set -o pipefail
+          bash validacao-local/executar_s4.sh 2>&1 | tee validacao-local/evidencias-s4/prova.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidencias-adaptador-s4
+          path: validacao-local/evidencias-s4/
+          retention-days: 30
+      - name: Encerrar laboratórios
+        if: always()
+        run: |
+          docker compose -p ver1-s4-kafka -f validacao-local/compose-s4-kafka.yml down -v
+          docker compose -p ver1-s4 -f validacao-local/compose-s4.yml down -v

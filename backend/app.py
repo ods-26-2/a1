@@ -23,6 +23,7 @@ from .config import KafkaSettings, Settings
 from .db import apply_schema, open_pool, to_iso, utc_now
 from .services import Services, build_services
 from .kafka_client import A1KafkaConsumer
+from .s4_kafka import S4KafkaWorker
 
 
 API_PREFIX = "/api/v1"
@@ -42,10 +43,14 @@ class ReviewRequest(BaseModel):
 
 def create_app(
     settings: Settings | None = None, *, clock: Callable[[], datetime] = utc_now,
-    consumer_factory=None,
+    consumer_factory=None, s4_factory=None,
 ) -> FastAPI:
     settings = settings or Settings.from_env()
     kafka_settings = KafkaSettings.from_env()
+    s4_flag = os.getenv("S4_ENABLED", "0").strip().lower()
+    if s4_flag not in {"0", "1", "false", "true"}:
+        raise ValueError("S4_ENABLED deve ser 0/1/false/true")
+    s4_enabled = s4_flag in {"1", "true"}
 
     @asynccontextmanager
     async def lifespan(app: FastAPI):
@@ -53,6 +58,7 @@ def create_app(
         kafka_consumer = None
         kafka_thread = None
         kafka_started = False
+        s4_worker = s4_thread = None
         try:
             apply_schema(pool)
             
@@ -70,11 +76,22 @@ def create_app(
             kafka_thread.start()
             kafka_started = True
             
+            if s4_enabled:
+                s4_worker = (s4_factory or S4KafkaWorker)(app.state.services.s4, kafka_settings.broker_url)
+                s4_thread = threading.Thread(target=s4_worker.run, daemon=True)
+                app.state.s4_worker = s4_worker
+                s4_thread.start()
             yield
         finally:
             # Encerramento limpo e fecho da BD
+            if s4_worker:
+                s4_worker.parar()
             if kafka_consumer:
                 kafka_consumer.parar() # Pode chamar o shutdown do Kafka aqui
+            if s4_thread:
+                await asyncio.to_thread(s4_thread.join, kafka_settings.shutdown_timeout)
+                if s4_thread.is_alive():
+                    raise RuntimeError("Adaptador S4 não encerrou; pool mantido aberto para persistência em andamento.")
             if kafka_started:
                 await asyncio.to_thread(
                     kafka_thread.join, kafka_settings.shutdown_timeout
@@ -114,19 +131,19 @@ def create_app(
                 "detail": f"PostgreSQL inacessível: {type(exc).__name__}.",
             }
         subscriber = request.app.state.kafka_consumer.health_snapshot()
+        s4 = (request.app.state.s4_worker.health_snapshot() if s4_enabled else {
+            "name": "s4", "status": "DOWN",
+            "detail": "Adaptador S4 desativado; habilitação explícita por S4_ENABLED=1.",
+        })
         return {
-            "status": "ONLINE" if database["status"] == "UP" and subscriber["status"] == "UP" else "DEGRADED",
+            "status": "ONLINE" if database["status"] == "UP" and subscriber["status"] == "UP" and (not s4_enabled or s4["status"] == "UP") else "DEGRADED",
             "mode": "REAL",
             "checked_at": to_iso(clock()),
             "components": [
                 {"name": "api-a1", "status": "UP", "detail": "Backend A1."},
                 database,
                 subscriber,
-                {
-                    "name": "s4",
-                    "status": "DOWN",
-                    "detail": "Adaptador S4 não implementado (S3-09); pedidos ficam pendentes.",
-                },
+                s4,
             ],
         }   
 

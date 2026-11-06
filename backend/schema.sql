@@ -134,3 +134,9 @@ CREATE OR REPLACE TRIGGER reviews_immutable
 CREATE OR REPLACE TRIGGER audit_events_immutable
     BEFORE UPDATE OR DELETE OR TRUNCATE ON audit_events
     FOR EACH STATEMENT EXECUTE FUNCTION a1_reject_change();
+
+-- S3-09: durable S4 transport data; existing commands/payloads remain unchanged.
+ALTER TABLE commands ADD COLUMN IF NOT EXISTS transport_envelope jsonb;
+ALTER TABLE commands ADD COLUMN IF NOT EXISTS response_clip_id uuid;
+ALTER TABLE commands ADD COLUMN IF NOT EXISTS next_attempt_at timestamptz;
+ALTER TABLE evidence ADD COLUMN IF NOT EXISTS descriptor jsonb;

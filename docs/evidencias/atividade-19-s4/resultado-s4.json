@@ -1,0 +1,64 @@
+{
+  "mode": "SIMULATED_S4_AND_MEDIA_REAL_KAFKA_POSTGRES_A1",
+  "inspection_ids": [
+    "INSP-1c7ec84d-7447-4d15-9496-eba0ffc5ff0d",
+    "INSP-7f52b2af-d1b7-4b6b-b27d-e69e2a6bca7b",
+    "INSP-e9f502a9-d0a3-4d86-969b-963ee01787c7",
+    "INSP-f718e7cc-b423-4542-a300-a10016eb1e34"
+  ],
+  "first": {
+    "inspections": 4,
+    "completed_commands": 4,
+    "available_audits": 4,
+    "synthetic_image_hashes_verified": 4
+  },
+  "after_duplicate_commands": {
+    "inspections": 4,
+    "completed_commands": 4,
+    "available_audits": 4,
+    "synthetic_image_hashes_verified": 4
+  },
+  "response_offsets": {
+    "ods.s4.capture.reply": {
+      "committed": 8,
+      "high": 8
+    },
+    "ods.s4.clip": {
+      "committed": 8,
+      "high": 8
+    }
+  },
+  "health": {
+    "status": "ONLINE",
+    "mode": "REAL",
+    "checked_at": "2026-11-06T04:09:21.310Z",
+    "components": [
+      {
+        "name": "api-a1",
+        "status": "UP",
+        "detail": "Backend A1."
+      },
+      {
+        "name": "database",
+        "status": "UP",
+        "detail": "PostgreSQL acess\u00edvel."
+      },
+      {
+        "name": "i8-subscriber",
+        "status": "UP",
+        "detail": "Broker acess\u00edvel; t\u00f3pico ods.industria.defeito_classificado."
+      },
+      {
+        "name": "s4",
+        "status": "UP",
+        "detail": "Transporte S4 conectado; disponibilidade/corre\u00e7\u00e3o do servi\u00e7o exige prova pr\u00f3pria."
+      }
+    ]
+  },
+  "after_backend_restart": {
+    "inspections": 4,
+    "completed_commands": 4,
+    "available_audits": 4,
+    "synthetic_image_hashes_verified": 4
+  }
+}

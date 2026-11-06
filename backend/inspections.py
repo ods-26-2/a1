@@ -9,7 +9,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Callable, Mapping
 
-from .db import to_iso
+from .db import to_iso, utc_now
 from .repository import InspectionRepository
 from .taxonomy import TaxonomyCatalog
 
@@ -23,9 +23,10 @@ def _optional_str(value: Any) -> str | None:
 
 
 class InspectionService:
-    def __init__(self, repository: InspectionRepository, taxonomy: TaxonomyCatalog) -> None:
+    def __init__(self, repository: InspectionRepository, taxonomy: TaxonomyCatalog, clock=utc_now) -> None:
         self.repository = repository
         self.taxonomy = taxonomy
+        self.clock = clock
 
     def current(self) -> dict[str, Any] | None:
         row = self.repository.find_current()
@@ -80,6 +81,10 @@ class InspectionService:
         }
 
     def view(self, row: Mapping[str, Any]) -> dict[str, Any]:
+        evidence_state = row["evidence_state"] or "UNAVAILABLE"
+        evidence_detail = row["evidence_detail"] or "Sem registro de evidência para a inspeção."
+        if evidence_state == "AVAILABLE" and row["evidence_expires_at"] and row["evidence_expires_at"] <= self.clock():
+            evidence_state, evidence_detail = "EXPIRED", "Evidência expirada conforme o descritor S4."
         defect = None
         if row["result"] == "NON_CONFORMING":
             label = self.taxonomy.resolve(row["taxonomy_version"], row["defect_class"])
@@ -136,11 +141,11 @@ class InspectionService:
             },
             "final_decision": final_decision,
             "evidence": {
-                "state": row["evidence_state"] or "UNAVAILABLE",
+                "state": evidence_state,
                 "clip_id": _optional_str(row["evidence_clip_id"]),
-                "url": row["evidence_url"] if row["evidence_state"] == "AVAILABLE" else None,
+                "url": row["evidence_url"] if evidence_state == "AVAILABLE" else None,
                 "expires_at": _optional_iso(row["evidence_expires_at"]),
-                "detail": row["evidence_detail"] or "Sem registro de evidência para a inspeção.",
+                "detail": evidence_detail,
             },
         }
 
