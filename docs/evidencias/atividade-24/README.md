@@ -15,3 +15,9 @@ A primeira rodada teve uma falha no teste: `%` literal de `LIKE` precisava ser e
 Este laboratório não inicia Kafka e não usa o broker Google Cloud. O simulador conserva a deduplicação apenas durante sua instância. Não comprova firmware, transporte real, movimento físico, reinício do dispositivo ou integração completa VER-1.
 
 [Roteiro para reproduzir e pendências da atividade 25](../../sprints/atividade-24-resumo.md).
+
+## Regressão GitHub Actions
+
+O teste P7 passou em https://github.com/ods-26-2/a1/actions/runs/42138027447. A regressão geral inicial, https://github.com/ods-26-2/a1/actions/runs/42138027186, repetiu a corrida de prazos já identificada no PR #9: o pool leva 30 s para registrar a falha e o teste também esperava 30 s. O erro real apareceu imediatamente antes do prazo da consulta de saúde.
+
+Foi aplicado o mesmo ajuste do roteiro, de 30 para 60 s, sem remover a verificação de erro real, saúde degradada ou offset pendente. Esse ajuste de teste também consta no PR #9; a correção funcional de limites de inteiros permanece apenas naquele PR. Os fluxos CI serão repetidos neste PR.
