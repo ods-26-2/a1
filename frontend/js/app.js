@@ -9,6 +9,7 @@ import { formatTime } from "./ui/format.js";
 import { cacheViewStateElements, setViewState } from "./ui/viewState.js";
 import { setupInspectionHistory } from "./history.js";
 import { setupReports } from "./reports.js";
+import { setupSectionNavigation } from "./ui/sectionNavigation.js";
 
 const ERROR_TITLES = Object.freeze({
   [API_ERROR_KINDS.NETWORK]: "API A1 inacessível",
@@ -299,6 +300,7 @@ function initializeApp() {
   }
 
   describeMode();
+  setupSectionNavigation();
   bindInteractions();
 
   if (dataSource.demo) {

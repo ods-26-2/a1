@@ -1,0 +1,72 @@
+{
+  "manifest_version": "1.0",
+  "activity": 27,
+  "recorded_on": "2026-11-06",
+  "status": "AVALIADOS_COM_NAVEGACAO_INCORPORADA",
+  "criterion": "Componentes úteis incorporados; demais justificados.",
+  "criterion_source": {
+    "filename": "plano_fechamento_sprint3_dependencias.pdf",
+    "page": 4,
+    "sha256": "883f4ad42f96d8bab38860e6bb288eb492ed28228aac407798b2d0527d12a460"
+  },
+  "baselines": {
+    "a1": {"repository": "https://github.com/ods-26-2/a1", "commit": "070b153fa0a3199a8682a6435278ebd52b4739ba"},
+    "b6": {"repository": "https://github.com/ods-26-2/b6", "commit": "61a9658b7c36e8abc016eff79ce9f5237d92aa64"}
+  },
+  "license_review": {
+    "status": "NAO_DECLARADA_NA_ARVORE_FIXADA",
+    "basis": "A árvore B6 contém README e quatro diretórios com TypeScript, testes e HTML; nenhum LICENSE/COPYING/NOTICE ou declaração de licença foi encontrado na leitura realizada.",
+    "copied_b6_source_files": [],
+    "copied_b6_styles": false,
+    "added_runtime_dependencies": [],
+    "implementation_origin": "Implementação original A1 do comportamento geral de navegação avaliado no AppShell B6; sem transcrição/tradução de código B6 ou presunção de licença permissiva."
+  },
+  "readme": {"path": "README.md", "sha256": "85db2869925a76810984fad5c9955944bc29c3e98ef7df2907a5c3d72f4e1894"},
+  "components": [
+    {
+      "name": "AppShell", "source": "b6-app-shell/b6_app_shell.ts", "source_sha256": "67aff324568d3f440806325bb89fad8f087f6744e3883feee221c634277671ae",
+      "evidence_lines": [260, 280],
+      "decision": "COMPORTAMENTO_UTIL_INCORPORADO_SEM_COPIA",
+      "useful_behavior": "Navegação explícita por seções e indicação do destino ativo, sem regra de negócio.",
+      "implementation": ["frontend/js/ui/sectionNavigation.js", "frontend/index.html", "frontend/css/styles.css"],
+      "adaptation": "Âncoras HTML nativas, títulos focáveis, aria-current, suporte ao histórico da URL e teclado; nenhuma rota de negócio ou requisição é disparada.",
+      "excluded_parts": "Shell completo, temas, CSS global e métricas Jetson não incorporados: A1 já tem layout responsivo/health próprio, sem contrato CPU/GPU/RAM/temperatura."
+    },
+    {
+      "name": "AlertConsole", "source": "b6-alert-console/b6_alert_console.ts", "source_sha256": "682c39e4af44161ed73b1194d2815cf3bf8bf2c97f458ee61411cfbe659fb115",
+      "evidence_lines": [9, 27],
+      "decision": "NAO_INCORPORADO",
+      "reason": "Ciclo ACTIVE/ACKNOWLEDGED/MUTED/CLOSED, ações em massa e foco em timeline não correspondem a análise I8, decisão/revisão A1 ou health. A1 não expõe AlertPayload nem comandos acknowledge/mute/close; fila/revisão já oferecem o fluxo correto, com auditoria no servidor."
+    },
+    {
+      "name": "OverlayPlayer", "source": "b6-overlay-player/b6_overlay_player.ts", "source_sha256": "ef974a6b7ab46b0a50ff5e019b167f7dc1cfd9f0d10ef7bf3a559e5496541880",
+      "evidence_lines": [14, 28],
+      "decision": "NAO_INCORPORADO",
+      "reason": "Player exige vídeo, timeline em segundos e caixas normalizadas; A1 usa snapshot S4 pontual e bbox I8 em pixels, sem timeline/dimensões de quadro garantidas no contrato. Não converter essas representações por suposição nem mascarar o bloqueio S4 real com player de vídeo."
+    },
+    {
+      "name": "ZoneEditor", "source": "b6-zone-editor/b6_zone_editor.ts", "source_sha256": "0fa58fd2df6a1e91a5488f45d873f61f929b42e955cf13954ab9c25b57a260aa",
+      "evidence_lines": [13, 18],
+      "decision": "NAO_INCORPORADO",
+      "reason": "Edição/exportação de polígonos/zonas não é requisito do A1 de inspeção/triagem/relatórios. Não existe API A1 de manutenção de zonas; incorporar editor criaria novo domínio e contratos sem necessidade desta tarefa."
+    }
+  ],
+  "validation": {
+    "frontend_tests_passed": 27,
+    "frontend_tests_failed": 0,
+    "new_navigation_tests_passed": 4,
+    "upstream_b6_tests_executed": false,
+    "real_browser_visual_check_claimed": true,
+    "browser_check": {
+      "mode": "FAKE_LOCAL",
+      "navigation_hash_and_focus": true,
+      "recurrence_report_generated": true,
+      "console_errors_or_warnings": 0,
+      "mobile_checked": false,
+      "real_api_checked": false
+    },
+    "backend_or_api_contract_changes": false,
+    "build_system_added": false
+  },
+  "related_documents": ["README.md", "../../sprints/sprint-3.md", "../../arquitetura.md", "../../contratos/a1-api.md"]
+}

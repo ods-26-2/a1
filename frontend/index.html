@@ -36,6 +36,13 @@
       </div>
     </header>
 
+    <nav id="section-navigation" class="section-navigation" aria-label="Seções do A1">
+      <a href="#history-title">Histórico</a>
+      <a href="#reports-title">Relatórios</a>
+      <a href="#queue-title">Fila de revisão</a>
+      <a href="#inspection-section-title">Inspeção exibida</a>
+    </nav>
+
     <main class="inspection-page">
       <div class="page-heading">
         <div>
@@ -64,7 +71,7 @@
       </div>
 
       <section class="review-queue" aria-labelledby="history-title">
-        <h2 id="history-title">Histórico de inspeções</h2>
+        <h2 id="history-title" tabindex="-1">Histórico de inspeções</h2>
         <p>Filtre pela captura (UTC), resultado e defeito originais do I8. Selecione uma inspeção para abrir os detalhes e revisões abaixo.</p>
         <form id="history-filters" class="history-filters">
           <label>Captura a partir de (UTC)<input type="datetime-local" step="0.001" name="captured_from" /></label>
@@ -80,7 +87,7 @@
       </section>
 
       <section class="review-queue" aria-labelledby="reports-title">
-        <h2 id="reports-title">Relatórios locais</h2>
+        <h2 id="reports-title" tabindex="-1">Relatórios locais</h2>
         <p>Recorrência e causas usam os filtros de histórico acima, com início e fim obrigatórios (até 31 dias e 5000 inspeções). Causa provável é hipótese do operador, não classificação do I8.</p>
         <div class="queue-navigation">
           <label>Relatório <select id="report-kind"><option value="recurrence">Recorrência de defeitos</option><option value="causes">Causas declaradas</option><option value="inspection">Inspeção exibida</option></select></label>
@@ -105,7 +112,7 @@
       </section>
 
       <section class="review-queue" aria-labelledby="queue-title">
-        <div class="panel-heading"><h2 id="queue-title">Fila de revisão</h2>
+        <div class="panel-heading"><h2 id="queue-title" tabindex="-1">Fila de revisão</h2>
           <button id="queue-refresh" class="button button--ghost" type="button">Atualizar fila</button></div>
         <p id="queue-summary" role="status">Carregando fila…</p>
         <div id="queue-items" class="queue-items"></div>
@@ -116,6 +123,7 @@
         </div>
       </section>
 
+      <h2 id="inspection-section-title" tabindex="-1">Inspeção exibida</h2>
       <section
         id="inspection-layout"
         class="inspection-layout"
