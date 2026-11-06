@@ -81,3 +81,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 ## Componentes B6 — atividade 27
 
 [Avaliação individual, licença/proveniência e evidências](../evidencias/atividade-27-b6/README.md), com [manifesto fixado](../evidencias/atividade-27-b6/manifesto.json). Comportamento útil de navegação AppShell incorporado em implementação vanilla original A1, sem copiar fonte B6. AlertConsole, OverlayPlayer e ZoneEditor não incorporados, com incompatibilidades de domínio/contrato justificadas. Sem dependência de build ou mudança na API.
+
+## Composição S3-12 — atividade 28
+
+[Composição local, prova e limites](../evidencias/atividade-28/README.md), com [manifesto de aceite](../evidencias/atividade-28/manifesto.json). Resultado: **APROVADA_COMPOSICAO_LOCAL**. A1, publisher I8 fixado, Kafka e PostgreSQL são configurados por ambiente; envio, reenvio, deduplicação, API/frontend e reinício passaram. A prova usa eventos sintéticos e não homologa inferência ou ambiente industrial.
