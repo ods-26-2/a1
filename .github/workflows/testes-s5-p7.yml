@@ -1,0 +1,42 @@
+name: Sprint 3 - preparação S5 e regressão P7
+on:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'shared/**'
+      - 'tests/**'
+      - 'validacao-local/**'
+      - 'Dockerfile'
+      - 'requirements*.txt'
+      - '.github/workflows/testes-s5-p7.yml'
+  workflow_dispatch:
+jobs:
+  s5-p7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Preparar evidências
+        run: mkdir -p validacao-local/evidencias-s5-p7
+      - name: Revalidar atividades 23 e 24 com PostgreSQL em Docker
+        shell: bash
+        run: |
+          set -o pipefail
+          docker compose -p ver1-s5-p7 -f validacao-local/compose-s5-p7.yml run --rm --build testes \
+            2>&1 | tee validacao-local/evidencias-s5-p7/focados.log
+      - name: Regressão completa A1 em Docker
+        shell: bash
+        run: |
+          set -o pipefail
+          docker compose -p ver1-s5-p7 -f validacao-local/compose-s5-p7.yml run --rm testes \
+            sh -c 'python scripts/validate_contracts.py && python -m pytest -q --junitxml=/evidencias/regressao.xml && npm test' \
+            2>&1 | tee validacao-local/evidencias-s5-p7/regressao.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidencias-s5-p7
+          path: validacao-local/evidencias-s5-p7/
+          retention-days: 30
+      - name: Encerrar laboratório
+        if: always()
+        run: docker compose -p ver1-s5-p7 -f validacao-local/compose-s5-p7.yml down -v
