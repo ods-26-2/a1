@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import hashlib
 import math
 from dataclasses import dataclass
 from pathlib import Path
@@ -36,6 +37,50 @@ class TriageDecision:
 
 
 class PolicyCatalog:
+    @classmethod
+    def from_candidate(cls, candidate_dir: Path | str) -> "PolicyCatalog":
+        """Load an explicitly selected candidate after verifying policy/source hashes.
+
+        The default catalog never scans candidate subdirectories. This method is
+        for offline review; choosing a candidate does not activate it in services.
+        """
+        root = Path(candidate_dir)
+        try:
+            descriptor = json.loads((root / "descriptor.json").read_text(encoding="utf-8"))
+            content_bytes = (root / "policy" / "content.json").read_bytes()
+            source_bytes = (root / "source-i8-policy.json").read_bytes()
+            content = json.loads(content_bytes)
+            source = json.loads(source_bytes)
+            if descriptor["kind"] != "A1_TRIAGE_POLICY_CANDIDATE" or descriptor["status"] != "PROVISIONAL_NOT_ACTIVE":
+                raise TriageError("descritor não identifica uma política candidata provisória")
+            if hashlib.sha256(content_bytes).hexdigest() != descriptor["hash_sha256"]:
+                raise TriageError("hash SHA-256 da política candidata não corresponde ao descritor")
+            origin = descriptor["source"]
+            commit = origin["commit"]
+            if (origin["repository"] != "https://github.com/ods-26-2/i8"
+                    or origin["path"] != "models/policy-caixa_papelao-policy-csv-001.json"
+                    or not isinstance(commit, str) or len(commit) != 40
+                    or any(char not in "0123456789abcdef" for char in commit)):
+                raise TriageError("origem I8 deve indicar repositório, caminho e commit completos")
+            if hashlib.sha256(source_bytes).hexdigest() != origin["hash_sha256"]:
+                raise TriageError("hash SHA-256 da origem I8 não corresponde ao descritor")
+            if origin["normalization"] != "CRLF_TO_LF" or b"\r" in source_bytes:
+                raise TriageError("snapshot I8 deve preservar a normalização LF declarada")
+            if hashlib.sha256(source_bytes.replace(b"\n", b"\r\n")).hexdigest() != origin["git_blob_hash_sha256"]:
+                raise TriageError("hash SHA-256 do blob Git I8 não corresponde ao snapshot")
+            if content["policy_version"] != descriptor["policy_version"] or content["taxonomy_version"] != descriptor["taxonomy_version"]:
+                raise TriageError("versão da candidata diverge do descritor")
+            if any(source[key] != origin[key] for key in ("policy_version", "product_id", "normal_model_version", "classifier_version", "taxonomy_version")):
+                raise TriageError("metadados da origem I8 divergem do snapshot")
+            if content["taxonomy_version"] != source["taxonomy_version"]:
+                raise TriageError("taxonomia da candidata diverge da origem I8")
+            thresholds = content["minimum_confidence"]
+            if thresholds["CONFORMING"] is not None or thresholds["NON_CONFORMING"] != source["parameters"]["known_confidence"]:
+                raise TriageError("mapeamento dos limiares diverge da proposta provisória I8/A1")
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            raise TriageError(f"candidata inválida: {exc}") from exc
+        return cls(root / "policy")
+
     def __init__(self, policy_dir: Path | str = DEFAULT_POLICY_DIR) -> None:
         self._by_taxonomy: dict[str, TriagePolicy] = {}
         for path in sorted(Path(policy_dir).glob("*.json")):
