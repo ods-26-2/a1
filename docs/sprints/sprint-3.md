@@ -49,3 +49,7 @@ Fonte de numeração: plano_fechamento_sprint3_dependencias.pdf fornecido pela e
 ## Adaptador P7 com simulador — atividade 24
 
 Pedido durável, reenvio com mesmo ID, correlação de reply/state, aceite separado da conclusão, limites e prazo explícito. Consulte o [resumo e roteiro Docker](atividade-24-resumo.md). A integração física continua na atividade 25; o driver publicado ainda exige alinhamento com SIS-2.
+
+## Evidência S4 — atividade 19
+
+[Adaptador, arquitetura, comandos Docker e bloqueios da atividade 20](atividade-19-adaptador-s4.md). Reutiliza pedidos já persistidos; ativação explícita, correlação, timeout e expiração. O laboratório usa S4/mídia simulados e Kafka/PostgreSQL/A1 reais.

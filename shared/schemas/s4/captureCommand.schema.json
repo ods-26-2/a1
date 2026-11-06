@@ -1,0 +1,82 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CaptureCommand",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "ods.s4.capture.command"
+    },
+    "message_type": {
+      "type": "string",
+      "const": "command"
+    },
+    "producer": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string"
+        },
+        "media_type": {
+          "type": "string",
+          "enum": ["CLIP", "SNAPSHOT"]
+        },
+        "at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "start_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "end_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "event_id": {
+          "type": ["string", "null"],
+          "format": "uuid"
+        },
+        "label": {
+          "type": "string"
+        }
+      },
+      "required": ["source_id", "media_type"],
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "media_type": {
+                "const": "SNAPSHOT"
+              }
+            },
+            "required": ["media_type"]
+          },
+          "then": {
+            "required": ["at"]
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "media_type": {
+                "const": "CLIP"
+              }
+            },
+            "required": ["media_type"]
+          },
+          "then": {
+            "required": ["start_at", "end_at"]
+          }
+        }
+      ]
+    }
+  },
+  "required": ["schema", "message_type", "producer", "target", "payload"]
+}

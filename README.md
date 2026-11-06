@@ -158,3 +158,5 @@ docker compose run --rm tests
 ```
 
 Evidências: `docs/evidencias/s3-07/README.md`.
+
+Para a integração de evidências S4, consulte o [resumo da atividade 19](docs/sprints/atividade-19-adaptador-s4.md): arquitetura, testes Docker e pontos pendentes do serviço real.
