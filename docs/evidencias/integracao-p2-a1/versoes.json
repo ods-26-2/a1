@@ -1,0 +1,8 @@
+{
+  "a1_base": "5d17305048f21914ed46d4fbe0770c81180215eb",
+  "i8_repository": "https://github.com/ods-26-2/i8.git",
+  "i8_commit": "051851f8c7889aba4da8422293c911aa84579da4",
+  "p2_repository": "https://github.com/ods-26-2/p2.git",
+  "p2_commit": "fddf028c025b4a9be22d3a67696a13c0c65b9b0e",
+  "scope": "composição de transporte sintético; ensaio P2 CPU separado, com imagens sintéticas"
+}
