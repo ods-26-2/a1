@@ -61,6 +61,10 @@ a:focus-visible {
   color: #fff;
 }
 
+.section-navigation { display: flex; flex-wrap: wrap; gap: .35rem; padding: .5rem clamp(1rem, 3vw, 3rem); background: var(--surface); border-bottom: 1px solid var(--line); }
+.section-navigation a { display: inline-flex; align-items: center; min-height: 2.75rem; padding: .5rem .8rem; color: var(--accent-dark); border: 2px solid transparent; border-radius: .3rem; font-weight: 600; }
+.section-navigation a[aria-current="location"] { border-color: var(--accent-dark); background: var(--surface-muted); text-decoration-thickness: .15em; }
+
 .brand {
   display: flex;
   align-items: center;
