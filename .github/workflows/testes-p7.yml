@@ -1,0 +1,32 @@
+name: Sprint 3 - adaptador P7 com simulador
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'backend/**'
+      - 'shared/schemas/p7/**'
+      - 'tests/**'
+      - 'validacao-local/compose-p7.yml'
+      - 'Dockerfile'
+      - 'requirements*.txt'
+      - '.github/workflows/testes-p7.yml'
+jobs:
+  p7:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Testar P7 com PostgreSQL dentro do Docker
+        run: |
+          set -o pipefail
+          mkdir -p validacao-local/evidencias-p7
+          docker compose -p ver1-p7 -f validacao-local/compose-p7.yml run --rm --build testes 2>&1 | tee validacao-local/evidencias-p7/testes.log
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: evidencias-p7-fake
+          path: validacao-local/evidencias-p7/
+          retention-days: 30
+      - name: Encerrar laboratório
+        if: always()
+        run: docker compose -p ver1-p7 -f validacao-local/compose-p7.yml down -v

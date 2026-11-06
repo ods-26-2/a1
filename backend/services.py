@@ -14,6 +14,7 @@ from .inspections import InspectionService, ReviewService
 from .repository import InspectionRepository
 from .taxonomy import TaxonomyCatalog
 from .triage import PolicyCatalog, TriageService
+from .p7 import P7Adapter
 
 
 @dataclass(frozen=True)
@@ -22,6 +23,7 @@ class Services:
     ingestion: IngestionService
     inspections: InspectionService
     reviews: ReviewService
+    p7: P7Adapter
 
 
 def build_services(
@@ -36,4 +38,5 @@ def build_services(
         ingestion=IngestionService(repository, triage, clock),
         inspections=inspections,
         reviews=ReviewService(repository, inspections, clock),
+        p7=P7Adapter(repository, clock),
     )

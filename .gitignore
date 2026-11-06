@@ -13,3 +13,5 @@ coverage/
 
 # Generated local validation reports are not source files.
 /validacao-local/evidencias/
+
+/validacao-local/evidencias-p7/

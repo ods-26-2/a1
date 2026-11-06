@@ -1,0 +1,45 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "MoveCommand",
+  "type": "object",
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "ods.p7.move.command"
+    },
+    "message_type": {
+      "type": "string",
+      "const": "command"
+    },
+    "producer": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object",
+      "properties": {
+        "source_id": {
+          "type": "string"
+        },
+        "pan_deg": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "tilt_deg": {
+          "type": "number",
+          "minimum": -45,
+          "maximum": 45
+        },
+        "speed_deg_s": {
+          "type": "number",
+          "exclusiveMinimum": 0
+        }
+      },
+      "required": ["source_id", "pan_deg", "tilt_deg"]
+    }
+  },
+  "required": ["schema", "message_type", "producer", "target", "payload"]
+}
