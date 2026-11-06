@@ -1,0 +1,32 @@
+{
+  "activity": 31,
+  "mode": "FAKE",
+  "persisted": false,
+  "checks": [
+    "histórico filtrado",
+    "recorrência",
+    "causa declarada",
+    "relatório de inspeção",
+    "layout mobile sem overflow",
+    "vídeo H.264"
+  ],
+  "browser_errors": [],
+  "captures": [
+    "01-historico-filtrado.png",
+    "02-recorrencia.png",
+    "03-inspecao-causa.png",
+    "04-mobile-relatorio.png"
+  ],
+  "video": "videos/demonstracao-frontend.mp4",
+  "sha256": {
+    "01-historico-filtrado.png": "d488246584c4414fdb53b7a674aa8028201fa486813d476013602b85fa1fb469",
+    "02-recorrencia.png": "5def9cc2539873701f61c0341248e62bb0420bf2824ac905f4ef4fdc6391b44c",
+    "03-inspecao-causa.png": "2f1e25af745a4492352f963a682f1c791c4049febcacc64eac16b6bb6c6e877c",
+    "04-mobile-relatorio.png": "78d40a0cc5e2ac2c364f54bd7b7d541fed88e841a4fc401cc6c051856f92dd92"
+  },
+  "limits": [
+    "API fake explícita",
+    "causa sem persistência",
+    "não demonstra inferência, S4 ou P7 reais"
+  ]
+}
