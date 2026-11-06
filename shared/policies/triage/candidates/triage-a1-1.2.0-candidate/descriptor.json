@@ -1,0 +1,32 @@
+{
+  "policy_version": "triage-a1-1.2.0-candidate",
+  "taxonomy_version": "defects-a1-1.0.0",
+  "kind": "A1_TRIAGE_POLICY_CANDIDATE",
+  "status": "PROVISIONAL_NOT_ACTIVE",
+  "hash_sha256": "77ddba0fb468796097fdc93e1dd81c4b6d8b201b1d66321c4773e6d212959044",
+  "source": {
+    "repository": "https://github.com/ods-26-2/i8",
+    "commit": "52301258ee27ed8b25ba9bc17a497630880398a9",
+    "path": "models/policy-caixa_papelao-policy-csv-001.json",
+    "hash_sha256": "208fc3d0785c9829e840725ecb48a63fbe83213e10474125eec1d55f8e091c74",
+    "git_blob_hash_sha256": "50934f490840bf242e90fc91689199777013afb5e21a3cd69f5e04473969b98a",
+    "normalization": "CRLF_TO_LF",
+    "policy_version": "policy-1.0.0",
+    "product_id": "caixa_papelao",
+    "normal_model_version": "normal-csv-001",
+    "classifier_version": "classifier-csv-001",
+    "taxonomy_version": "defects-a1-1.0.0"
+  },
+  "mapping": {
+    "NON_CONFORMING": "minimum_confidence <- parameters.known_confidence (provisional)",
+    "CONFORMING": "null: conforming_similarity is not a confidence threshold",
+    "ANOMALY": "REVIEW",
+    "UNCERTAIN": "REVIEW"
+  },
+  "limitations": [
+    "Source thresholds are provisional, not an accepted industrial calibration.",
+    "No validated CONFORMING confidence threshold; keep human review.",
+    "Product caixa_papelao only; A1 currently selects policy by taxonomy, not product.",
+    "This candidate does not activate in build_services or change historical decisions."
+  ]
+}

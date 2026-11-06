@@ -35,6 +35,8 @@ Transporte fake, deduplicação, reinício, falha do PostgreSQL e regressão da 
 
 ## Outros escopos do fechamento
 
+- [Etapa 16: política candidata A1, origem/hash e rollback](atividade-16-politica-candidata.md). Provisória e não ativada; política padrão preservada.
+
 - Unificação de extração e similaridade, S3-04: atividade 10.
 - Dataset, artefatos, calibração e avaliação: atividades 11–16.
 - Entrada/runtime I8, S3-06, e fluxo real: atividades 17–18.

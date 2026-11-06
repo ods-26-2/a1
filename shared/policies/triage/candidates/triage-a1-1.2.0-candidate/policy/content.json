@@ -1,0 +1,23 @@
+{
+  "policy_version": "triage-a1-1.2.0-candidate",
+  "taxonomy_version": "defects-a1-1.0.0",
+  "default_status": "REVIEW",
+  "minimum_confidence": {
+    "CONFORMING": null,
+    "NON_CONFORMING": 0.8
+  },
+  "consequences": [
+    {
+      "defect_class": "AMASSADO",
+      "status": "REJECTED"
+    },
+    {
+      "defect_class": "FURADO",
+      "status": "REJECTED"
+    },
+    {
+      "defect_class": "FURADO_AMASSADO",
+      "status": "REJECTED"
+    }
+  ]
+}

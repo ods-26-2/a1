@@ -1,0 +1,13 @@
+{
+  "policy_version": "policy-1.0.0",
+  "product_id": "caixa_papelao",
+  "normal_model_version": "normal-csv-001",
+  "classifier_version": "classifier-csv-001",
+  "taxonomy_version": "defects-a1-1.0.0",
+  "parameters": {
+    "conforming_similarity": 0.2354041860284747,
+    "known_confidence": 0.8,
+    "anomaly_similarity": 0.09153255441789314,
+    "uncertain_margin": 0.05
+  }
+}
