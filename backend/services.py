@@ -16,6 +16,7 @@ from .taxonomy import TaxonomyCatalog
 from .triage import PolicyCatalog, TriageService
 from .p7 import P7Adapter
 from .s4 import S4Adapter
+from .s5 import S5Adapter
 
 
 @dataclass(frozen=True)
@@ -26,6 +27,7 @@ class Services:
     reviews: ReviewService
     p7: P7Adapter
     s4: S4Adapter
+    s5: S5Adapter
 
 
 def build_services(
@@ -42,4 +44,5 @@ def build_services(
         reviews=ReviewService(repository, inspections, clock),
         p7=P7Adapter(repository, clock),
         s4=S4Adapter(repository, clock),
+        s5=S5Adapter(repository, clock),
     )

@@ -140,3 +140,19 @@ ALTER TABLE commands ADD COLUMN IF NOT EXISTS transport_envelope jsonb;
 ALTER TABLE commands ADD COLUMN IF NOT EXISTS response_clip_id uuid;
 ALTER TABLE commands ADD COLUMN IF NOT EXISTS next_attempt_at timestamptz;
 ALTER TABLE evidence ADD COLUMN IF NOT EXISTS descriptor jsonb;
+
+-- Activity 23: S5 queries/events are independent of individual inspections.
+CREATE TABLE IF NOT EXISTS s5_queries (
+    query_id uuid PRIMARY KEY,
+    status text NOT NULL CHECK(status IN ('PENDING','SENT','COMPLETED','REJECTED','EXPIRED')),
+    envelope jsonb NOT NULL,
+    response jsonb,
+    created_at timestamptz NOT NULL,
+    deadline_at timestamptz NOT NULL,
+    next_attempt_at timestamptz
+);
+CREATE TABLE IF NOT EXISTS s5_metric_events (
+    message_id uuid PRIMARY KEY,
+    envelope jsonb NOT NULL,
+    received_at timestamptz NOT NULL
+);

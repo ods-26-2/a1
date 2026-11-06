@@ -53,3 +53,7 @@ Pedido durável, reenvio com mesmo ID, correlação de reply/state, aceite separ
 ## Evidência S4 — atividade 19
 
 [Adaptador, arquitetura, comandos Docker e bloqueios da atividade 20](atividade-19-adaptador-s4.md). Reutiliza pedidos já persistidos; ativação explícita, correlação, timeout e expiração. O laboratório usa S4/mídia simulados e Kafka/PostgreSQL/A1 reais.
+
+## Preparação S5 e revalidação P7 — atividades 23 e 24
+
+[Critérios, funções, comandos Docker e limites](atividades-23-24-fechamento.md). A integração S5 EVENT é preparada por contrato com simulador; P7 com fake já estava na main e é revalidado. A prova física da atividade 25 continua separada.

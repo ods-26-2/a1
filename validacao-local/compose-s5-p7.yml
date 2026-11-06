@@ -1,0 +1,25 @@
+# Isolated activities 23/24 lab. No Kafka, host ports or hardware access.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: a1
+      POSTGRES_USER: a1
+      POSTGRES_PASSWORD: ver1-s5-p7-lab-only
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U a1 -d a1"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+  testes:
+    build:
+      context: ..
+      target: tests
+    environment:
+      A1_TEST_DATABASE_URL: postgresql://a1:ver1-s5-p7-lab-only@db:5432/a1
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./evidencias-s5-p7:/evidencias
+    command: [python, -m, pytest, -q, tests/test_s5.py, tests/test_p7.py, --junitxml=/evidencias/s5-p7.xml]
