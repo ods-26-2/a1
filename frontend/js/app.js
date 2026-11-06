@@ -8,6 +8,7 @@ import { cacheEvidenceElements } from "./ui/evidence.js";
 import { formatTime } from "./ui/format.js";
 import { cacheViewStateElements, setViewState } from "./ui/viewState.js";
 import { setupInspectionHistory } from "./history.js";
+import { setupReports } from "./reports.js";
 
 const ERROR_TITLES = Object.freeze({
   [API_ERROR_KINDS.NETWORK]: "API A1 inacessível",
@@ -314,6 +315,7 @@ function initializeApp() {
     reasonInput.value = "";
     await loadCurrentInspection();
   });
+  setupReports(dataSource, () => currentView?.inspection_id);
   window.setInterval(refreshHealth, HEALTH_INTERVAL_MS);
 
   if (dataSource.mode === "REAL") {

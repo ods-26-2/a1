@@ -1,6 +1,16 @@
 import { inspectionSearchOptions } from "./data/inspectionSearch.js";
 import { formatDateTime } from "./ui/format.js";
 
+export function readHistoryFilters(form) {
+  const values = new FormData(form);
+  const filters = { limit: 20, offset: 0 };
+  for (const key of ["captured_from", "captured_to", "result", "source_id", "defect_class"]) {
+    const value = values.get(key).trim();
+    if (value) filters[key] = key.startsWith("captured_") ? `${value}Z` : value;
+  }
+  return inspectionSearchOptions(filters);
+}
+
 export function setupInspectionHistory(dataSource, selectInspection, root = document) {
   const form = root.querySelector("#history-filters");
   const summary = root.querySelector("#history-summary");
@@ -37,13 +47,7 @@ export function setupInspectionHistory(dataSource, selectInspection, root = docu
   form.addEventListener("submit", (event) => {
     event.preventDefault();
     try {
-      const values = new FormData(form);
-      const filters = { limit: 20, offset: 0 };
-      for (const key of ["captured_from", "captured_to", "result", "source_id", "defect_class"]) {
-        const value = values.get(key).trim();
-        if (value) filters[key] = key.startsWith("captured_") ? `${value}Z` : value;
-      }
-      load(inspectionSearchOptions(filters));
+      load(readHistoryFilters(form));
     } catch (error) { ++token; items.replaceChildren(); previous.disabled = next.disabled = true; summary.textContent = error.message; }
   });
   form.addEventListener("reset", () => load({ limit: 20, offset: 0 }));

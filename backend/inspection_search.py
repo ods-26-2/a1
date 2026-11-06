@@ -5,7 +5,7 @@ from typing import Literal
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator, model_validator
 
 
-class InspectionSearch(BaseModel):
+class InspectionFilters(BaseModel):
     model_config = ConfigDict(extra="forbid", frozen=True)
 
     captured_from: AwareDatetime | None = None
@@ -13,8 +13,6 @@ class InspectionSearch(BaseModel):
     result: Literal["CONFORMING", "NON_CONFORMING", "ANOMALY", "UNCERTAIN"] | None = None
     source_id: str | None = Field(default=None, min_length=1, max_length=256)
     defect_class: str | None = Field(default=None, min_length=1, max_length=128, pattern=r"^[A-Z][A-Z0-9_]*$")
-    limit: int = Field(default=50, ge=1, le=100)
-    offset: int = Field(default=0, ge=0)
 
     @field_validator("captured_from", "captured_to", mode="before")
     @classmethod
@@ -60,3 +58,8 @@ class InspectionSearch(BaseModel):
                 clauses.append(f"i.{column} {operator} %s")
                 values.append(value)
         return (" WHERE " + " AND ".join(clauses) if clauses else ""), tuple(values)
+
+
+class InspectionSearch(InspectionFilters):
+    limit: int = Field(default=50, ge=1, le=100)
+    offset: int = Field(default=0, ge=0)

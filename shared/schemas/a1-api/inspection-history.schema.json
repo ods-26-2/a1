@@ -53,7 +53,7 @@
         "required": ["event_type", "actor", "occurred_at", "details"],
         "properties": {
           "event_type": {
-            "enum": ["INGESTED", "TRIAGED", "EVIDENCE_REQUESTED", "REVIEW_RECORDED"]
+            "enum": ["INGESTED", "TRIAGED", "EVIDENCE_REQUESTED", "REVIEW_RECORDED", "CAUSE_RECORDED", "S4_SENT", "S4_ACCEPTED", "S4_AVAILABLE", "S4_UNAVAILABLE", "S4_EXPIRED", "P7_PENDING", "P7_SENT", "P7_ACCEPTED", "P7_COMPLETED", "P7_REJECTED", "P7_FAILED", "P7_EXPIRED"]
           },
           "actor": { "type": "string", "minLength": 1 },
           "occurred_at": { "type": "string", "format": "date-time" },

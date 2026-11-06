@@ -923,6 +923,8 @@ h2 {
 .history-filters label { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
 .history-filters input, .history-filters select { width: 100%; min-width: 0; padding: .65rem; font: inherit; border: 1px solid #8a96a6; border-radius: .4rem; background: white; color: #172333; }
 #history-items button { max-width: 100%; overflow-wrap: anywhere; text-align: left; }
+.report-results { max-height: 22rem; overflow: auto; overflow-wrap: anywhere; }
+.history-filters textarea { width: 100%; min-height: 6rem; font: inherit; padding: .65rem; border: 1px solid #8a96a6; border-radius: .4rem; }
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

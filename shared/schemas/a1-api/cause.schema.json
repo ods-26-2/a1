@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://ods.local/a1/api/v1/cause.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["cause_id", "inspection_id", "operator", "cause", "basis", "recorded_at", "status"],
+  "properties": {
+    "cause_id": {"type": "string", "format": "uuid"},
+    "inspection_id": {"type": "string", "minLength": 1},
+    "operator": {"type": "string", "minLength": 1, "maxLength": 64},
+    "cause": {"type": "string", "minLength": 1, "maxLength": 200},
+    "basis": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "recorded_at": {"type": "string", "format": "date-time"},
+    "status": {"const": "OPERATOR_REPORTED"}
+  }
+}

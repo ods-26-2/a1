@@ -4,6 +4,7 @@
 import { createFakeA1Api } from "./fakeA1Api.js";
 import { createHttpA1Api } from "./httpA1Api.js";
 import { inspectionSearchOptions, validateInspectionList } from "./inspectionSearch.js";
+import { reportOptions, validateReport, validateCause } from "./reports.js";
 import {
   REVIEW_ACTIONS,
   validateHealth,
@@ -46,6 +47,20 @@ export function createInspectionDataSource(config, { fetchImpl } = {}) {
     async searchInspections(options) {
       const filters = inspectionSearchOptions(options);
       return validateInspectionList(await api.searchInspections(filters), filters);
+    },
+
+    async loadReport(kind, options, inspectionId) {
+      if (!["recurrence", "causes", "inspection"].includes(kind)) throw new Error("Tipo de relatório inválido.");
+      return validateReport(kind === "inspection" ? await api.getInspectionReport(inspectionId) : await api.getAggregateReport(kind, reportOptions(options)), kind);
+    },
+    async recordCause(inspectionId, body) {
+      if (!inspectionId) throw new Error("Selecione uma inspeção.");
+      const data = {};
+      for (const [key, maximum] of [["operator", 64], ["cause", 200], ["basis", 1000]]) {
+        if (typeof body[key] !== "string" || !body[key].trim() || body[key].trim().length > maximum || /[\u0000-\u0008\u000B\u000C\u000E-\u001F]|[\uD800-\uDFFF]/u.test(body[key])) throw new Error("Informe operador, causa provável e fundamentação válidos.");
+        data[key] = body[key].trim();
+      }
+      return validateCause(await api.recordCause(inspectionId, data));
     },
 
     async loadReviewQueue(options) {
