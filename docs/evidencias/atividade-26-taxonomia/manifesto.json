@@ -1,0 +1,51 @@
+{
+  "manifest_version": "1.0",
+  "activity": 26,
+  "recorded_on": "2026-11-06",
+  "criterion": "A1 e I8 usam mesma versão, descritor e hash.",
+  "criterion_source": {
+    "filename": "plano_fechamento_sprint3_dependencias.pdf",
+    "page": 4,
+    "sha256": "883f4ad42f96d8bab38860e6bb288eb492ed28228aac407798b2d0527d12a460"
+  },
+  "scope": "Referência compartilhada A1/I8 e compatibilidade do loader; não prova implantação nem hash do treino histórico",
+  "a1": {
+    "repository": "https://github.com/ods-26-2/a1",
+    "commit": "a4ea77a191eddc7726007fcdb1699cb612797c19",
+    "files": {
+      "content": {"path": "shared/artifacts/defect-taxonomy/defects-a1-1.0.0/content.json", "sha256": "324476cf7bbef29de8583807c1eb7b4a3709ef269c2db317a670501da4f7440a"},
+      "descriptor": {"path": "shared/artifacts/defect-taxonomy/defects-a1-1.0.0/descriptor.json", "sha256": "e7cf99210f56789c7b0ceb7096dbeaf5e6e1e3f1ae551ff94c45994c67c0ea95"},
+      "published": {"path": "shared/artifacts/defect-taxonomy/defects-a1-1.0.0/published.json", "sha256": "f464869dd2c183eaa0f78f7aab8f4f3d6a5d704d4093dee3ba0d532e1b0c9981"}
+    }
+  },
+  "i8": {
+    "repository": "https://github.com/ods-26-2/i8",
+    "commit": "55a808b1351fdd94ea039148b49fba1f478603e1",
+    "files": {
+      "loader": {"path": "src/taxonomy/__init__.py", "sha256": "a4d7591961588d7f92cb78d0384cace7d50532c1cda3287b006466e0a025e954"},
+      "contracts": {"path": "src/contracts/__init__.py", "sha256": "44fb42bc125e8d8a7d0838ed88dba8e22108a9c7ad8649cf7cf3985a3e52cca1"},
+      "infer_cli": {"path": "scripts/infer_image.py", "sha256": "96bbd5b25efa7c6b10d93b3f2f0e9565353370f11a23fad19557284915bad384"},
+      "publish_cli": {"path": "scripts/publish_events.py", "sha256": "d15c9a16bd458a327ebd3356da5ca420282656cfbae989716fe84e8279a51782"},
+      "predict_cli": {"path": "scripts/predict_manifest.py", "sha256": "63272464a2ade14c617b17516c9c50d3c1806be10207fff3132afcfac2161132"},
+      "classifier": {"path": "models/classifier-caixa_papelao-classifier-csv-001.json", "sha256": "ca146f0bc4adcc656d0fc00867f8609fb45ded9ebd4a0f9ab30fca685be4fe6d"},
+      "policy": {"path": "models/policy-caixa_papelao-policy-csv-001.json", "sha256": "50934f490840bf242e90fc91689199777013afb5e21a3cd69f5e04473969b98a"}
+    }
+  },
+  "expected_descriptor": {
+    "artifact_id": "defect-taxonomy-a1",
+    "artifact_version": "defects-a1-1.0.0",
+    "kind": "DEFECT_TAXONOMY",
+    "owner": "A1",
+    "uri": "registry://b5/a1/defect-taxonomy/defects-a1-1.0.0",
+    "hash_sha256": "324476cf7bbef29de8583807c1eb7b4a3709ef269c2db317a670501da4f7440a",
+    "valid_from": "2026-10-20T12:00:00.000Z",
+    "schema_version": "1.0"
+  },
+  "provenance_limits": [
+    "I8 exige arquivos explícitos de conteúdo/descritor; comandos publicados apontam para pacote A1. Não há alegação de cópia ou sincronização automática.",
+    "Loader I8 é executado isoladamente nesta verificação com os bytes A1 fixados; não representa configuração de processo implantado.",
+    "Classificador e política históricos I8 gravam taxonomy_version, mas não fixam hash/descritor usados no treino; igualdade histórica desses bytes não é comprovada.",
+    "URI registry é metadado; não houve consulta B5, broker, treino, inferência industrial ou publicação externa.",
+    "Hashes asseguram consistência com o manifesto revisado; não constituem assinatura ou homologação industrial."
+  ]
+}

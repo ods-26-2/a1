@@ -73,3 +73,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 ## Prova física P7 — atividade 25
 
 Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registro e roteiro acompanhado](../evidencias/atividade-25-p7-fisico/README.md) e o [manifesto rastreável](../evidencias/atividade-25-p7-fisico/manifesto.json) fixam A1/P7, dependência de bancada, coordenadas, homing, limites, transporte, idempotência, riscos e parada segura. Nenhum driver foi executado e não houve movimento físico nesta atividade.
+
+## Taxonomia final A1/I8 — atividade 26
+
+[Verificação executável e proveniência](../evidencias/atividade-26-taxonomia/README.md) e [manifesto com commits/descritor/hashes](../evidencias/atividade-26-taxonomia/manifesto.json). Resultado local: **VERIFICADA_REFERENCIA_COMPARTILHADA**, com loaders A1/I8 consumindo os mesmos bytes e recusando divergências. I8 referencia o pacote A1; implantação e hash da taxonomia no treino histórico não estão comprovados por essa igualdade local.
