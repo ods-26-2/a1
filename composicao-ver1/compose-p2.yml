@@ -1,0 +1,44 @@
+# Complemento do laboratório: mesmo backend/Kafka/banco, inferência P2 explícita.
+services:
+  i8-p2:
+    build:
+      context: ..
+      dockerfile: composicao-ver1/p2/Dockerfile
+    image: ver1-composicao-p2:local
+    user: ${VER1_UID:-1000}:${VER1_GID:-1000}
+    environment:
+      P2_BACKEND: ort
+      P2_ENGINE_DIR: /evidencias/engines
+      KAFKA_BROKER_URL: kafka:9092
+      KAFKA_TOPIC: ods.industria.defeito_classificado
+    volumes:
+      - ./evidencias-p2:/evidencias
+      - ../shared/artifacts/defect-taxonomy:/taxonomies:ro
+    profiles: [ferramentas]
+    cpus: 2
+    mem_limit: 3g
+  i8-publisher:
+    volumes:
+      - ./evidencias-p2:/evidencias:ro
+  prova-p2:
+    image: ver1-composicao-backend:local
+    user: ${VER1_UID:-1000}:${VER1_GID:-1000}
+    environment:
+      DATABASE_URL: postgresql://a1:${VER1_DB_PASSWORD:-ver1-local}@db:5432/a1
+      KAFKA_BROKER_URL: kafka:9092
+      KAFKA_TOPIC: ods.industria.defeito_classificado
+      KAFKA_GROUP_ID: ${VER1_GROUP_ID:-ver1-sprint3-a1}
+      API_URL: http://frontend/api/v1
+      A1_SHA: ${VER1_A1_SHA:-unknown}
+      A1_DIRTY: ${VER1_A1_DIRTY:-unknown}
+      FRONTEND_URL: http://frontend/frontend/
+    volumes:
+      - ..:/repos/a1:ro
+      - ./.dependencias/i8:/repos/i8:ro
+      - ./evidencias-p2:/evidencias
+      - ./p2/provar.py:/lab/provar.py:ro
+    entrypoint: [python, /lab/provar.py]
+    profiles: [ferramentas]
+networks:
+  default:
+    internal: true

@@ -102,3 +102,6 @@ A prova reutiliza as verificações observacionais de
 `validacao-local/provar_fluxo.py` e usa `scripts.publish_events` do I8 como
 produtor. Não usa o produtor fake do A1. O workflow **Sprint 3 - composição local
 VER-1** repete essa prova em Docker no GitHub Actions e publica seus artefatos.
+## Ensaio adicional com inferência P2
+
+Após o merge I8 #10, a composição fixa a nova revisão do I8. Para testar imagens sintéticas com inferência CPU real até Kafka/A1/PostgreSQL, execute `bash composicao-ver1/testar-p2.sh` na raiz do A1. O laboratório original de transporte continua abaixo. Veja [escopo, comandos, evidências e limites](../docs/sprints/integracao-p2-kafka-a1.md).

@@ -15,6 +15,7 @@ on:
       - 'package.json'
       - 'requirements*.txt'
       - 'scripts/capture_sprint3_closure.mjs'
+      - 'scripts/capture_readiness.mjs'
       - 'scripts/build_closure_manifest.py'
       - 'scripts/verify_closure_evidence.py'
       - 'docs/evidencias/atividade-31/**'
@@ -70,12 +71,28 @@ jobs:
   evidencias:
     name: Atividade 31 - vídeo e evidências
     needs: metricas
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - name: Garantir ffmpeg
-        run: command -v ffmpeg || (sudo apt-get update && sudo apt-get install -y ffmpeg)
+        timeout-minutes: 5
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo timeout 60s apt-get \
+              -o Acquire::Retries=2 \
+              -o Acquire::http::Timeout=20 \
+              -o Acquire::https::Timeout=20 update
+            sudo timeout 180s apt-get \
+              -o Acquire::Retries=2 \
+              -o Acquire::http::Timeout=20 \
+              -o Acquire::https::Timeout=20 \
+              install --yes --no-install-recommends ffmpeg
+          fi
+          ffmpeg -version
+          google-chrome --version
+          node --version
       - name: Repetir captura visual
         run: node scripts/capture_sprint3_closure.mjs "$(command -v google-chrome)" "$(command -v ffmpeg)" "$RUNNER_TEMP/atividade-31"
       - name: Verificar evidências versionadas

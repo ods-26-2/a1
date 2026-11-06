@@ -5,6 +5,7 @@ import { createServer } from "node:http";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { extname, join, resolve, sep } from "node:path";
+import { inspectionReady } from "./capture_readiness.mjs";
 
 const CHROME = process.argv[2] ?? "C:/Program Files/Google/Chrome/Application/chrome.exe";
 const FFMPEG = process.argv[3] ?? "ffmpeg";
@@ -114,7 +115,7 @@ try {
   await send("Emulation.setDeviceMetricsOverride", { width: 1366, height: 768, deviceScaleFactor: 1, mobile: false });
   const base = `http://127.0.0.1:${server.address().port}/frontend/?api=fake&scenario=NON_CONFORMING&fault=NONE`;
   await send("Page.navigate", { url: base });
-  await waitFor(`!document.querySelector('#history-summary').textContent.includes('Carregando') && document.querySelector('#inspection-id').textContent !== '—'`);
+  await waitFor(`(${inspectionReady.toString()})(document)`);
   addFrames(await screenshot(join(frames, "initial.png")), 12);
 
   await scrollTo("#history-title");

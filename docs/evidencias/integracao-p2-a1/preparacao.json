@@ -1,0 +1,71 @@
+{
+  "scope": "Inferência real P2 FP32/CPU com imagens sintéticas e modelos históricos; não comprova acurácia industrial",
+  "synthetic_images": true,
+  "real_inference": true,
+  "real_industrial_images": false,
+  "shared_broker": false,
+  "engine_version": "i8-resnet18-imagenet-1.0.0-fp32",
+  "backend": "ort",
+  "precision": "FP32",
+  "frames_sha256": "760476ca4d7129983a205fbd360bbd3065494abbb27d9319348670432a1126bc",
+  "samples": [
+    {
+      "frame_index": 1,
+      "image": "synthetic-1.png",
+      "image_sha256": "79dcc0118a4c3a39229265796017071c057576a66b3d180b1a7b9dd491b67e33",
+      "seed": 1,
+      "expected": {
+        "result": "UNCERTAIN",
+        "confidence": 0.9643436252694423,
+        "similarity": 0.2710605607590324,
+        "defect_class": null,
+        "model_version": "normal-csv-001"
+      }
+    },
+    {
+      "frame_index": 2,
+      "image": "synthetic-2.png",
+      "image_sha256": "2cb1eacff9392a007be4e9d517f0152f0bbb841401440f0dbcd76b1d13ea7f76",
+      "seed": 2,
+      "expected": {
+        "result": "UNCERTAIN",
+        "confidence": 0.9668325622683994,
+        "similarity": 0.26857162376007526,
+        "defect_class": null,
+        "model_version": "normal-csv-001"
+      }
+    },
+    {
+      "frame_index": 3,
+      "image": "synthetic-3.png",
+      "image_sha256": "ddc4e3f65c122349ce8d776e8e8d619ef0284d1b9f471481ca5a84ddc3350c44",
+      "seed": 3,
+      "expected": {
+        "result": "UNCERTAIN",
+        "confidence": 0.9669330465395004,
+        "similarity": 0.26847113948897433,
+        "defect_class": null,
+        "model_version": "normal-csv-001"
+      }
+    }
+  ],
+  "artifact_hashes": {
+    "models/normal_caixa_papelao_normal-csv-001.json": "f85e476974b2dd0b8c8cbf9c48f11c1d50a9951aa3e6e6c51fa4654c277e2dc5",
+    "models/classifier-caixa_papelao-classifier-csv-001.json": "ca146f0bc4adcc656d0fc00867f8609fb45ded9ebd4a0f9ab30fca685be4fe6d",
+    "models/policy-caixa_papelao-policy-csv-001.json": "50934f490840bf242e90fc91689199777013afb5e21a3cd69f5e04473969b98a",
+    "taxonomy/content.json": "324476cf7bbef29de8583807c1eb7b4a3709ef269c2db317a670501da4f7440a",
+    "taxonomy/descriptor.json": "e7cf99210f56789c7b0ceb7096dbeaf5e6e1e3f1ae551ff94c45994c67c0ea95",
+    "engines/i8-resnet18-imagenet-1.0.0/manifest.json": "70cd57ec51854664085f3cf05af6a691d36b48664ec710f2c7cd1ba3d73aae15",
+    "engines/i8-resnet18-imagenet-1.0.0/metadata.json": "a040d38f16ed12d161eb68429166e3f62d5ec5437ef6f87d8b2c4e53298a3819",
+    "engines/i8-resnet18-imagenet-1.0.0/resnet18.onnx": "7fed8809576908f95b825f1096e9ad2737864bb6e37be339014b3464942566b1"
+  },
+  "exported_model_sha256": "7fed8809576908f95b825f1096e9ad2737864bb6e37be339014b3464942566b1",
+  "torch": "2.15.0+cpu",
+  "numpy": "1.26.4",
+  "limits": [
+    "Não demonstra quatro resultados reais do dataset",
+    "Não executa captura P4/I1/P6 ou Jetson/TensorRT",
+    "S4/S5/P7 reais desativados; broker compartilhado não acessado",
+    "Modelos históricos não são novo treino, calibração ou aceite industrial"
+  ]
+}
