@@ -35,3 +35,45 @@ def test_json_records_accepts_compose_array_and_stats_lines(tmp_path: Path) -> N
     report = tmp_path / "records.jsonl"
     report.write_text('[{"Name":"db"},{"Name":"kafka"}]\n{"Name":"backend"}\n', encoding="utf-8")
     assert [item["Name"] for item in metrics.json_records(report)] == ["db", "kafka", "backend"]
+
+
+def test_pipeline_reports_arrival_without_claiming_database_commit(tmp_path, monkeypatch) -> None:
+    """The stored received_at marks ingest entry, even when read after commit."""
+    import json
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+
+    start = datetime(2026, 11, 6, 12, tzinfo=timezone.utc)
+    (tmp_path / "envio-inicio-ns.txt").write_text(str(int(start.timestamp()) * 10**9))
+    (tmp_path / "envio-fim-ns.txt").write_text(str(int(start.timestamp()) * 10**9 + 2 * 10**9))
+    arrival = start.replace(microsecond=500000)
+    rows = [(str(index), arrival, {"published_at": start.isoformat(),
+             "payload": {"result": "CONFORMING"}}) for index in range(4)]
+
+    class Connection:
+        def __enter__(self): return self
+        def __exit__(self, *_): pass
+        def execute(self, *_): return SimpleNamespace(fetchall=lambda: rows)
+
+    class Response:
+        status = 200
+        def __enter__(self): return self
+        def __exit__(self, *_): pass
+        def read(self): return b'{"total": 4}'
+
+    monkeypatch.setattr(pipeline, "EVIDENCE", tmp_path)
+    monkeypatch.setattr(pipeline.psycopg, "connect", lambda *_: Connection())
+    monkeypatch.setattr(pipeline, "urlopen", lambda *_args, **_kwargs: Response())
+    monkeypatch.setenv("DATABASE_URL", "postgresql://test")
+    monkeypatch.setenv("API_URL", "http://test/api/v1")
+    output = tmp_path / "latencia.json"
+    monkeypatch.setattr("sys.argv", ["medir_pipeline.py", "--output", str(output), "--api-samples", "1"])
+    pipeline.main()
+    value = json.loads(output.read_text())
+    assert value["publisher_invocation_to_a1_ingestion_ms"]["p50"] == 500.0
+    assert value["synthetic_published_marker_to_a1_ingestion_ms"]["p50"] == 500.0
+    assert value["persistence_latency_measured"] is False
+    assert "publisher_invocation_to_database_ms" not in value
+    assert "synthetic_published_marker_to_database_ms" not in value
+    assert all(item["publisher_invocation_to_a1_ingestion_ms"] == 500.0
+               for item in value["observations"])

@@ -6,30 +6,51 @@
   "a1_commit": "04572cd8c6118922b4378fec0aa29478b02a0206",
   "i8_commit": "55a808b1351fdd94ea039148b49fba1f478603e1",
   "latency": {
-    "pipeline": "início do comando publisher I8 até persistência PostgreSQL pelo A1",
+    "pipeline": "início do comando publisher I8 até início da ingestão A1",
     "publisher_command_ms": 4612.251,
-    "publisher_invocation_to_database_ms": {
-      "samples": 4,
-      "min": 4424.304,
-      "p50": 4494.177,
-      "p95_nearest_rank": 4521.766,
-      "max": 4521.766
-    },
     "api_history_request_ms": {
       "samples": 30,
       "min": 2.686,
       "p50": 2.836,
       "p95_nearest_rank": 3.699,
       "max": 5.213
-    }
+    },
+    "publisher_invocation_to_a1_ingestion_ms": {
+      "samples": 4,
+      "min": 4424.304,
+      "p50": 4494.177,
+      "p95_nearest_rank": 4521.766,
+      "max": 4521.766
+    },
+    "persistence_latency_measured": false
   },
   "resources": {
     "snapshot": "após regressão, reinício e 30 leituras da API",
     "containers": [
-      { "service": "backend", "memory_used_mib": 48.230, "cpu_percent_snapshot": "0.18%", "pids": 11 },
-      { "service": "db", "memory_used_mib": 30.980, "cpu_percent_snapshot": "0.04%", "pids": 7 },
-      { "service": "frontend", "memory_used_mib": 5.164, "cpu_percent_snapshot": "2.78%", "pids": 5 },
-      { "service": "kafka", "memory_used_mib": 341.700, "cpu_percent_snapshot": "1.93%", "pids": 100 }
+      {
+        "service": "backend",
+        "memory_used_mib": 48.23,
+        "cpu_percent_snapshot": "0.18%",
+        "pids": 11
+      },
+      {
+        "service": "db",
+        "memory_used_mib": 30.98,
+        "cpu_percent_snapshot": "0.04%",
+        "pids": 7
+      },
+      {
+        "service": "frontend",
+        "memory_used_mib": 5.164,
+        "cpu_percent_snapshot": "2.78%",
+        "pids": 5
+      },
+      {
+        "service": "kafka",
+        "memory_used_mib": 341.7,
+        "cpu_percent_snapshot": "1.93%",
+        "pids": 100
+      }
     ],
     "total_memory_used_mib": 426.074
   },
@@ -47,6 +68,15 @@
     "Medição local sintética; tempo de inferência de imagem não incluído.",
     "A latência inclui criação do container do publisher; não isola somente transporte Kafka.",
     "Memória e CPU são um snapshot, não pico nem teste de carga.",
-    "Runner GitHub compartilhado e quatro eventos não representam hardware industrial."
-  ]
+    "Runner GitHub compartilhado e quatro eventos não representam hardware industrial.",
+    "A métrica termina no início da ingestão A1; a latência até commit ou visibilidade após commit não foi medida."
+  ],
+  "semantic_correction": {
+    "recorded_on": "2026-11-06",
+    "original_result": "historico/resultado.json",
+    "original_summary": "historico/resumo.log",
+    "reason": "received_at é registrado no início de ingest(), antes da validação e da transação. Os valores históricos foram reclassificados, sem nova medição ou alteração numérica.",
+    "original_field": "publisher_invocation_to_database_ms",
+    "correct_field": "publisher_invocation_to_a1_ingestion_ms"
+  }
 }
