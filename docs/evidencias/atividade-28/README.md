@@ -1,4 +1,13 @@
-# Atividade 28 — evidência da composição local
+# Atividade 28 — composição local concluída
+
+Resultado: **APROVADA_COMPOSICAO_LOCAL**. O critério da página 5 do plano é
+“A1, I8, Kafka e PostgreSQL configurados por ambiente”. A PR A1
+[#16](https://github.com/ods-26-2/a1/pull/16) foi mesclada em
+`ace5585f7db0e5e7463d35444f96ab336970e421`; o workflow da composição passou
+na execução
+[#42176495483](https://github.com/ods-26-2/a1/actions/runs/42176495483). O
+[manifesto de aceite](manifesto.json) fixa critério, componentes, commits,
+configuração e limites.
 
 Em 06/11/2026, a composição foi executada em Docker com Kafka 3.9.1,
 PostgreSQL 17, frontend nginx, backend A1 e publisher I8 real.
@@ -20,4 +29,6 @@ e disponibiliza relatório completo, recibos, logs e versões em artefato.
 
 Reprodução e limites: [guia curto](../../../composicao-ver1/README.md).
 Não comprova inferência real, integração S4/S5/P7, ambiente final ou
-fechamento coletivo das atividades 28/29/30.
+fechamento coletivo das atividades 29/30. A regressão da atividade 29 deve
+repetir a prova sobre a `main` consolidada, porque a evidência inicial precede
+as atividades 22–27.
