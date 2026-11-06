@@ -21,7 +21,8 @@ bash composicao-ver1/executar.sh testar
 ```
 
 O comando constrói as imagens, sobe os serviços, publica quatro eventos pelo
-I8, confere a API através do nginx da interface, o banco e os offsets do Kafka.
+I8, confere a API através do nginx da interface, o histórico e seus filtros por
+resultado, o banco e os offsets do Kafka.
 Depois reenvia os mesmos eventos e reinicia o backend. O resultado esperado é
 **oito entregas no Kafka, quatro inspeções e quatro comandos no banco**, sem
 duplicar a auditoria de ingestão. Ao terminar, executa `compose down -v`.
@@ -89,9 +90,13 @@ de alterações são registrados. Não usa o PR I8 #10 enquanto está em revisã
   composição não inventa workers, serviços físicos ou respostas para eles.
 
 Esta entrega prepara a **base local da atividade 28**. O fechamento coletivo
-continua dependendo da atividade 21 e da integração aceita dos componentes.
+inclui o histórico e os filtros da atividade 21, integrados na main durante esta
+entrega. A aceitação coletiva e a integração real dos componentes continuam
+separadas.
 Atividades 18, 20, 25, 29 e 30 não são homologadas por este teste. As imagens
 reais, execução no ambiente final e registro do aceite TRA-1 continuam pendentes.
+A atividade 20 já tem [bloqueio externo documentado](../docs/evidencias/atividade-20-s4-real/README.md),
+sem homologação do S4 real.
 
 A prova reutiliza as verificações observacionais de
 `validacao-local/provar_fluxo.py` e usa `scripts.publish_events` do I8 como

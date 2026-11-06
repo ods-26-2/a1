@@ -5,7 +5,7 @@
   "synthetic_events": true,
   "real_inference": false,
   "shared_broker": false,
-  "a1_base": "2e59fe3d90070a00db025b86edc83857e5c0ae47",
+  "a1_base": "a0c7a1de8331fd07dfd5942b212018188adcb445",
   "i8_commit": "55a808b1351fdd94ea039148b49fba1f478603e1",
   "a1_working_tree_modified": true,
   "checks": {
@@ -25,7 +25,8 @@
         "high": 4,
         "committed": 4
       },
-      "frontend_real_api_proxy": true
+      "frontend_real_api_proxy": true,
+      "history_and_result_filters": true
     },
     "reenvio": {
       "status": "aprovado",
@@ -43,7 +44,8 @@
         "high": 8,
         "committed": 8
       },
-      "frontend_real_api_proxy": true
+      "frontend_real_api_proxy": true,
+      "history_and_result_filters": true
     },
     "reinicio": {
       "status": "aprovado",
@@ -61,7 +63,8 @@
         "high": 8,
         "committed": 8
       },
-      "frontend_real_api_proxy": true
+      "frontend_real_api_proxy": true,
+      "history_and_result_filters": true
     }
   },
   "cleanup": "compose down -v executado com sucesso no modo testar",
@@ -69,7 +72,9 @@
     "one partition and one replica",
     "no real images/models or industrial performance",
     "S4/S5/P7 reais não validados; S4 desativado",
-    "atividade 21 e regressão coletiva pendentes",
+    "regressão coletiva e inferência real pendentes",
     "shared broker not accessed"
-  ]
+  ],
+  "a1_checkout": "e399645c33d3ea2a6532eb6558a7bb3714be884f",
+  "demonstration_mode": "aprovado; encerramento explícito com down -v"
 }

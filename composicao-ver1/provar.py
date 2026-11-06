@@ -51,7 +51,7 @@ def prepare():
         'events_sha256': hashlib.sha256(EVENTS.read_bytes()).hexdigest(),
         'message_ids': [e['message_id'] for e in events], 'phases': {},
         'limits': ['one partition and one replica', 'no real images/models or industrial performance',
-                   'S4/S5/P7 reais não validados; S4 desativado', 'atividade 21 e regressão coletiva pendentes', 'shared broker not accessed'],
+                   'S4/S5/P7 reais não validados; S4 desativado', 'regressão coletiva e inferência real pendentes', 'shared broker not accessed'],
     }
     write_report(report)
     print(json.dumps({'prepared_events': 4, 'session_id': session}))
@@ -93,6 +93,13 @@ def verify(phase):
         assert audit_types.get('INGESTED') == 4
         if phase != 'envio':
             assert audit_types == report['phases']['envio']['audit_counts']
+    history = request('/inspections?limit=100&offset=0')
+    assert history['total'] == 4
+    assert {v['origin']['message_id'] for v in history['items']} == set(report['message_ids'])
+    for event in events:
+        page = request('/inspections?result=' + event['payload']['result'])
+        assert page['total'] == 1
+        assert page['items'][0]['origin']['message_id'] == event['message_id']
     api = []
     for event in events:
         view = request('/inspections/INSP-' + event['message_id'])
@@ -108,7 +115,7 @@ def verify(phase):
                     'triage_status': view['triage']['status']})
     report['phases'][phase] = {'status': 'aprovado', 'counts': counts, 'database_totals': totals,
         'ingestion_failures': failures, 'offsets': offsets, 'api_reads': api, 'audit_counts': audit_types,
-        'original_events_preserved': True, 'health': health, 'frontend_real_api_proxy': True, 'receipts': receipts}
+        'original_events_preserved': True, 'health': health, 'frontend_real_api_proxy': True, 'history_and_result_filters': True, 'receipts': receipts}
     report['status'] = 'composicao-local-aprovada' if phase == 'reinicio' else phase + '-aprovado'
     write_report(report)
     print(json.dumps({'phase': phase, 'status': 'aprovado', 'counts': counts, 'offsets': offsets}))

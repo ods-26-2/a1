@@ -3,6 +3,7 @@
 // não altera nenhuma regra do frontend.
 import { createFakeA1Api } from "./fakeA1Api.js";
 import { createHttpA1Api } from "./httpA1Api.js";
+import { inspectionSearchOptions, validateInspectionList } from "./inspectionSearch.js";
 import {
   REVIEW_ACTIONS,
   validateHealth,
@@ -40,6 +41,11 @@ export function createInspectionDataSource(config, { fetchImpl } = {}) {
 
     async loadInspection(inspectionId) {
       return validateInspectionView(await api.getInspection(inspectionId));
+    },
+
+    async searchInspections(options) {
+      const filters = inspectionSearchOptions(options);
+      return validateInspectionList(await api.searchInspections(filters), filters);
     },
 
     async loadReviewQueue(options) {

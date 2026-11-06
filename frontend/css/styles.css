@@ -919,6 +919,10 @@ h2 {
 .review-correction { display: grid; grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr)); gap: .75rem; }
 .operator-field textarea, .operator-field select { width: 100%; font: inherit; padding: .7rem; border: 1px solid #8a96a6; border-radius: .4rem; color: #172333; background: white; }
 .review-history { line-height: 1.6; }
+.history-filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr)); gap: .75rem; }
+.history-filters label { display: flex; flex-direction: column; gap: .4rem; min-width: 0; }
+.history-filters input, .history-filters select { width: 100%; min-width: 0; padding: .65rem; font: inherit; border: 1px solid #8a96a6; border-radius: .4rem; background: white; color: #172333; }
+#history-items button { max-width: 100%; overflow-wrap: anywhere; text-align: left; }
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

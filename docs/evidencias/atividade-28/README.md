@@ -5,7 +5,9 @@ PostgreSQL 17, frontend nginx, backend A1 e publisher I8 real.
 
 `resultado-local.json` registra a prova: quatro eventos sintéticos, reenvio
 dos mesmos quatro, oito offsets confirmados e quatro inspeções persistidas.
-O reinício do backend preservou o resultado. HTML, JavaScript e leitura da
+O reinício do backend preservou o resultado. A prova foi repetida após
+integrar a main a0c7a1d (atividades 20 e 21), incluindo consultas do histórico
+e filtro por cada resultado, através do proxy nginx. HTML, JavaScript e leitura da
 API pelo proxy do frontend foram conferidos. O modo testar encerrou os
 containers e removeu o volume com `compose down -v`.
 O modo `demonstrar` também passou e manteve os serviços após o sucesso;

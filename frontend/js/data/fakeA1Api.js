@@ -2,6 +2,7 @@
 // httpA1Api.js. Os dados vêm de shared/mocks/a1-api/inspections/, derivados dos
 // eventos 6c válidos. Nada é persistido e a mídia representa um S4 simulado.
 import { A1ApiError, API_ERROR_KINDS } from "./apiError.js";
+import { inspectionSearchOptions } from "./inspectionSearch.js";
 
 const REPO_ROOT = new URL("../../../", import.meta.url);
 const FIXTURE_DIR = "shared/mocks/a1-api/inspections/";
@@ -145,6 +146,26 @@ export function createFakeA1Api({
       throw new A1ApiError(API_ERROR_KINDS.HTTP, `Inspeção ${inspectionId} não encontrada.`, {
         status: 404,
       });
+    },
+
+    async searchInspections(options) {
+      const filters = inspectionSearchOptions(options);
+      await simulateLatency();
+      const views = await Promise.all(FAKE_SCENARIOS.map(loadFixture));
+      const matches = views.filter((view) => {
+        const at = Date.parse(view.times.captured_at);
+        return (!filters.captured_from || at >= Date.parse(filters.captured_from)) &&
+          (!filters.captured_to || at < Date.parse(filters.captured_to)) &&
+          (!filters.result || view.analysis.result === filters.result) &&
+          (!filters.source_id || view.origin.source_id === filters.source_id) &&
+          (!filters.defect_class || view.analysis.defect?.defect_class === filters.defect_class);
+      });
+      matches.sort((a, b) => Date.parse(b.times.captured_at) - Date.parse(a.times.captured_at) ||
+        (a.inspection_id < b.inspection_id ? 1 : a.inspection_id > b.inspection_id ? -1 : 0));
+      return { items: matches.slice(filters.offset, filters.offset + filters.limit).map((view) => {
+        view.final_decision = reviews.get(view.inspection_id) ?? null;
+        return applyFault(view);
+      }), total: matches.length, limit: filters.limit, offset: filters.offset };
     },
 
     async getReviewQueue({ limit = 20, offset = 0 } = {}) {
