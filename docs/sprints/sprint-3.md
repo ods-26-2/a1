@@ -58,6 +58,10 @@ Pedido durável, reenvio com mesmo ID, correlação de reply/state, aceite separ
 
 Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registro de bloqueio e roteiro de retomada](../evidencias/atividade-20-s4-real/README.md) e o [manifesto rastreável](../evidencias/atividade-20-s4-real/manifesto.json) fixam as versões A1/S4, cinco impedimentos, responsáveis e critérios para a próxima validação. Não houve captura real nem homologação do serviço nesta atividade.
 
+## Histórico e filtros — atividade 21 / S3-10
+
+[Contrato da busca histórica](../contratos/a1-api.md#inspectionlist--histórico-pesquisável-s3-10--atividade-21) e [evidências/roteiro](../evidencias/atividade-21-historico/README.md). API PostgreSQL e tela com período de captura, resultado I8, origem e defeito originais combináveis, ordenação estável e paginação. Auditoria por ID e revisões existentes preservadas; relatórios e recorrência ficam na atividade 22.
+
 ## Preparação S5 e revalidação P7 — atividades 23 e 24
 
 [Critérios, funções, comandos Docker e limites](atividades-23-24-fechamento.md). A integração S5 EVENT é preparada por contrato com simulador; P7 com fake já estava na main e é revalidado. A prova física da atividade 25 continua separada.

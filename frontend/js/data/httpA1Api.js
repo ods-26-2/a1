@@ -68,6 +68,7 @@ export function createHttpA1Api({
     demo: null,
     getHealth: () => request("health"),
     getCurrentInspection: () => request("inspections/current"),
+    searchInspections: (filters) => request(`inspections?${new URLSearchParams(filters)}`),
     getInspection: (inspectionId) =>
       request(`inspections/${encodeURIComponent(inspectionId)}`),
     getReviewQueue: ({ limit = 20, offset = 0 } = {}) =>

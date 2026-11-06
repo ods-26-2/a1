@@ -24,6 +24,7 @@ from .db import apply_schema, open_pool, to_iso, utc_now
 from .services import Services, build_services
 from .kafka_client import A1KafkaConsumer
 from .s4_kafka import S4KafkaWorker
+from .inspection_search import InspectionSearch
 
 
 API_PREFIX = "/api/v1"
@@ -146,6 +147,10 @@ def create_app(
                 s4,
             ],
         }   
+
+    @app.get(f"{API_PREFIX}/inspections")
+    def search_inspections(request: Request, filters: Annotated[InspectionSearch, Query()]) -> dict:
+        return services(request).inspections.search(filters)
 
     @app.get(f"{API_PREFIX}/inspections/current")
     def current_inspection(request: Request):

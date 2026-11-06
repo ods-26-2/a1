@@ -12,6 +12,7 @@ from typing import Any, Callable, Mapping
 from .db import to_iso, utc_now
 from .repository import InspectionRepository
 from .taxonomy import TaxonomyCatalog
+from .inspection_search import InspectionSearch
 
 
 def _optional_iso(value: datetime | None) -> str | None:
@@ -39,6 +40,11 @@ class InspectionService:
     def queue(self, *, limit: int = 50, offset: int = 0) -> dict[str, Any]:
         rows, total = self.repository.pending_reviews(limit=limit, offset=offset)
         return {"items": [self.view(row) for row in rows], "total": total, "limit": limit, "offset": offset}
+
+    def search(self, filters: InspectionSearch) -> dict[str, Any]:
+        rows, total = self.repository.search(filters)
+        return {"items": [self.view(row) for row in rows], "total": total,
+                "limit": filters.limit, "offset": filters.offset}
 
     def review_options(self, inspection_id: str) -> dict[str, Any] | None:
         row = self.repository.find(inspection_id)

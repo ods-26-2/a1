@@ -12,6 +12,7 @@ Schemas executáveis: `shared/schemas/a1-api/`. Fixtures da API fake:
 | Método | Rota | Resposta |
 |---|---|---|
 | GET | `/api/v1/health` | `Health` (200). Falha de rede ou timeout = OFFLINE no front |
+| GET | `/api/v1/inspections` | `InspectionList` (200): busca histórica paginada e filtrada |
 | GET | `/api/v1/inspections/current` | `InspectionView` (200) ou `204` sem inspeção |
 | GET | `/api/v1/inspections/review-queue?limit=20&offset=0` | `ReviewQueue` com items, total, limit e offset |
 | GET | `/api/v1/inspections/{inspection_id}` | `InspectionView` (200) ou `404` |
@@ -65,6 +66,51 @@ O backend entrega a inspeção já resolvida:
 - `evidence`: `AVAILABLE`, `PENDING`, `UNAVAILABLE` ou `EXPIRED`. `url` só
   existe em `AVAILABLE`; nos demais estados o front mostra placeholder
   explícito, nunca a imagem de outra peça.
+
+## InspectionList — histórico pesquisável (S3-10 / atividade 21)
+
+`GET /api/v1/inspections` consulta registros persistidos, com filtros opcionais
+combinados por **AND**. A resposta usa `inspection-list.schema.json`:
+`{items: InspectionView[], total, limit, offset}`. Resultado vazio ou página além
+do fim retorna `200`, `items: []` e total preservado.
+
+| Parâmetro | Semântica |
+|---|---|
+| `captured_from` | `times.captured_at >= início` (inclusivo) |
+| `captured_to` | `times.captured_at < fim` (exclusivo) |
+| `result` | Resultado automático I8: CONFORMING, NON_CONFORMING, ANOMALY ou UNCERTAIN |
+| `source_id` | Origem exata, sensível a maiúsculas, até 256 caracteres; sem NUL ou texto vazio |
+| `defect_class` | Código original I8, até 128 caracteres, padrão `[A-Z][A-Z0-9_]*` |
+| `limit` | Inteiro de 1 a 100; padrão 50 |
+| `offset` | Inteiro não negativo; padrão 0 |
+
+Datas exigem ISO 8601 com `T` e fuso explícito (`Z` ou offset); são comparadas
+em UTC. O início deve ser estritamente anterior ao fim. Campos desconhecidos,
+datas inválidas/sem fuso, códigos malformados e paginação inválida retornam
+`422`. Código de defeito ou origem bem formado sem registros retorna vazio,
+inclusive quando pertence a outra versão histórica da taxonomia. Combinação
+incompatível (por exemplo ANOMALY + AMASSADO) retorna vazio.
+
+Filtros de resultado e defeito consultam a **análise original imutável**, não
+o estado final APPROVED/REJECTED/REVIEW nem a classe corrigida pelo operador.
+Cada item continua expondo ambos em `analysis` e `final_decision`. A auditoria
+por ID permanece em `/inspections/{id}/history`, com contrato inalterado.
+
+Ordem fixa: `captured_at DESC, inspection_id DESC`; desempate determinístico,
+paginação `limit/offset` compatível com a fila existente. Total e itens usam
+a mesma transação PostgreSQL de leitura com snapshot repetível. Requisições
+sucessivas têm snapshots independentes: novas inspeções podem deslocar páginas;
+para uma consulta delimitada, fixe período e repita a busca quando necessário.
+Não há promessa de exportação ou snapshot entre páginas nesta atividade.
+
+```text
+/api/v1/inspections?captured_from=2026-11-01T00%3A00%3A00Z&captured_to=2026-11-07T00%3A00%3A00Z&result=NON_CONFORMING&source_id=cam-linha1&defect_class=AMASSADO&limit=20&offset=0
+```
+
+Na tela, campos de período são explicitamente UTC, limite fixo de 20,
+anterior/próximas e botão de limpar filtros. Clique em um registro abre os
+detalhes/revisões existentes. Modo fake aplica as mesmas regras às quatro
+fixtures, sem persistência; modo real consulta somente a API A1.
 
 ## InspectionHistory
 
