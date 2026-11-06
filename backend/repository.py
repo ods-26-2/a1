@@ -10,6 +10,7 @@ from uuid import UUID, uuid4
 from psycopg import errors
 from psycopg.types.json import Jsonb
 from psycopg_pool import ConnectionPool
+from .inspection_search import InspectionSearch
 
 
 class ConflictingContextError(ValueError):
@@ -294,6 +295,17 @@ class InspectionRepository:
         with self.pool.connection() as conn:
             total = conn.execute("SELECT count(*) AS total FROM (" + query + ") pending").fetchone()["total"]
             rows = conn.execute(query + " ORDER BY i.received_at, i.inspection_id LIMIT %s OFFSET %s", (limit, offset)).fetchall()
+            return rows, total
+
+    def search(self, filters: InspectionSearch) -> tuple[list[dict[str, Any]], int]:
+        where, params = filters.predicate()
+        with self.pool.connection() as conn:
+            # Count and page see the same snapshot, including concurrent reviews.
+            conn.execute("SET TRANSACTION ISOLATION LEVEL REPEATABLE READ READ ONLY")
+            total = conn.execute("SELECT count(*) AS total FROM inspections i" + where, params).fetchone()["total"]
+            rows = conn.execute(_VIEW_QUERY + where +
+                " ORDER BY i.captured_at DESC, i.inspection_id DESC LIMIT %s OFFSET %s",
+                (*params, filters.limit, filters.offset)).fetchall()
             return rows, total
 
     def audit_events(self, inspection_id: str) -> list[dict[str, Any]]:

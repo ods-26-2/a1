@@ -44,6 +44,10 @@ CREATE UNIQUE INDEX IF NOT EXISTS inspections_observation_idx
 CREATE INDEX IF NOT EXISTS inspections_received_at_idx
     ON inspections (received_at DESC);
 
+-- S3-10: deterministic capture-time history; additive, no row rewriting.
+CREATE INDEX IF NOT EXISTS inspections_captured_history_idx
+    ON inspections (captured_at DESC, inspection_id DESC);
+
 CREATE TABLE IF NOT EXISTS reviews (
     seq           bigserial PRIMARY KEY,
     review_id     uuid NOT NULL UNIQUE,
