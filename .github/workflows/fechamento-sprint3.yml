@@ -41,3 +41,25 @@ jobs:
         run: |
           docker compose -p ver1-sprint3-regressao -f validacao-local/compose-s5-p7.yml down -v --remove-orphans
           bash composicao-ver1/executar.sh parar
+  metricas:
+    name: Atividade 30 - latência e recursos
+    needs: regressao
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Medir pipeline, API, memória e ambiente
+        run: bash fechamento-sprint3/medir.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: atividade-30-metricas-${{ github.sha }}
+          path: |
+            fechamento-sprint3/evidencias/atividade-30/
+            composicao-ver1/evidencias/
+          retention-days: 30
+      - name: Garantir encerramento do laboratório
+        if: always()
+        run: bash composicao-ver1/executar.sh parar

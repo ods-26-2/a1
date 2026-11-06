@@ -1,0 +1,52 @@
+{
+  "activity": 30,
+  "status": "MEDICAO_LOCAL_REGISTRADA",
+  "recorded_at": "2026-11-06T12:47:34Z",
+  "workflow_run": "https://github.com/ods-26-2/a1/actions/runs/42219871217",
+  "a1_commit": "04572cd8c6118922b4378fec0aa29478b02a0206",
+  "i8_commit": "55a808b1351fdd94ea039148b49fba1f478603e1",
+  "latency": {
+    "pipeline": "início do comando publisher I8 até persistência PostgreSQL pelo A1",
+    "publisher_command_ms": 4612.251,
+    "publisher_invocation_to_database_ms": {
+      "samples": 4,
+      "min": 4424.304,
+      "p50": 4494.177,
+      "p95_nearest_rank": 4521.766,
+      "max": 4521.766
+    },
+    "api_history_request_ms": {
+      "samples": 30,
+      "min": 2.686,
+      "p50": 2.836,
+      "p95_nearest_rank": 3.699,
+      "max": 5.213
+    }
+  },
+  "resources": {
+    "snapshot": "após regressão, reinício e 30 leituras da API",
+    "containers": [
+      { "service": "backend", "memory_used_mib": 48.230, "cpu_percent_snapshot": "0.18%", "pids": 11 },
+      { "service": "db", "memory_used_mib": 30.980, "cpu_percent_snapshot": "0.04%", "pids": 7 },
+      { "service": "frontend", "memory_used_mib": 5.164, "cpu_percent_snapshot": "2.78%", "pids": 5 },
+      { "service": "kafka", "memory_used_mib": 341.700, "cpu_percent_snapshot": "1.93%", "pids": 100 }
+    ],
+    "total_memory_used_mib": 426.074
+  },
+  "environment": {
+    "runner": "Linux x86_64 GitHub-hosted",
+    "cpu_count": 4,
+    "memory_total_kib": 16366640,
+    "docker_client": "29.4.2",
+    "docker_server": "29.4.2",
+    "docker_compose": "5.1.3",
+    "kafka_image": "apache/kafka:3.9.1",
+    "postgres_image": "postgres:17-alpine"
+  },
+  "limits": [
+    "Medição local sintética; tempo de inferência de imagem não incluído.",
+    "A latência inclui criação do container do publisher; não isola somente transporte Kafka.",
+    "Memória e CPU são um snapshot, não pico nem teste de carga.",
+    "Runner GitHub compartilhado e quatro eventos não representam hardware industrial."
+  ]
+}
