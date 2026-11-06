@@ -1,0 +1,112 @@
+{
+  "manifest_version": "1.0",
+  "activity": 20,
+  "title": "Validar S4 real",
+  "status": "BLOQUEADA_EXTERNAMENTE",
+  "recorded_on": "2026-11-06",
+  "timezone": "America/Sao_Paulo",
+  "criterion": "Serviço real validado ou bloqueio externo documentado.",
+  "criterion_source": {
+    "filename": "plano_fechamento_sprint3_dependencias.pdf",
+    "page": 4,
+    "sha256": "883f4ad42f96d8bab38860e6bb288eb492ed28228aac407798b2d0527d12a460"
+  },
+  "dependencies": ["Atividade 19", "Serviço S4 disponível e compatível"],
+  "owners": {
+    "validation": ["Samuel", "Ícaro"],
+    "external_resolution": "Equipe MOD-2/S4; responsável nominal e prazo de correção ainda não confirmados"
+  },
+  "baselines": {
+    "a1": {
+      "repository": "https://github.com/ods-26-2/a1",
+      "commit": "2e59fe3d90070a00db025b86edc83857e5c0ae47"
+    },
+    "s4": {
+      "repository": "https://github.com/ods-26-2/s4",
+      "commit": "57ea2cc226b2a8cf47a134d1f7490060d2033027"
+    }
+  },
+  "evidence_basis": "Inspeção estática dos arquivos dos commits fixados e leitura das evidências publicadas da atividade 19; não houve execução contra S4 real nesta atividade.",
+  "real_environment": {
+    "availability": "NÃO_VERIFICADA",
+    "shared_broker": "NÃO_ACESSADO",
+    "source_and_buffer": "NÃO_VALIDADOS",
+    "media_http_endpoint": "NÃO_HOMOLOGADO",
+    "real_capture_attempted": false,
+    "external_contact_made": false
+  },
+  "blockers": [
+    {
+      "id": "S4-20-01",
+      "subject": "Instante solicitado",
+      "observation": "O handler usa newestCaptureTsNs e janela de +/-0,5 segundo para SNAPSHOT; não consulta payload.at.",
+      "s4_evidence": {"path": "src/infrastructure/b3_bus/handlers/capture_command_handler.cpp", "lines": [91, 99]},
+      "a1_evidence": {"path": "backend/s4.py", "lines": [135, 139]},
+      "impact": "O descritor pode representar outra peça e é rejeitado pela correlação temporal do A1.",
+      "unblock_condition": "S4 deve capturar o instante solicitado e comprovar fonte/sessão/instante da inspeção; ausência no buffer deve produzir erro explícito, sem substituir pelo quadro mais recente."
+    },
+    {
+      "id": "S4-20-02",
+      "subject": "Representação SNAPSHOT",
+      "observation": "O handler gera saída .mp4 e janela temporal mesmo quando media_type é SNAPSHOT; o payload publica os limites dessa janela.",
+      "s4_evidence": {"path": "src/infrastructure/b3_bus/handlers/capture_command_handler.cpp", "lines": [89, 99]},
+      "s4_additional_evidence": {"path": "src/infrastructure/b3_bus/clip_payload.cpp", "lines": [24, 27]},
+      "a1_evidence": {"path": "frontend/js/ui/evidence.js", "lines": [47, 66]},
+      "impact": "Não há prova de imagem renderizável pelo A1; limites distintos do instante pedido também são rejeitados.",
+      "unblock_condition": "Publicar SNAPSHOT como imagem real compatível com o elemento de imagem A1, MIME correto, hash dos bytes e start_at=end_at=captured_at=instante solicitado."
+    },
+    {
+      "id": "S4-20-03",
+      "subject": "Idempotência e clip_id",
+      "observation": "O handler gera novo clip_id em cada chamada, sem consulta de deduplicação por message_id visível nesse caminho.",
+      "s4_evidence": {"path": "src/infrastructure/b3_bus/handlers/capture_command_handler.cpp", "lines": [47, 79]},
+      "a1_evidence": {"path": "backend/s4.py", "lines": [67, 83]},
+      "impact": "Reenvio do mesmo comando após resposta perdida pode criar outra captura/clip_id, incompatível com a identidade durável do pedido A1.",
+      "unblock_condition": "Demonstrar mesmo resultado/clip_id e uma única captura para mesmo message_id e conteúdo, inclusive após reiniciar S4; rejeitar reutilização do ID com intenção divergente."
+    },
+    {
+      "id": "S4-20-04",
+      "subject": "Acesso HTTP(S) à mídia",
+      "observation": "clip_media_uri publica s4://clips/<arquivo>; A1 só expõe HTTP(S), sem conversão automática de URI.",
+      "s4_evidence": {"path": "src/infrastructure/b3_bus/clip_payload.cpp", "lines": [11, 12]},
+      "a1_evidence": {"path": "backend/s4_contracts.py", "lines": [65, 70]},
+      "impact": "Descritor nativo mantém evidência UNAVAILABLE; existência do arquivo não prova acesso pelo navegador.",
+      "unblock_condition": "Disponibilizar referência HTTP(S) controlada compatível com o contrato consumido por A1, acessível no navegador autorizado, com validade e hash verificáveis; eventual gateway exige integração explícita, sem inventar URL."
+    },
+    {
+      "id": "S4-20-05",
+      "subject": "OK antes da verificação do buffer",
+      "observation": "O handler publica reply OK antes de verificar supportsCaptureWindows e captureBuffer, podendo retornar sem descritor.",
+      "s4_evidence": {"path": "src/infrastructure/b3_bus/handlers/capture_command_handler.cpp", "lines": [64, 84]},
+      "a1_evidence": {"path": "backend/s4.py", "lines": [116, 134]},
+      "impact": "OK isolado não comprova captura; A1 pode permanecer pendente até timeout, com resultado da captura desconhecido.",
+      "unblock_condition": "Demonstrar conclusão por descritor e mídia correlacionados após aceite, ou erro explícito quando a captura não puder concluir; jamais homologar apenas reply OK ou health."
+    }
+  ],
+  "current_decision": {
+    "real_service_validated": false,
+    "external_block_recorded": true,
+    "real_environment_activation_authorized_by_this_record": false,
+    "product_changes": false,
+    "next_action": "Samuel e Ícaro alinham os cinco bloqueios com MOD-2/S4 e executam o roteiro real após ambiente e implementação compatíveis estarem disponíveis.",
+    "revalidation_date": null,
+    "revalidation_date_reason": "Depende de confirmação externa de responsável, disponibilidade e correções."
+  },
+  "acceptance": {
+    "current": "Bloqueio externo documentado; serviço real não homologado.",
+    "future_validated_real_requires": [
+      "Versões e ambiente identificados, fonte/buffer reais e tópicos disponíveis",
+      "Comando, reply, descritor, inspeção e mídia real correlacionados",
+      "Instante exato e SNAPSHOT renderizável, bytes e SHA-256 conferidos",
+      "Reenvio/reinício sem captura duplicada ou troca de clip_id",
+      "HTTP(S), expiração, erros e timeout observados sem associação a outra inspeção",
+      "Logs, comandos, offsets, consultas de banco e revisão de Samuel/Ícaro registrados"
+    ]
+  },
+  "related_documents": [
+    "README.md",
+    "../../sprints/atividade-19-adaptador-s4.md",
+    "../atividade-19-s4/README.md",
+    "../../sprints/sprint-3.md"
+  ]
+}
