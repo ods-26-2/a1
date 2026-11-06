@@ -55,21 +55,21 @@ def main() -> None:
     if len(rows) != 4:
         raise ValueError(f"esperadas 4 inspeções; recebidas {len(rows)}")
 
-    invocation_to_database = []
-    marker_to_database = []
+    invocation_to_ingestion = []
+    marker_to_ingestion = []
     observations = []
     for message_id, received_at, event in rows:
         observed_ms = (int(received_at.timestamp() * 1_000_000_000) - invocation_ns) / 1_000_000
         marker_ms = (received_at - iso(event["published_at"])).total_seconds() * 1000
         if observed_ms < 0 or marker_ms < 0:
             raise ValueError("relógios produziram latência negativa")
-        invocation_to_database.append(observed_ms)
-        marker_to_database.append(marker_ms)
+        invocation_to_ingestion.append(observed_ms)
+        marker_to_ingestion.append(marker_ms)
         observations.append({
             "message_id": message_id,
             "result": event["payload"]["result"],
-            "publisher_invocation_to_database_ms": round(observed_ms, 3),
-            "synthetic_published_marker_to_database_ms": round(marker_ms, 3),
+            "publisher_invocation_to_a1_ingestion_ms": round(observed_ms, 3),
+            "synthetic_published_marker_to_a1_ingestion_ms": round(marker_ms, 3),
         })
 
     api_samples = []
@@ -85,14 +85,16 @@ def main() -> None:
 
     result = {
         "status": "MEDICAO_LOCAL_REGISTRADA",
-        "pipeline": "início do comando publisher I8 -> persistência PostgreSQL pelo A1",
+        "pipeline": "início do comando publisher I8 -> início da ingestão A1",
+        "persistence_latency_measured": False,
         "publisher_command_ms": round((completion_ns - invocation_ns) / 1_000_000, 3),
-        "publisher_invocation_to_database_ms": summary(invocation_to_database),
-        "synthetic_published_marker_to_database_ms": summary(marker_to_database),
+        "publisher_invocation_to_a1_ingestion_ms": summary(invocation_to_ingestion),
+        "synthetic_published_marker_to_a1_ingestion_ms": summary(marker_to_ingestion),
         "api_history_request_ms": summary(api_samples),
         "observations": observations,
         "limits": [
             "Eventos sintéticos; tempo de inferência de imagem não incluído.",
+            "received_at marca o início de ingest(), antes da validação e da transação; não mede o commit.",
             "Quatro eventos, uma partição Kafka e um runner compartilhado não representam carga industrial.",
             "O marcador published_at é sintético; a métrica principal usa o relógio observado no início do comando publisher."
         ],

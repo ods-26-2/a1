@@ -62,18 +62,22 @@
     },
     {
       "path": "docs/evidencias/atividade-30/resultado.json",
-      "bytes": 1992,
-      "sha256": "24837df886be6927418b82df592b075564dae3f41ea4b448e6147af2530b59af"
+      "bytes": 2787,
+      "sha256": "6b9bd0bef56ff0f36369c6920d0dabd12771844f431ff310a15c20f747ea3f51"
     },
     {
       "path": "docs/evidencias/atividade-30/resumo.log",
-      "bytes": 336,
-      "sha256": "b9d1d28a03f55d1bcc66f08d00fff737bd0b0fd0964cb8ed648cf826c08db71f"
+      "bytes": 442,
+      "sha256": "29880c5172ecbfc9ca667f1423b0b75661be1bb0279974dcdd1744a391afcb3c"
     }
   ],
   "limits": [
     "Vídeo e capturas usam API fake explícita e não persistente.",
     "Logs 29/30 provêm dos laboratórios Docker com PostgreSQL, Kafka, A1 e publisher I8 sintético.",
     "Inferência real, S4 real e P7 físico não são demonstrados."
-  ]
+  ],
+  "metric_semantics_correction": {
+    "recorded_on": "2026-11-06",
+    "reason": "Resultados da 30 reclassificados como chegada ao A1, sem nova medição numérica. Originais preservados em docs/evidencias/atividade-30/historico/. Vídeo e capturas não alterados."
+  }
 }

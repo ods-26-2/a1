@@ -57,11 +57,11 @@ python fechamento-sprint3/consolidar_metricas.py \
 python - "$output/resultado.json" > "$output/resumo.log" <<'PY'
 import json, sys
 value = json.load(open(sys.argv[1], encoding="utf-8"))
-pipeline = value["latency"]["publisher_invocation_to_database_ms"]
+pipeline = value["latency"]["publisher_invocation_to_a1_ingestion_ms"]
 api = value["latency"]["api_history_request_ms"]
 print(f"status={value['status']}")
 print(f"commit={value['a1_commit']}")
-print(f"pipeline_samples={pipeline['samples']} p50_ms={pipeline['p50']} p95_ms={pipeline['p95_nearest_rank']} max_ms={pipeline['max']}")
+print(f"ingestion_samples={pipeline['samples']} p50_ms={pipeline['p50']} p95_ms={pipeline['p95_nearest_rank']} max_ms={pipeline['max']}")
 print(f"api_samples={api['samples']} p50_ms={api['p50']} p95_ms={api['p95_nearest_rank']} max_ms={api['max']}")
 print(f"container_memory_total_mib={value['resources']['total_memory_used_mib']}")
 PY

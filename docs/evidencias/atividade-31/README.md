@@ -20,3 +20,8 @@ Limites: a demonstração visual não persiste causas, não executa inferência 
 imagem e não homologa S4 real ou P7 físico. Os artefatos integrais dos runners
 expiram em 30 dias; resultados, resumos, comandos, capturas, vídeo e hashes
 essenciais permanecem no repositório.
+
+Os resultados da atividade 30 tiveram seus rótulos corrigidos: medem chegada
+ao início da ingestão A1, e não o commit no banco. Números históricos foram
+preservados, com originais arquivados; os hashes dos dois arquivos afetados
+foram atualizados neste manifesto. Vídeo e capturas permanecem iguais.

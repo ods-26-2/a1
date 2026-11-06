@@ -92,7 +92,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 
 ## Latência e recursos — atividade 30
 
-[Método, ambiente e limites](../evidencias/atividade-30/README.md). Resultado: **MEDICAO_LOCAL_REGISTRADA**. No runner observado, publisher até persistência teve p50 4494,177 ms e p95 4521,766 ms; 30 leituras da API tiveram p50 2,836 ms e p95 3,699 ms; quatro containers somaram 426,074 MiB no snapshot. A latência inclui criação do container do publisher. Eventos sintéticos não incluem inferência real nem representam carga industrial.
+[Método, ambiente e limites](../evidencias/atividade-30/README.md). Resultado: **MEDICAO_LOCAL_REGISTRADA**. No runner observado, publisher até início da ingestão A1 teve p50 4494,177 ms e p95 4521,766 ms; 30 leituras da API tiveram p50 2,836 ms e p95 3,699 ms; quatro containers somaram 426,074 MiB no snapshot. A latência inclui criação do container do publisher. Eventos sintéticos não incluem inferência real nem representam carga industrial.
 
 ## Vídeos e evidências — atividade 31
 
