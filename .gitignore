@@ -19,3 +19,7 @@ coverage/
 /validacao-local/evidencias-s4/
 
 /validacao-local/evidencias-s5-p7/
+
+/composicao-ver1/.dependencias/
+/composicao-ver1/evidencias/
+!/composicao-ver1/.env.example

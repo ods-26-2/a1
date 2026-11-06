@@ -34,6 +34,12 @@ Sem parâmetros, a tela usa a API A1 fake e mostra o painel de cenários. Para a
 API real, use `?api=http://localhost:8000/api/v1` ou preencha
 `<meta name="a1-api-base">` em `frontend/index.html`.
 
+## Composição local VER-1 — Sprint 3
+
+Para testar A1 + publisher I8 + Kafka + PostgreSQL juntos, consulte
+[atividade 28: comandos e limites](composicao-ver1/README.md).
+Esse laboratório usa broker local e se encerra com `compose down -v`.
+
 ## Executar com Docker
 
 Requer Docker com Compose. Na raiz deste repositório:

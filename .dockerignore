@@ -11,3 +11,6 @@ coverage/
 docs/
 docker-compose.yml
 validacao-local/evidencias/
+
+composicao-ver1/.dependencias/
+composicao-ver1/evidencias/

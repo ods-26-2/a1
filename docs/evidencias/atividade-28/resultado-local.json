@@ -1,0 +1,75 @@
+{
+  "date": "2026-11-06",
+  "scope": "real I8 publisher, Kafka, A1, PostgreSQL and API; synthetic events; no model inference",
+  "status": "composicao-local-aprovada",
+  "synthetic_events": true,
+  "real_inference": false,
+  "shared_broker": false,
+  "a1_base": "2e59fe3d90070a00db025b86edc83857e5c0ae47",
+  "i8_commit": "55a808b1351fdd94ea039148b49fba1f478603e1",
+  "a1_working_tree_modified": true,
+  "checks": {
+    "envio": {
+      "status": "aprovado",
+      "counts": {
+        "inspections": 4,
+        "commands": 4,
+        "ingested": 4
+      },
+      "database_totals": {
+        "inspections": 4,
+        "commands": 4
+      },
+      "offsets": {
+        "low": 0,
+        "high": 4,
+        "committed": 4
+      },
+      "frontend_real_api_proxy": true
+    },
+    "reenvio": {
+      "status": "aprovado",
+      "counts": {
+        "inspections": 4,
+        "commands": 4,
+        "ingested": 4
+      },
+      "database_totals": {
+        "inspections": 4,
+        "commands": 4
+      },
+      "offsets": {
+        "low": 0,
+        "high": 8,
+        "committed": 8
+      },
+      "frontend_real_api_proxy": true
+    },
+    "reinicio": {
+      "status": "aprovado",
+      "counts": {
+        "inspections": 4,
+        "commands": 4,
+        "ingested": 4
+      },
+      "database_totals": {
+        "inspections": 4,
+        "commands": 4
+      },
+      "offsets": {
+        "low": 0,
+        "high": 8,
+        "committed": 8
+      },
+      "frontend_real_api_proxy": true
+    }
+  },
+  "cleanup": "compose down -v executado com sucesso no modo testar",
+  "limits": [
+    "one partition and one replica",
+    "no real images/models or industrial performance",
+    "S4/S5/P7 reais não validados; S4 desativado",
+    "atividade 21 e regressão coletiva pendentes",
+    "shared broker not accessed"
+  ]
+}
