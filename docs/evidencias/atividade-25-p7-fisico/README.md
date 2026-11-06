@@ -1,0 +1,55 @@
+# Atividade 25 — validação P7 físico
+
+Resultado em 06/11/2026: **BLOQUEADA_EXTERNAMENTE**. O plano, página 4, permite “Prova física concluída ou bloqueio documentado”, dependendo da atividade 24 e de bancada disponível. Não houve execução física, conexão/energização de hardware, importação ou instanciação do driver, nem acesso ao barramento real nesta atividade.
+
+O [manifesto](manifesto.json) fixa versões, critério/hash do PDF fornecido, cinco bloqueios, impacto, responsáveis, riscos e condições de retomada. A bancada não está acessível neste trabalho; isso não afirma que o equipamento da equipe esteja defeituoso ou que seu serviço esteja fora do ar.
+
+## Base auditada e responsabilidade
+
+| Componente | Versão fixada |
+|---|---|
+| A1 | [`38921bb6f015a1470556be8712227c6bdf387f9f`](https://github.com/ods-26-2/a1/tree/38921bb6f015a1470556be8712227c6bdf387f9f) |
+| P7 main/origin-main local | [`a4698d9e0590db6ecaeb741cfaac15356b6599e2`](https://github.com/ods-26-2/p7/tree/a4698d9e0590db6ecaeb741cfaac15356b6599e2) |
+
+Ícaro é responsável pela prova física no plano. SIS-2/P7 precisa confirmar responsável nominal pela bancada, implementação da ponte, liberação e prazo. Esses aceites ainda não foram obtidos por este registro. A [atividade 24](../../sprints/atividade-24-resumo.md) entrega adaptador dirigido por chamador, sem worker/rota/botão de movimento automático; as [evidências com fake](../atividade-24/README.md) e sua [revalidação local](../atividades-23-24/README.md) não homologam mecanismo ou firmware.
+
+## Bloqueios verificáveis
+
+| ID | Evidência | Condição de desbloqueio |
+|---|---|---|
+| P7-25-01 — bancada | Hardware, fonte elétrica, fixação, carga, referência, limites e parada não disponíveis para inspeção física nesta atividade. | Disponibilizar bancada identificada e responsável presente; validar segurança com especificações dos componentes instalados e registrar a liberação. |
+| P7-25-02 — coordenadas e recusa | [Driver, linhas 11–15](https://github.com/ods-26-2/p7/blob/a4698d9e0590db6ecaeb741cfaac15356b6599e2/pantilt_driver.py#L11-L15): pan 0–180 e tilt 30–150; [linhas 29–30](https://github.com/ods-26-2/p7/blob/a4698d9e0590db6ecaeb741cfaac15356b6599e2/pantilt_driver.py#L29-L30): clamping. [Contrato A1](https://github.com/ods-26-2/a1/blob/38921bb6f015a1470556be8712227c6bdf387f9f/shared/schemas/p7/moveCommand.schema.json): pan −90–90 e tilt −45–45. | Medir e documentar zero, sinal, escala e curso por eixo na montagem real. Recusar pedido inválido com erro, sem mascarar intenção via clamping. Não presumir conversão de +90° sem calibração. |
+| P7-25-03 — homing/velocidade/parada | [Driver, linhas 17–22](https://github.com/ods-26-2/p7/blob/a4698d9e0590db6ecaeb741cfaac15356b6599e2/pantilt_driver.py#L17-L22): construtor chama `home()`, que solicita 90/90. [Linhas 24–35](https://github.com/ods-26-2/p7/blob/a4698d9e0590db6ecaeb741cfaac15356b6599e2/pantilt_driver.py#L24-L35): escrita direta, sem velocidade ou verificação física de referência/parada nesse caminho. | Procedimento de referência e parada aprovados para o conjunto real; inicialização/reinício sem movimento inesperado. Cumprir velocidade solicitada ou recusá-la explicitamente. |
+| P7-25-04 — mensagens e conclusão | Driver retorna setpoints aplicados, sem command/reply/state. [A1, linhas 163–197](https://github.com/ods-26-2/a1/blob/38921bb6f015a1470556be8712227c6bdf387f9f/backend/p7.py#L163-L197) exige correlação, fonte, alvo, `IDLE` e `is_homed`. | Ponte/firmware e transporte real alinhados a SIS-2/B2; comparar mensagens e posição física. `OK` é aceite, não prova de movimento concluído. Não reportar setpoint como medição. |
+| P7-25-05 — idempotência e reinício | [Driver, linhas 4–35](https://github.com/ods-26-2/p7/blob/a4698d9e0590db6ecaeb741cfaac15356b6599e2/pantilt_driver.py#L4-L35): sem IDs/persistência/deduplicação. [A1, linhas 137–161](https://github.com/ods-26-2/a1/blob/38921bb6f015a1470556be8712227c6bdf387f9f/backend/p7.py#L137-L161) conserva ID/conteúdo e trata timeout como resultado físico desconhecido. | Provar deduplicação no lado físico, inclusive após reiniciar P7, e recusar reutilização do ID com outra intenção. Reconciliar posição após falha antes de novo comando. |
+
+O `home()` publicado é uma centralização comandada. O retorno de `set_angle()` não mede posição real e não comprova sensor de referência, fim de curso, velocidade, movimento concluído ou torque. A tolerância numérica do adaptador A1 (`abs_tol=1e-6`) compara campos da mensagem com o alvo; não é especificação de precisão mecânica. A tolerância física e o método/instrumento de medição precisam ser acordados e registrados antes da prova.
+
+## Riscos e checklist antes de energizar
+
+- [ ] Ícaro/SIS-2 identificam placa/controladora, servos, fonte, mecanismo, câmera/carga, firmware/ponte e versões; confirmam documentação de tensão, corrente, polaridade, proteções e interface elétrica. Este registro não fornece valores elétricos ou ligação presumida.
+- [ ] Responsável habilitado pela equipe confere cabeamento e fixação com energia isolada. Área livre de pessoas/objetos no curso, sem pontos de aprisionamento acessíveis, cabos tensionados ou carga solta. Curso útil e velocidade inicial são definidos para a montagem, dentro de margem segura medida.
+- [ ] Procedimento de parada independente da aplicação/comunicação é identificado e verificado; prever carga liberada por perda de torque e estabilização mecânica. Não presumir que remover alimentação sempre deixa a montagem segura.
+- [ ] Corrigir/alinha-se o movimento automático no construtor antes de energização/instanciação. O programa de demonstração publicado também contém movimentos automáticos; não utilizá-lo como ensaio de integração.
+- [ ] Referência/homing, zero, sentidos dos eixos, limites, velocidade e critérios de posição atingida estão aprovados; mensagem `is_homed=true` exige fundamento físico documentado.
+- [ ] Ponte/firmware, transporte, tópicos, identidade do mecanismo, persistência/deduplicação e códigos de erro estão disponíveis; ambiente de prova isolado da produção.
+- [ ] Responsável presente libera o ensaio, confirma meio de parada e registra como reiniciar/reconciliar posição após falha. Sem esses itens, manter bloqueio e não enviar comandos de movimento.
+
+## Roteiro acompanhado da futura prova física
+
+1. **Preparação:** guardar data, local, responsáveis, versões A1/P7/ponte/contratos e identificação da bancada. Registrar configuração acordada, limites medidos, velocidades, método/tolerância física, fonte de energia, proteção, condições da carga e procedimento de parada. Documentar tópico/grupo/endereço sem credenciais. Repetir os testes fake da atividade 24 como regressão separada; seu resultado não substitui este ensaio.
+2. **Inicialização e referência:** após liberação da bancada, inicializar sob supervisão e confirmar ausência de movimento inesperado. Executar procedimento físico de homing acordado; registrar posição e estados HOMING/IDLE e a evidência que fundamenta `is_homed`. Movimento solicitado antes de referência válida deve receber `NOT_HOMED` e não mover o conjunto. Se essa situação não puder ser preparada com segurança, mantê-la como pendência em vez de provocar condição perigosa.
+3. **Um movimento controlado:** escolher alvo e velocidade pequenos, previamente aprovados dentro do curso útil. Persistir comando A1 com `message_id` estável e contexto, salvar envelope enviado no tópico `ods.p7.move.command`. Guardar `ods.p7.move.reply` com correlação e `ods.p7.state` com fonte/sessão/sequence/horário/`last_command_id`. Acompanhar estados, conferir posição física com instrumento e tolerância acordados. `COMPLETED` só após state compatível; retorno numérico do driver e reply `OK` não bastam.
+4. **Limites:** verificar zero, sentido, posições intermediárias e limites seguros de cada eixo progressivamente, sem provocar colisão ou pressionar batente. Fora da faixa deve produzir `OUT_OF_RANGE` sem movimento e sem clamping silencioso. `LIMIT_SWITCH_REACHED` deve ser verificado somente por método de teste aprovado para o sensor/mecanismo; não forçar contato mecânico para fabricar falha. Medir velocidade ou comprovar recusa explícita de recurso não suportado.
+5. **Correlação e idempotência:** reenviar o mesmo envelope após simular perda de reply no ambiente controlado; confirmar uma única execução física e mesmo resultado correlacionado. Duplicatas, state antes da reply e respostas tardias não devem repetir/reabrir movimento. ID com outro alvo, fonte ou velocidade deve ser recusado. Fonte/ID incompatíveis não concluem pedido A1. Guardar contagens/logs e vídeo que permita distinguir nova mensagem de novo movimento.
+6. **Falhas e timeout:** exercitar falhas de comunicação/dispositivo apenas por injeção segura acordada, sem curto, sobrecarga ou bloqueio manual do mecanismo. Registrar `DEVICE_ERROR`, perda de resposta e timeout. Confirmar parada conforme procedimento físico, estado A1 e resultado desconhecido quando faltar conclusão. Não criar automaticamente novo ID após timeout: movimento anterior pode ter ocorrido. Verificar posição e reconciliar estado antes da retomada.
+7. **Reinício:** com mecanismo em condição segura, reiniciar A1 e depois o lado P7/ponte conforme procedimento da bancada. Confirmar que startup não move inesperadamente, estado de homing permanece válido ou é invalidado explicitamente, e que comando já processado reenviado com o mesmo ID não aciona novo movimento. Registrar posição antes/depois e evidência durável no dispositivo/ponte; persistência do PostgreSQL A1 isoladamente não satisfaz este caso.
+8. **Parada e encerramento:** executar parada controlada e o meio de parada independente pelo procedimento aprovado, sem pessoas no curso. Confirmar estado físico e estabilidade da carga, impedir novos comandos, registrar condições seguras para desenergizar. Guardar comandos/replies/states, auditoria A1, medições, logs, vídeo/capturas e resultados por item. Ícaro/SIS-2 revisam a prova e registram aprovação ou bloqueios remanescentes.
+
+Não há comando executável universal neste registro: bancada, ligação elétrica, procedimento de referência/parada e ponte real ainda precisam ser definidos pelos responsáveis. Executar `pantilt_driver.py` ou instanciar `PanTilt()` antes disso pode provocar movimento imediato.
+
+## Critério de aceite e limites da entrega
+
+Resultado atual: **bloqueio documentado**, alternativa prevista na atividade 25; não equivale a homologação física. Mudar para `VALIDADA_FISICAMENTE` exige checklist e roteiro concluídos com bancada real, versões, mensagens correlacionadas, posição medida, homing, limites, falhas, idempotência após reinício e parada segura comprovados. Preservar este registro e anexar a nova prova, com data e responsáveis. Se continuar bloqueada, atualizar fatos, condições de retomada e prazo confirmado, sem atribuir movimentos físicos aos testes fake.
+
+Este incremento contém somente documentação/manifesto/índice. Não conecta driver ao A1, não fornece circuito elétrico, não altera comportamento do produto nem executa tarefas 26+.

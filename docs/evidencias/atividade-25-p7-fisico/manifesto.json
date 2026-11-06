@@ -1,0 +1,100 @@
+{
+  "manifest_version": "1.0",
+  "activity": 25,
+  "title": "Validar P7 físico",
+  "status": "BLOQUEADA_EXTERNAMENTE",
+  "recorded_on": "2026-11-06",
+  "timezone": "America/Sao_Paulo",
+  "criterion": "Prova física concluída ou bloqueio documentado.",
+  "criterion_source": {
+    "filename": "plano_fechamento_sprint3_dependencias.pdf",
+    "page": 4,
+    "sha256": "883f4ad42f96d8bab38860e6bb288eb492ed28228aac407798b2d0527d12a460"
+  },
+  "dependencies": ["Atividade 24", "Bancada disponível"],
+  "owners": {
+    "physical_validation": "Ícaro",
+    "external_resolution": "Equipe SIS-2/P7; responsável nominal pela bancada, integração e liberação ainda não confirmado"
+  },
+  "baselines": {
+    "a1": {"repository": "https://github.com/ods-26-2/a1", "commit": "38921bb6f015a1470556be8712227c6bdf387f9f"},
+    "p7": {"repository": "https://github.com/ods-26-2/p7", "commit": "a4698d9e0590db6ecaeb741cfaac15356b6599e2"}
+  },
+  "evidence_basis": "Leitura estática dos commits fixados e das evidências publicadas da atividade 24. Driver não foi importado, instanciado ou executado.",
+  "physical_environment": {
+    "bench_access": "INDISPONÍVEL_NESTA_ATIVIDADE",
+    "hardware_identified": false,
+    "wiring_or_power_checked": false,
+    "mechanical_limits_calibrated": false,
+    "hardware_stop_verified": false,
+    "physical_motion_attempted": false,
+    "real_bus_accessed": false,
+    "external_contact_made": false
+  },
+  "blockers": [
+    {
+      "id": "P7-25-01", "subject": "Bancada e liberação física",
+      "observation": "Não há bancada ou hardware acessível para esta atividade; alimentação, fixação, curso, carga e parada não foram verificados.",
+      "impact": "Não é possível medir movimento, homing, limites ou parada com segurança nem afirmar funcionamento físico.",
+      "unblock_condition": "Ícaro e SIS-2/P7 disponibilizam bancada identificada, responsável presente e liberação elétrica/mecânica documentada segundo especificações dos componentes reais."
+    },
+    {
+      "id": "P7-25-02", "subject": "Coordenadas, limites e recusa",
+      "observation": "Driver usa pan 0–180 e tilt 30–150 e aplica clamping; contrato A1 usa pan -90–90 e tilt -45–45 e prevê erros explícitos.",
+      "p7_evidence": {"path": "pantilt_driver.py", "lines": [11, 15]},
+      "p7_additional_evidence": {"path": "pantilt_driver.py", "lines": [24, 35]},
+      "a1_evidence": {"path": "shared/schemas/p7/moveCommand.schema.json", "lines": [1, 45]},
+      "impact": "Ligação direta pode orientar o mecanismo de forma diferente da solicitada ou mascarar pedido fora da faixa.",
+      "unblock_condition": "SIS-2/P7 documenta e mede zero, sinal, escala e limites por eixo na montagem real; camada de integração recusa pedido inválido em vez de silenciosamente converter seu alvo por clamping."
+    },
+    {
+      "id": "P7-25-03", "subject": "Homing, velocidade e parada segura",
+      "observation": "Construtor chama home, que apenas solicita 90/90; set_angle escreve diretamente os servos, sem parâmetro de velocidade, verificação de referência física ou método de parada no arquivo inspecionado.",
+      "p7_evidence": {"path": "pantilt_driver.py", "lines": [17, 35]},
+      "impact": "Inicialização pode mover o conjunto imediatamente. Centralização e retorno numérico não comprovam referência, posição atingida, velocidade ou parada.",
+      "unblock_condition": "Validar procedimento físico de referência, velocidade/curso seguros e parada independente conforme bancada; startup/reinício não podem produzir movimento inesperado. Velocidade pedida deve ser cumprida ou recusada explicitamente."
+    },
+    {
+      "id": "P7-25-04", "subject": "Transporte, correlação e conclusão",
+      "observation": "O driver local não implementa mensagens command/reply/state; retorna somente ângulos comandados. Adaptador A1 exige state correlacionado, IDLE, is_homed e alvo correspondente para COMPLETED.",
+      "p7_evidence": {"path": "pantilt_driver.py", "lines": [24, 35]},
+      "a1_evidence": {"path": "backend/p7.py", "lines": [163, 197]},
+      "impact": "Não há prova física de aceite/conclusão nem ponte de transporte compatível. Reply OK isolada não satisfaz conclusão.",
+      "unblock_condition": "Disponibilizar ponte/firmware e transporte real alinhados a SIS-2/B2, mensagens e IDs corretos, sem anunciar posição medida/homing a partir apenas de um setpoint. Comprovar posição por medição independente e tolerância física acordada."
+    },
+    {
+      "id": "P7-25-05", "subject": "Idempotência, falhas e reinício",
+      "observation": "No caminho do driver não há message_id, registro durável de comandos ou deduplicação. Persistência do A1 e deduplicação do FakeP7 não comprovam isso no dispositivo.",
+      "p7_evidence": {"path": "pantilt_driver.py", "lines": [4, 35]},
+      "a1_evidence": {"path": "backend/p7.py", "lines": [137, 161]},
+      "impact": "Reenvio ou reinício pode repetir movimento; timeout não identifica a posição física final.",
+      "unblock_condition": "Provar mesma intenção/ID sem novo movimento e sem resultado duplicado, inclusive após reinício do lado P7; recusar ID com intenção divergente, testar resposta perdida/falhas e reconciliar posição antes de qualquer novo comando após timeout."
+    }
+  ],
+  "risks_to_resolve_before_power_or_motion": [
+    "Alimentação, polaridade, corrente, proteção e isolamento incompatíveis com componentes reais; validar especificações sem presumir valores elétricos.",
+    "Movimento inicial automático, esmagamento/prensagem, colisão, batente, cabos tensionados e carga/câmera sem fixação adequada.",
+    "Perda de torque ao remover energia pode liberar carga; parada/desenergização precisa de procedimento aprovado para a montagem.",
+    "Ausência de feedback físico, referência ou parada verificados pode mascarar movimento incompleto e posições inseguras."
+  ],
+  "current_decision": {
+    "physical_validation_completed": false,
+    "external_block_recorded": true,
+    "hardware_connection_or_activation_authorized_by_this_record": false,
+    "product_changes": false,
+    "next_action": "Ícaro e SIS-2/P7 confirmam responsável, bancada, correções de integração e procedimento de parada; somente então executam o roteiro físico acompanhado.",
+    "revalidation_date": null,
+    "revalidation_date_reason": "Prazo depende de bancada e alinhamento externo ainda não confirmados."
+  },
+  "acceptance": {
+    "current": "Bloqueio documentado; sem homologação física.",
+    "future_validated_physical_requires": [
+      "Bancada identificada, responsável presente, segurança elétrica/mecânica e parada verificadas",
+      "Coordenadas, limites, velocidade e homing medidos e acordados",
+      "Comando, reply e state reais correlacionados, com posição física conferida",
+      "Limites/erros/timeout/reenvio/reinício comprovados sem repetição indevida de movimento",
+      "Logs, IDs, medições, vídeos e procedimento de parada registrados com versões e revisão de Ícaro/SIS-2"
+    ]
+  },
+  "related_documents": ["README.md", "../../sprints/atividade-24-resumo.md", "../atividade-24/README.md", "../atividades-23-24/README.md", "../../sprints/sprint-3.md"]
+}
