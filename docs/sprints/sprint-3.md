@@ -97,3 +97,7 @@ Resultado: **BLOQUEADA_EXTERNAMENTE**, alternativa prevista no plano. O [registr
 ## Vídeos e evidências — atividade 31
 
 [Pacote publicado, comandos e limites](../evidencias/atividade-31/README.md). Resultado: **EVIDENCIAS_PUBLICADAS**. Vídeo H.264, quatro capturas, aceite do navegador, resultados/logs resumidos das atividades 29/30 e manifesto SHA-256 ficam no repositório. A demonstração visual usa API fake explícita; integração Docker permanece comprovada separadamente pelos logs dos runners.
+
+## Complemento da atividade 29 — navegador com API real
+
+[Prova integrada de navegador/API/PostgreSQL](../evidencias/validacao-api-real/README.md), executada por Ícaro sobre a main consolidada. Revisão, causa, filtros e exportações conferidos; persistência observada após reload/reinício e reabertura auditada. Eventos continuam sintéticos. O mesmo registro documenta timeout TCP no acesso externo Kafka informado, sem publicar mensagens.

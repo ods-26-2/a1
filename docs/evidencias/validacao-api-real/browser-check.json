@@ -1,0 +1,44 @@
+{
+  "recorded_on": "2026-11-06",
+  "a1_commit": "5d17305048f21914ed46d4fbe0770c81180215eb",
+  "i8_commit": "55a808b1351fdd94ea039148b49fba1f478603e1",
+  "status": "PASS",
+  "api_real": true,
+  "synthetic_events": true,
+  "real_inference": false,
+  "shared_broker_used": false,
+  "checks": [
+    "filtros combinados de captura/resultado/origem/defeito",
+    "correção REJECTED/FURADO preserva análise AMASSADO",
+    "causa declarada e auditada",
+    "JSON e CSV baixados pela interface",
+    "recorrência usa análise original",
+    "revisão e causa persistem após reload",
+    "revisão e causa persistem após reinício backend",
+    "reabertura retorna à fila com auditoria",
+    "navegação por Enter foca título",
+    "relatório real em 390px sem overflow horizontal"
+  ],
+  "mobile": {
+    "documentWidth": 375,
+    "focusedId": "reports-title",
+    "overflow": false,
+    "reportText": "Origem: cam-linha1 · captura: 06/11/2026, 11:05:17 · análise I8: NON_CONFORMING · defeito original: AMASSADOTriagem: REVIEW · decisão final: REVIEW · evidência: PENDINGCausa provável declarada: Hipótese sintética para validar persistência · icaro-validacao-local · 06/11/2026, 11:07:21 · fundamento: Ensaio da API real com evento sintético; não representa diagnóstico industrial.06/11/2026, 11:05:21 · INGESTED · I806/11/2026, 11:05:21 · TRIAGED · AUTO06/11/2026, 11:05:21 · EVIDENCE_REQUESTED · A106/11/2026, 11:06:54 · REVIEW_RECORDED · icaro-validacao-local06/11/2026, 11:07:21 · CAUSE_RECORDED · icaro-validacao-local06/11/2026, 11:10:25 · REVIEW_RECORDED · icaro-validacao-localA exportação contém análise, decisões, referências de evidência, revisões, causas e auditoria completas.",
+    "width": 390
+  },
+  "final_dom": {
+    "apiMode": "API REAL",
+    "focusedId": "reports-title",
+    "inspectionId": "INSP-247f6c01-6c6f-418d-bae4-ab24b35ab21c",
+    "model": "synthetic-transport-proof",
+    "queue": "4 inspeção(ões) aguardando revisão.",
+    "report": "Origem: cam-linha1 · captura: 06/11/2026, 11:05:17 · análise I8: NON_CONFORMING · defeito original: AMASSADOTriagem: REVIEW · decisão final: REVIEW · evidência: PENDINGCausa provável declarada: Hipótese sintética para validar persistência · icaro-validacao-local · 06/11/2026, 11:07:21 · fundamento: Ensaio da API real com evento sintético; não representa diagnóstico industrial.06/11/2026, 11:05:21 · INGESTED · I806/11/2026, 11:05:21 · TRIAGED · AUTO06/11/2026, 11:05:21 · EVIDENCE_REQUESTED · A106/11/2026, 11:06:54 · REVIEW_RECORDED · icaro-validacao-local06/11/2026, 11:07:21 · CAUSE_RECORDED · icaro-validacao-local06/11/2026, 11:10:25 · REVIEW_RECORDED · icaro-validacao-localA exportação contém análise, decisões, referências de evidência, revisões, causas e auditoria completas."
+  },
+  "browser_console": [],
+  "limits": [
+    "S4 desativado; evidência pendente esperada",
+    "sem teste de usabilidade com operadores reais",
+    "sem validação física ou inferência industrial",
+    "não é teste automatizado de navegador incorporado ao CI"
+  ]
+}

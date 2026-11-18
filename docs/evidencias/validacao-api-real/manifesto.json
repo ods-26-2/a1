@@ -1,0 +1,68 @@
+{
+  "recorded_on": "2026-11-06",
+  "a1_base": "5d17305048f21914ed46d4fbe0770c81180215eb",
+  "i8_publisher": "55a808b1351fdd94ea039148b49fba1f478603e1",
+  "scope": "navegador/API/PostgreSQL reais com eventos sintéticos; broker externo TCP timeout",
+  "files": [
+    {
+      "path": "docs/evidencias/validacao-api-real/README.md",
+      "bytes": 6948,
+      "sha256": "a62e0666416f7cf8e2a74412140a341fe0294f81e16a745d91602d7901cce095"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/api-banco-final.json",
+      "bytes": 7374,
+      "sha256": "a2e5070eae77d0f38e7f4b78610ee4ad4885661381de330e2d6c37fae97bb552"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/browser-check.json",
+      "bytes": 3111,
+      "sha256": "b6b8ead3a3c2dbc32bb61ba3f5969431072e2c04af9b7ad6d9ad5a4391114d4c"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/capturas/02-relatorio-api-real.jpg",
+      "bytes": 95413,
+      "sha256": "86b8b8bb72532f82ba7b91e3c7f7e296afc7d892febd823e228428e315b00b93"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/capturas/05-mobile-api-real.jpg",
+      "bytes": 53420,
+      "sha256": "4569254e2ba64d47f3a53bb2c0d56a4bf854d23766357b2a905a050b7f69baad"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/console.json",
+      "bytes": 3,
+      "sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/encerramento.log",
+      "bytes": 1132,
+      "sha256": "58d1ec7b58cec70018a8f58651c39791fbc00970b772d875f0eaa16aaa7bd555"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/kafka-compartilhado.json",
+      "bytes": 506,
+      "sha256": "8287d29e894e4fcfcf0ca5e0d7791e85bb891f2746c3c4c3a0c73d8aa38f0020"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/prova-broker-compartilhado.py",
+      "bytes": 1791,
+      "sha256": "7b888ff963e14d0a93bb078c7e30b62a524d666a05b2e27860544ec9e2991ef3"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/relatorio-browser.csv",
+      "bytes": 4691,
+      "sha256": "e0a9a56211b963502544e57c5dc0da28572ee58e8b63204e55beac89c3d3bec6"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/relatorio-browser.json",
+      "bytes": 4226,
+      "sha256": "f374e06e80c0cf6a9a785981e6bbc9624b794da4b354927f27165b525708ec5d"
+    },
+    {
+      "path": "docs/evidencias/validacao-api-real/validacao-exportacoes.json",
+      "bytes": 489,
+      "sha256": "7ff0012e72445c232cd9a2951cc1704e3d1e042d50ad7dc9dde0470616bd1434"
+    }
+  ]
+}
