@@ -1,0 +1,52 @@
+{
+  "scope": "Prova Docker local em checkout limpo; imagens sintéticas",
+  "code_commit": "e815ddcf3ce452f3891bbb68de2ef04f030c055e",
+  "files": [
+    {
+      "path": "resultado.json",
+      "sha256": "31064dd6c8ed0839406a2a0a21a3791a0071a155f1c9598748ffda31dc8297b8",
+      "bytes": 7362
+    },
+    {
+      "path": "preparacao.json",
+      "sha256": "00627101901ad792c2505af8f352186b290a0dd9b96fcdbd89cf73624c77e005",
+      "bytes": 3027
+    },
+    {
+      "path": "frames.jsonl",
+      "sha256": "760476ca4d7129983a205fbd360bbd3065494abbb27d9319348670432a1126bc",
+      "bytes": 687
+    },
+    {
+      "path": "eventos.jsonl",
+      "sha256": "f1ffa7b7b96c3b0b675b24281dd2e368115ee2691e5cb56b970ca1e7a937d3ad",
+      "bytes": 2002
+    },
+    {
+      "path": "recibos-envio.jsonl",
+      "sha256": "bfffdb88d59d02d50c13646c9a1395d5fab0f6ae8a20327cf5e99be0fa5a9801",
+      "bytes": 393
+    },
+    {
+      "path": "recibos-reenvio.jsonl",
+      "sha256": "11e33144a5ab08264b23d8af22127b95aa027f74e91ffef8615a671fb6a46061",
+      "bytes": 393
+    },
+    {
+      "path": "engine-ausente.json",
+      "sha256": "bfe8ebebb47d1df8c2c221829bd30d5556b3ad70706d6a5559a5650c56fa5450",
+      "bytes": 120
+    },
+    {
+      "path": "encerramento.log",
+      "sha256": "1b869811dc95d4c0a462eb4338a56b3b10badc9e5ab58e626097385490c1a402",
+      "bytes": 1084
+    },
+    {
+      "path": "versoes.json",
+      "sha256": "2c40e0c4430e60a28c96c5f3ecbacf8d5136522160f6c594b97c59c6478d72b9",
+      "bytes": 393
+    }
+  ],
+  "large_artifacts": "Imagens/pacotes e logs completos permanecem no artefato CI e no diretório local de execução"
+}

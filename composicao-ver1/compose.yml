@@ -126,7 +126,7 @@ services:
       KAFKA_GROUP_ID: ${VER1_GROUP_ID:-ver1-sprint3-a1}
       API_URL: http://frontend/api/v1
       A1_SHA: ${VER1_A1_SHA:-unknown}
-      I8_SHA: 55a808b1351fdd94ea039148b49fba1f478603e1
+      I8_SHA: 051851f8c7889aba4da8422293c911aa84579da4
       FRONTEND_URL: http://frontend/frontend/
       A1_DIRTY: ${VER1_A1_DIRTY:-unknown}
     volumes:

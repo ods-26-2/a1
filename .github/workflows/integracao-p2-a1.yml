@@ -1,0 +1,36 @@
+name: Sprint 3 - P2 e inferência I8 até A1 em Docker
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'composicao-ver1/**'
+      - 'backend/**'
+      - 'shared/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - 'requirements*.txt'
+      - 'validacao-local/provar_fluxo.py'
+      - 'tests/test_p2_composition_proof.py'
+      - '.github/workflows/integracao-p2-a1.yml'
+permissions:
+  contents: read
+jobs:
+  p2-kafka-a1:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Inferência P2 CPU, Kafka, banco, reenvio e reinício
+        run: bash composicao-ver1/testar-p2.sh
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: integracao-p2-kafka-a1-${{ github.sha }}
+          path: composicao-ver1/evidencias-p2/
+          retention-days: 30
+          if-no-files-found: error
+      - name: Garantir encerramento do laboratório P2
+        if: always()
+        run: docker compose --project-name ver1-sprint3-p2 --env-file composicao-ver1/.env.example -f composicao-ver1/compose.yml -f composicao-ver1/compose-p2.yml down -v --remove-orphans

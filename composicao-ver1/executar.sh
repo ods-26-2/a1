@@ -19,17 +19,7 @@ if docker volume inspect ver1-sprint3-local_lab-db >/dev/null 2>&1; then
   echo 'Volume de laboratório anterior encontrado. Execute parar antes de um novo teste.' >&2
   exit 1
 fi
-i8_sha="$(python3 -c 'import json; print(json.load(open("versoes.json"))["i8_commit"])')"
-i8_url="$(python3 -c 'import json; print(json.load(open("versoes.json"))["i8_repository"])')"
-if [ ! -d .dependencias/i8/.git ] && [ ! -f .dependencias/i8/.git ]; then
-  mkdir -p .dependencias/i8
-  git -C .dependencias/i8 init -q
-  git -C .dependencias/i8 remote add origin "$i8_url"
-  git -C .dependencias/i8 fetch --depth=1 origin "$i8_sha"
-  git -C .dependencias/i8 checkout -q --detach FETCH_HEAD
-fi
-test "$(git -C .dependencias/i8 rev-parse HEAD)" = "$i8_sha"
-test -z "$(git -C .dependencias/i8 status --porcelain)"
+bash preparar-dependencias.sh i8
 export VER1_A1_SHA="$(git -C .. rev-parse HEAD)"
 export VER1_A1_DIRTY=false
 if [ -n "$(git -C .. status --porcelain)" ]; then export VER1_A1_DIRTY=true; fi
